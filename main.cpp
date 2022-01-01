@@ -1,17 +1,12 @@
-<<<<<<< HEAD
-
 #include "engine_collect.h"
 
-int main(int argc, char** argv)
+Egg = []()
 {
-		engine(argc, argv);
-} 
-=======
+	cout << "help" << endl;
+};
 
-#include "engine_collect.h"
-
-int main(int argc, char** argv)
+int main(int argc, char** argv, egg Egg)
 {
-		engine(argc, argv);
-} 
->>>>>>> ddcba64 (MakeUpdate)
+		Egg;
+//		engine(argc, argv);
+}; 

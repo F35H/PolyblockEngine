@@ -2,8 +2,6 @@ FILE = game_def
 
 LINKER =   -l freeglut -l opengl32 -lstdc++
 
-
-
 OBJ =  main.o bake.o gameio.o timers.o engine_collect.o
 OUT = engine
 ERROR = err
