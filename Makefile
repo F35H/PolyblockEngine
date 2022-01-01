@@ -26,7 +26,7 @@ upload:
 	git add Makefile
 	git commit -m "MakeUpdate"
 	git branch -M development 
-	git push - u origin development
+	git push -u origin development
 
 $(OUT): $(OBJ) 
 	gcc *.cpp  $(LINKER) -std=c++14
