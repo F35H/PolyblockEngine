@@ -22,9 +22,9 @@ create:
 	echo "" > $(FILE).cpp
 	
 upload:
-	git add *.cpp *.h *.txt
+	git add *.cpp *.h 
 	git add Makefile
-	git commit -m "MakeUpdate"
+	git commit -m "MakeUpdate" -a
 	git branch -M development 
 	git push -u origin development
 
