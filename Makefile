@@ -24,7 +24,7 @@ create:
 upload:
 	git add *.cpp *.h 
 	git add Makefile
-	git commit -m "MakeUpdate" -a
+	git commit -m "MakeUpdate" 
 	git branch -M development 
 	git push -u origin development
 
