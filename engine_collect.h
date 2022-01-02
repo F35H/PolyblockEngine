@@ -15,6 +15,7 @@ extern void   (*display) ();
 
 typedef void (*egg) ();
 egg Egg;
+Edge(egg Egg);
 //Variables
 }
 #endif

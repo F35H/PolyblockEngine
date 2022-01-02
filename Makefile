@@ -1,8 +1,8 @@
-FILE = game_def
+FILE = genCBFvar
 
 LINKER =   -l freeglut -l opengl32 -lstdc++
 
-OBJ =  main.o bake.o gameio.o timers.o engine_collect.o
+OBJ =  main.o
 OUT = engine
 ERROR = err
 
@@ -27,7 +27,7 @@ upload:
 	git push -u origin development
 
 $(OUT): $(OBJ) 
-	gcc *.cpp  $(LINKER) -std=c++14
+	gcc main.cpp -o engine.exe  $(LINKER) -std=c++14
 
 
 clean:
