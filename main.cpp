@@ -1,15 +1,10 @@
-#include "GL/freeglut.h"
-#include "engine_hub.h"
-#include <iostream>
-#include <fstream>
-#include <map>
 
+#include "engine_hub.h"
 	 
 
 int main(int argc, char** argv)
 {
-	gameVar vars;
-	void engine(argc,argv,vars);
+	engine(argc,argv);
 	/*
 	std::ofstream out;
 	out.open ("txt/ErrLog.txt");
@@ -21,7 +16,7 @@ int main(int argc, char** argv)
 	{
 		std::cout << "failed" << std::endl;
 	}
-	
+	*/	
 	while(true);
-	*/
+
 }; 

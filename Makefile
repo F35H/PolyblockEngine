@@ -1,8 +1,8 @@
-FILE = genCBFvar
+FILE = gameCBFvar
 
 LINKER =   -l freeglut -l opengl32 -lstdc++
 
-OBJ =  main.o
+OBJ =  main.o engine_hub.o genCBFvar.o
 OUT = engine
 ERROR = err
 
@@ -27,7 +27,7 @@ upload:
 	git push -u origin development
 
 $(OUT): $(OBJ) 
-	gcc main.cpp -o engine.exe  $(LINKER) -std=c++14
+	g++ main.cpp engine_hub.cpp genCBFvar.cpp -o engine  $(LINKER) -std=c++14
 
 
 clean:
