@@ -1,4 +1,4 @@
-FILE = gameCBFvar
+FILE = precomptest
 
 LINKER =   -l freeglut -l opengl32 -lstdc++
 
@@ -16,8 +16,7 @@ start: $(OUT) $(OUTEXE)
 compile: $(OUT) $(OUTEXE)
 
 create:	
-	echo "" > $(FILE).h
-	echo "" > $(FILE).cpp
+	echo "" > $(FILE).h.gch
 	
 upload:
 	git add *.cpp *.h 
