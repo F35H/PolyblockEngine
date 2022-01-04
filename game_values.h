@@ -1,6 +1,9 @@
 #ifndef  GAME_VALUE_H
 #define GAME_VALUE_H
 #include "GL/freeglut.h"
+#include "initCBFvar.h"
+#include "gameCBFvar.h"
+#include "genCBFvar.h"
 #include <iostream>
 #include <fstream>
 #include <map>

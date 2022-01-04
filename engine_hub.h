@@ -1,10 +1,6 @@
 #ifndef  ENGINE_HUB_H
 #define ENGINE_HUB_H
-#include "GL/freeglut.h"
-#include "game_values.h"
-#include "initCBFvar.h"
-#include "gameCBFvar.h"
-#include "genCBFvar.h"
+#include "error_handling.h"
 
 
 

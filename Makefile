@@ -1,10 +1,11 @@
-FILE = precomptest
+FILE = errorhandling
+precomp = game_values 
 
 LINKER =   -l freeglut -l opengl32 -lstdc++
 
-OBJ =  main.o engine_hub.o genCBFvar.o
+CPP =	main.cpp engine_hub.cpp genCBFvar.cpp errorhandling.cpp 
+OBJ =  main.o engine_hub.o genCBFvar.o errorhandling.o
 OUT = engine
-ERROR = err
 
 COMOBJ = $(OUT) $(OBJ)
 OUTEXE = $(OUT).exe
@@ -16,7 +17,7 @@ start: $(OUT) $(OUTEXE)
 compile: $(OUT) $(OUTEXE)
 
 create:	
-	echo "" > $(FILE).h
+	echo "" > $(FILE).cpp
 	
 upload:
 	git add *.cpp *.h 
@@ -26,8 +27,8 @@ upload:
 	git push -u origin development
 
 $(OUT): $(OBJ) 
-	g++ -c engine_hub.h -o engine_hub.h.gch
-	g++ main.cpp engine_hub.cpp genCBFvar.cpp -o engine  $(LINKER) -std=c++14
+	g++ -c $(precomp).h -o $(precomp).h.gch
+	g++   -o engine  $(LINKER) -std=c++14
 
 
 clean:
