@@ -16,7 +16,7 @@ start: $(OUT) $(OUTEXE)
 compile: $(OUT) $(OUTEXE)
 
 create:	
-	echo "" > $(FILE).h.gch
+	echo "" > $(FILE).h
 	
 upload:
 	git add *.cpp *.h 
@@ -26,8 +26,9 @@ upload:
 	git push -u origin development
 
 $(OUT): $(OBJ) 
+	g++ -c engine_hub.h -o engine_hub.h.gch
 	g++ main.cpp engine_hub.cpp genCBFvar.cpp -o engine  $(LINKER) -std=c++14
 
 
 clean:
-	rm *.o	*.exe 
+	rm *.o	*.exe  *.h.gch *.txt *.bin

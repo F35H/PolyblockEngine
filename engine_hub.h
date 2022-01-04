@@ -8,10 +8,13 @@
 
 
 
-	
-//extern void (*errorReturn)(const char *fmt,  va_list ap);
+
 void engine(int argc,char **argv);
-void initCallBackFunctions(int argc,char **argv);
-void gameCallBackFunctions();
-void genCallBackFunctions();
+namespace hub{
+	extern void (*display)();
+//	extern void (*errorReturn)(const char *fmt,  va_list ap);
+	void Display();
+	void initCallBackFunctions(int argc,char **argv);
+	void gameCallBackFunctions();
+	void genCallBackFunctions();	};
 #endif
