@@ -2,22 +2,22 @@
 
 //Variables
 //External Function Pointers
-bool (*bakeConfigure)(std::map<std::string,SI> &genBakeVar, PSI &psi) = [](std::map<std::string,SI> &genBakeVar, PSI &psi){
+bool (*bakeConfigure)(std::map<const char*,SI> &genBakeVar, PSI &psi) = [](std::map<const char*,SI> &genBakeVar, PSI &psi){
 	for(psi = 0;;psi++)
 	{
 		switch(psi)
 		{
 			default:
-			genBakeVar.insert(std::pair<std::string,SI>(WINDOWWIDTH,si));
+			genBakeVar.insert(std::pair<const char*,SI>(WINDOWWIDTH,si));
 			break;
 			case 0:
-			genBakeVar.insert(std::pair<std::string,SI>(WINDOWHEIGHT,si));
+			genBakeVar.insert(std::pair<const char*,SI>(WINDOWHEIGHT,si));
 			break;
 			case 1:
-			genBakeVar.insert(std::pair<std::string,SI>(CENTERWIDTH,si));
+			genBakeVar.insert(std::pair<const char*,SI>(CENTERWIDTH,si));
 			break;
 			case 2:
-			genBakeVar.insert(std::pair<std::string,SI>(CENTERHEIGHT,si));
+			genBakeVar.insert(std::pair<const char*,SI>(CENTERHEIGHT,si));
 			break;
 			case 3:
 			goto escape;

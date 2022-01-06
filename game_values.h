@@ -1,5 +1,22 @@
 #ifndef  GAME_VALUE_H
 #define GAME_VALUE_H
+
+#ifdef _WIN64
+#include <direct.h>
+#define CompileDirectory _getcwd
+#elifdef _WIN32
+#include <direct.h>
+#define CompileDirectory _getcwd
+#elifdef unix
+#include <unistd.h>
+#define CompileDirectory getcwd
+#elifdef __MACH__
+#include <unistd.h>
+#define CompileDirectory getcwd
+#else
+#define CompileDirectory badOS
+#endif
+
 #include "GL/freeglut.h"
 #include "initCBFvar.h"
 #include "gameCBFvar.h"
@@ -7,6 +24,9 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <ctime>
+#include <cstdarg>
+#include <io.h>
 
 
 //Graphical Names
@@ -20,7 +40,6 @@
 //Game Statistics
 #define GAME_NAME "GAME_NAME"
 //Error Statistics
-#define FAILEDLOGFRAC (1/4)
 #define FAILEDLOGNAME "FAILED LOG ERROR"
 
 
