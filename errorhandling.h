@@ -12,6 +12,7 @@ extern int window;
 	void Display();
 	//Functions Used && Define Inside CPP
 	void ErrorReturn(const char *fmt, va_list ap);
+	void ErrorReturn(const char *fmt);
 	void printLog(std::string st);
 	void outLog(const std::string &st);
 	//Functions Defined In Hub

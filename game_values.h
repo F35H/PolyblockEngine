@@ -4,17 +4,22 @@
 #ifdef _WIN64
 #include <direct.h>
 #define CompileDirectory _getcwd
-#elifdef _WIN32
+#define Check "WIN64"
+#elif _WIN32
 #include <direct.h>
 #define CompileDirectory _getcwd
-#elifdef unix
+#define Check "WIN32"
+#elif unix
 #include <unistd.h>
 #define CompileDirectory getcwd
-#elifdef __MACH__
+#define Check "LINUX"
+#elif __MACH__
 #include <unistd.h>
 #define CompileDirectory getcwd
+#define Check "MAC"
 #else
-#define CompileDirectory badOS
+#define CompileDirectory getcwd
+#define Check "BADOS"
 #endif
 
 #include "GL/freeglut.h"

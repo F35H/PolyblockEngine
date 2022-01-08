@@ -3,7 +3,7 @@ precomp = game_values
 
 LINKER =   -l freeglut -l opengl32 -lstdc++
 
-CPP =	main.cpp engine_hub.cpp genCBFvar.cpp errorhandling.cpp  initCBFvar.cpp
+CPP =	-g main.cpp engine_hub.cpp genCBFvar.cpp errorhandling.cpp  initCBFvar.cpp
 OBJ =  main.o engine_hub.o genCBFvar.o errorhandling.o initCBFvar.o
 OUT = engine
 
