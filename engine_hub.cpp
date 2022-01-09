@@ -5,7 +5,7 @@
 void engine(int argc,char **argv)	{	using namespace hub;	badOS:
 	if	(	Check != "BADOS" )	{	initCallBackFunctions(argc,argv);
 	gameCallBackFunctions();	genCallBackFunctions();	}
-	else	{	errorHan::ErrorReturn("BADOS");	goto badOS;	}	};
+	else	{	errorHan::ErrorReturn("BADOS");	}	};
 void hub::initCallBackFunctions(int argc, char**argv){	glutInit(&argc,argv);
 	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH),glutGet(GLUT_SCREEN_WIDTH));
 	glutInitWindowPosition(0,0);

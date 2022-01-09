@@ -19,9 +19,8 @@ void errorHan::Display(){	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	};
 void (*errorHan::display)() = errorHan::Display;
 
 void (*errorHan::errorReturn)(const char *fmt,  va_list ap) = {	errorHan::ErrorReturn	};
-void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	printLog((std::string)fmt);	};
-void errorHan::ErrorReturn(const char *fmt)	{	printLog((std::string)fmt);	};
-void errorHan::printLog(const std::string st)	{	time_t time;  std::string throwString;
+void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	ErrorReturn((std::string)fmt);	};
+void errorHan::ErrorReturn(const std::string st)	{	time_t time;  std::string throwString;
 	time = std::time(nullptr);	throwString = std::ctime(&time);
 	throwString += ":";	throwString += st;	throwString += "\n";
 	std::cout << throwString;	outLog(throwString);	};
