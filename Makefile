@@ -1,10 +1,11 @@
-FILE = errorhandling
-precomp = game_values 
+FILE = CBF
+PRECOMP = game_values
 
-LINKER =   -l freeglut -l opengl32 -lstdc++
+LINKER = -LG:/Dev/Custom_Engine/src/lib   -lopengl32  -l freeglut -lfreetype.dll -lstdc++
+INCLUDE = -IG:/Dev/Custom_Engine/src/include 
 
-CPP =	-g main.cpp engine_hub.cpp genCBFvar.cpp errorhandling.cpp  initCBFvar.cpp
-OBJ =  main.o engine_hub.o genCBFvar.o errorhandling.o initCBFvar.o
+CPP =	main.cpp engine_hub.cpp errorhandling.cpp game_values.cpp  
+OBJ =  main.o engine_hub.o  errorhandling.o game_values.o
 OUT = engine
 
 COMOBJ = $(OUT) $(OBJ)
@@ -12,9 +13,9 @@ OUTEXE = $(OUT).exe
 LOGOUT = $(ERROR).txt
 
 clean:
-#	rm *.o	*.exe  *.h.gch
-	g++ -c game_values.h -o game_values.h.gch 
-	g++  $(CPP) -o $(OUT)  $(LINKER) -std=c++14
+	rm $(PRECOMP).h.gch
+#	g++ -c $(PRECOMP).h -o $(PRECOMP).h.gch 
+#	g++  $(CPP) -o $(OUT)  $(LINKER) -std=c++14
 
 start: $(OUT) $(OUTEXE)
 	$$(start $(OUTEXE))
@@ -25,14 +26,14 @@ create:
 	echo "" > $(FILE).cpp
 	
 upload:
-	git add *.cpp *.h 
+	git add *
 	git add Makefile
 	git commit -m "MakeUpdate" 
 	git branch -M development 
 	git push -u origin development
 
-$(OUT): $(OBJ) 
-	g++  $(CPP) -o $(OUT)  $(LINKER) -std=c++14
+$(OUT): 
+	gcc  -o $(OUT) $(CPP)  $(INCLUDE) $(LINKER) -std=c++14
 
 
 

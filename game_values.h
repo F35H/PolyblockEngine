@@ -1,5 +1,5 @@
-#ifndef  GAME_VALUE_H
-#define GAME_VALUE_H
+#ifndef  GAME_VALUES_H
+#define GAME_VALUES_H
 
 #ifdef _WIN64
 #include <direct.h>
@@ -22,10 +22,8 @@
 #define Check "BADOS"
 #endif
 
+#include "ft2build.h"
 #include "GL/freeglut.h"
-#include "initCBFvar.h"
-#include "gameCBFvar.h"
-#include "genCBFvar.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -33,6 +31,7 @@
 #include <cstdarg>
 #include <io.h>
 
+#include FT_FREETYPE_H
 
 //Graphical Names
 #define WINDOWHEIGHT	"HEIGHT"
@@ -47,5 +46,9 @@
 //Error Statistics
 #define FAILEDLOGNAME "FAILED LOG ERROR"
 
+namespace game_values{
+extern int window;
+extern FT_Library library;
+}
 
 #endif

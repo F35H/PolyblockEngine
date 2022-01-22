@@ -1,0 +1,4 @@
+Fri Jan 21 11:08:21 2022
+:ERROR:  No display callback registered for window %d
+
+

@@ -3,16 +3,18 @@
 #include "game_values.h"
 
 
-extern int window;
+//extern int window;
 //extern void (*display)();
 	namespace errorHan{
 	//Functions Used Outside CPP
 	extern void (*errorReturn)(const char *fmt,  va_list ap);
 	extern void (*display)();
+	extern bool (*libInit)();
 	void Display();
 	//Functions Used && Define Inside CPP
 	void ErrorReturn(const char *fmt, va_list ap);
 	void ErrorReturn(const char *fmt);
+	bool LibInit();
 	void printLog(std::string st);
 	void outLog(const std::string &st);
 	//Functions Defined In Hub

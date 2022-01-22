@@ -1,26 +1,22 @@
 #include "errorhandling.h"
 
 
-	
+void (*errorHan::display)() = {	errorHan::Display	};
+void (*errorHan::errorReturn)(const char *fmt,  va_list ap) = {	errorHan::ErrorReturn	};
+bool (*errorHan::libInit)() = {	errorHan::LibInit	};
 
-
-
-
-
-
-void errorHan::genGLUTswitch(short int i){ switch(i)	{ 
-	default:	return;	//Case 0 is error routing for outLog
+void errorHan::genGLUTswitch(short int i){ switch(i)	{ default:	return;	
 	case 0:	{	char b[FILENAME_MAX];	CompileDirectory(b,FILENAME_MAX);
 	std::string c(b);	c += "\\txt";	mkdir(c.c_str());	return;	}
-	case 1:	{	glutDestroyWindow(window);	glutCreateWindow("GEN_GAME_ERROR");	glutReshapeWindow(400,200);
+	case 1:	{	glutDestroyWindow(game_values::window);	glutCreateWindow("GEN_GAME_ERROR");	glutReshapeWindow(400,200);
+	glutPositionWindow(glutGet(GLUT_SCREEN_WIDTH) * (0.4),glutGet(GLUT_SCREEN_HEIGHT)*(0.4));
+	glutDisplayFunc(errorHan::display);	glutMainLoop();	return;	}	
+	case 2:	{	glutDestroyWindow(game_values::window);	glutCreateWindow("GEN_GAME_ERROR");	glutReshapeWindow(400,200);
 	glutPositionWindow(glutGet(GLUT_SCREEN_WIDTH) * (0.4),glutGet(GLUT_SCREEN_HEIGHT)*(0.4));
 	glutDisplayFunc(errorHan::display);	glutMainLoop();	return;	}	}	};
 void errorHan::Display(){	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	};
-void (*errorHan::display)() = errorHan::Display;
-
-void (*errorHan::errorReturn)(const char *fmt,  va_list ap) = {	errorHan::ErrorReturn	};
-void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	ErrorReturn((std::string)fmt);	};
-void errorHan::ErrorReturn(const std::string st)	{	time_t time;  std::string throwString;
+void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	printLog((std::string)fmt);	};
+void errorHan::printLog(const std::string st)	{	time_t time;  std::string throwString;
 	time = std::time(nullptr);	throwString = std::ctime(&time);
 	throwString += ":";	throwString += st;	throwString += "\n";
 	std::cout << throwString;	outLog(throwString);	};
@@ -28,3 +24,7 @@ void errorHan::outLog(const std::string &st)	{	std::ofstream out;	out.open("txt/
 	for (	int i = -1; i != 2; i++	)	{	if (	out.tellp() == 0	)	{	out << st << std::endl;	return;	}
 	else	{	switch(i)	{	default:	def:	{	out.close(); out.open("txt/ErrLog.txt",	std::ios::out |	std::ios::trunc | std::ios::ate);	break;	}
 	case 0: {	genGLUTswitch(i);	goto def;	}	case 1: {	genGLUTswitch(i);	break;	}	}	}	}	out.close();	};
+bool errorHan::LibInit()	{	if (	FT_Init_FreeType( &game_values::library ) 	)	{
+	errorHan::printLog("FreeType Library Failed"); return false;	}
+	else {return true;}
+	};

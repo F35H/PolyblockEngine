@@ -3,15 +3,15 @@
 
 
 void engine(int argc,char **argv)	{	using namespace hub;	badOS:
-	if	(	Check != "BADOS" )	{	initCallBackFunctions(argc,argv);
+	if	(	Check != "BADOS" && errorHan::libInit )	{	initCallBackFunctions(argc,argv);
 	gameCallBackFunctions();	genCallBackFunctions();	}
-	else	{	errorHan::ErrorReturn("BADOS");	}	};
+	else	{	errorHan::printLog("BADOS");	}	};
 void hub::initCallBackFunctions(int argc, char**argv){	glutInit(&argc,argv);
 	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH),glutGet(GLUT_SCREEN_WIDTH));
 	glutInitWindowPosition(0,0);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glutCreateWindow(GAME_NAME);
-	window = glutGetWindow();
+	game_values::window = glutGetWindow();
 //	glutDisplayFunc(display);	
 };
 void hub::gameCallBackFunctions(){};
