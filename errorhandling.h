@@ -6,18 +6,17 @@
 //extern int window;
 //extern void (*display)();
 	namespace errorHan{
-	//Functions Used Outside CPP
-	extern void (*errorReturn)(const char *fmt,  va_list ap);
-	extern void (*display)();
+	//Function variables
 	extern bool (*libInit)();
-	void Display();
-	//Functions Used && Define Inside CPP
-	void ErrorReturn(const char *fmt, va_list ap);
-	void ErrorReturn(const char *fmt);
+	extern void (*display)();
+	extern void (*errorReturn)(const char *fmt,  va_list ap);
+	//Function Variable Definitions
 	bool LibInit();
+	void Display();
+	void ErrorReturn(const char *fmt);
+	void ErrorReturn(const char *fmt, va_list ap);
+	//Internal Functions
 	void printLog(std::string st);
-	void outLog(const std::string &st);
-	//Functions Defined In Hub
 	void genGLUTswitch(short int i);
-	};
+	void outLog(const std::string &st);	};
 #endif
