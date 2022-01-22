@@ -1,22 +1,28 @@
 #include "errorhandling.h"
 
-bool (*errorHan::libInit)()	=	{	errorHan::LibInit	};
+
+bool (*errorHan::initCheck)()	=	{	errorHan::InitCheck	};
 void (*errorHan::display)()	=	{	errorHan::Display	};
 void (*errorHan::errorReturn)(const char *fmt,  va_list ap)
 	=	{	errorHan::ErrorReturn	};
 
-bool errorHan::LibInit()	{	
+bool errorHan::InitCheck()	{	
 	if (	FT_Init_FreeType( &game_values::library ) 	)	{
-	errorHan::ErrorReturn("FreeType Library Failed");
-	 return false;	}
-	else if (	true; )	{
-		return true;	}	};
+		errorHan::ErrorReturn("FreeType Library Failed");
+			return false;	}
+	else if (	Check == game_values::check::bados	)	{
+		errorHan::ErrorReturn("Unidentified Operating System!");
+			return false; }
+	else if (	true	)	{
+			return true;	}	};	
 void errorHan::Display()	{	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	};
 void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	
 	printLog((std::string)fmt);	};
 
-void errorHan::genGLUTswitch(short int i){
+void errorHan::ErrorReturn(const char *fmt)	{	
+	printLog((std::string)fmt);	};
+void errorHan::errorSwitch(short int i){
 	switch(i)	{
 		default:	{
 				return;	}	
@@ -39,15 +45,16 @@ void errorHan::printLog(const std::string st)	{
 void errorHan::outLog(const std::string &st)	{
 	std::ofstream out;	out.open("txt/ErrLog.txt", std::ios::out);
 	for (	int i = -1; i != 2; i++	)	{
-			if (	out.tellp() == 0	)	{	out << st << std::endl;
-					return;	}
-			else if (	true;	)	{
-					switch(i)	{	
-						default:	def:	{	out.close();
-							 out.open("txt/ErrLog.txt",	std::ios::out |	std::ios::trunc | std::ios::ate);
-								break;	}
-						case 0: {	genGLUTswitch(i);	
-								goto def;	}
-						case 1: {	genGLUTswitch(i);
-								break;	}	}	}	}	out.close();	};
+		if (	out.tellp() == 0	)	{
+			out << st << std::endl;
+				return;	}
+		else if (	true	)	{
+			switch(i)	{	
+				default:	def:	{	out.close();
+					out.open("txt/ErrLog.txt",	std::ios::out |	std::ios::trunc | std::ios::ate);
+						break;	}
+				case 0: {	errorSwitch(i);	
+						goto def;	}
+				case 1: {	errorSwitch(i);	
+						break;	}	}	}	}	out.close();	};
 

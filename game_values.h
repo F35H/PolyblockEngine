@@ -4,22 +4,22 @@
 #ifdef _WIN64
 #include <direct.h>
 #define CompileDirectory _getcwd
-#define Check "WIN64"
+#define Check 0
 #elif _WIN32
 #include <direct.h>
 #define CompileDirectory _getcwd
-#define Check "WIN32"
+#define Check 1
 #elif unix
 #include <unistd.h>
 #define CompileDirectory getcwd
-#define Check "LINUX"
+#define Check 2
 #elif __MACH__
 #include <unistd.h>
 #define CompileDirectory getcwd
-#define Check "MAC"
+#define Check 3
 #else
 #define CompileDirectory getcwd
-#define Check "BADOS"
+#define Check 4
 #endif
 
 #include "ft2build.h"
@@ -47,8 +47,13 @@
 #define FAILEDLOGNAME "FAILED LOG ERROR"
 
 namespace game_values{
-extern int window;
-extern FT_Library library;
+	enum check : short	{
+		win64,	win32,
+		unix,	mac,	
+			bados	};
+	
+	extern int window;
+	extern FT_Library library;
 }
 
 #endif
