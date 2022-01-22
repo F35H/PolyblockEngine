@@ -26,12 +26,10 @@ create:
 	echo "" > $(FILE).cpp
 	
 upload:
-	git init
 	git add *
 	git add Makefile
 	git commit -m "MakeUpdate" 
 	git branch -M development 
-	git remote add origin https://github.com/F35H/Custom_Engine.git
 	git push -u origin development
 
 $(OUT): 
