@@ -31,7 +31,6 @@ upload:
 	git commit -m "MakeUpdate" 
 	git branch -M development 
 	git push -u origin development
-
 $(OUT): 
 	gcc  -o $(OUT) $(CPP)  $(INCLUDE) $(LINKER) -std=c++14
 
