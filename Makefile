@@ -1,8 +1,8 @@
-FILE = CBF
+FILE = gamefunctions
 PRECOMP = game_values
 
 LINKER = -LG:/Dev/Custom_Engine/src/lib   -lopengl32  -l freeglut -lfreetype.dll -lstdc++
-INCLUDE = -IG:/Dev/Custom_Engine/src/include 
+INCLUDE = -IG:/Dev/Custom_Engine/src/include -IG:/Dev/Custom_Engine/src/ 
 
 CPP =	main.cpp engine_hub.cpp errorhandling.cpp game_values.cpp  
 OBJ =  main.o engine_hub.o  errorhandling.o game_values.o
@@ -23,7 +23,7 @@ start: $(OUT) $(OUTEXE)
 compile: $(OUT) $(OUTEXE)
 
 create:	
-	echo "" > $(FILE).cpp
+	echo "" > $(FILE).h
 	
 upload:
 	git add *
@@ -32,7 +32,7 @@ upload:
 	git branch -M development 
 	git push -u origin development
 $(OUT): 
-	gcc  -o $(OUT) $(CPP)  $(INCLUDE) $(LINKER) -std=c++14
+	gcc  -o $(OUT) $(CPP)  $(INCLUDE) $(LINKER) -std=c++17
 
 
 

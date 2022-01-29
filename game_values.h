@@ -22,14 +22,15 @@
 #define Check 4
 #endif
 
-#include "ft2build.h"
-#include "GL/freeglut.h"
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <ctime>
 #include <cstdarg>
 #include <io.h>
+
+#include "ft2build.h"
+#include "GL/freeglut.h"
 
 #include FT_FREETYPE_H
 

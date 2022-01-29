@@ -2,11 +2,6 @@
 #define ENGINE_HUB_H
 #include "errorhandling.h"
 
-
-
-
-
-
 	void engine(int argc,char **argv);
 	
 namespace hub{

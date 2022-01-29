@@ -15,6 +15,6 @@
 	void ErrorReturn(const char *fmt, va_list ap);
 	//Internal Functions
 	void printLog(std::string st);
-	void errorSwitch(short int i);
+	void errorSwitch(short int i, std::string st);
 	void outLog(const std::string &st);	};
 #endif
