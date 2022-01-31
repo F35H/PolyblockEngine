@@ -2,7 +2,6 @@
 
 
 bool (*errorHan::initCheck)()	=	{	errorHan::InitCheck	};
-void (*errorHan::display)()	=	{	errorHan::Display	};
 void (*errorHan::errorReturn)(const char *fmt,  va_list ap)
 	=	{	errorHan::ErrorReturn	};
 
@@ -14,11 +13,7 @@ bool errorHan::InitCheck()	{
 		errorHan::ErrorReturn("Unidentified Operating System!");
 			return false; }
 	else if (	true	)	{
-			return true;	}	};	
-void errorHan::Display()	{
-    glDisable(GL_LIGHTING);
-    glColor3d(0.1,0.1,0.4);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	};
+			return true;	}	};
 void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	
 	printLog((std::string)fmt);	};
 
@@ -38,7 +33,9 @@ void errorHan::errorSwitch(short int i, std::string st){
 				(0.4),glutGet(GLUT_SCREEN_HEIGHT)*(0.4));
 			glutPositionWindow(glutGet(GLUT_SCREEN_WIDTH) * 
 				(0.4),glutGet(GLUT_SCREEN_HEIGHT)*(0.4));
-			glutDisplayFunc(errorHan::display);
+			glDisable(GL_LIGHTING);
+			glColor3d(0.1,0.1,0.4);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 			st += "\n\n A Severe Error Has Occured. \n\n";
 			st += "A good bug report needs to convey three things:";
 			st += "\n How to reproduce the bug, as precisely as possible, and how often this will make the bug appear";

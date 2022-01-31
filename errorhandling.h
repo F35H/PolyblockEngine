@@ -6,11 +6,9 @@
 	namespace errorHan{
 	//Function variables
 	extern bool (*initCheck)();
-	extern void (*display)();
 	extern void (*errorReturn)(const char *fmt,  va_list ap);
 	//Function Variable Definitions
 	bool InitCheck();
-	void Display();
 	void ErrorReturn(const char *fmt);
 	void ErrorReturn(const char *fmt, va_list ap);
 	//Internal Functions
