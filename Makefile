@@ -1,4 +1,4 @@
-FILE = gamefunctions
+FILE = CBF
 PRECOMP = game_values
 
 LINKER = -LG:/Dev/Custom_Engine/src/lib   -lopengl32  -l freeglut -lfreetype.dll -lstdc++
@@ -24,6 +24,12 @@ compile: $(OUT) $(OUTEXE)
 
 create:	
 	echo "" > $(FILE).h
+	echo "" > initCBF.cpp
+	echo "" > genCBF.cpp
+	echo "" > gameCBF.cpp
+	echo "" > initErr.cpp
+	echo "" > genErr.cpp
+	echo "" > gameErr.cpp
 	
 upload:
 	git add *

@@ -41,7 +41,7 @@ void errorHan::errorSwitch(short int i, std::string st){
 			st += "\n How to reproduce the bug, as precisely as possible, and how often this will make the bug appear";
 			st +=  "\n What should have happened, at least in your opinion";
 			st += "\n What actually happened, or at least as much information as you have recorded";
-			st += "\n \n Please Submit an Error Report to the Developer using the Error Log provided under the txt folder in the program directory, \n a Brief Explanation of What Happened, \n How to Reproduce the Bug, \n and What Should Have Happened. Thank You.";
+			st += "\n \n Please Submit an Error Report to the Developer using the Error Log provided under the txt folder in the program directory, \n a Brief Explanation of What Happened, \n How to Reproduce the Bug, \n and What Should Have Happened. \n Thank You.";
 			const unsigned char* throwString = (const unsigned char*)st.c_str();
 			glPushMatrix();
 			glLoadIdentity();
