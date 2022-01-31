@@ -13,8 +13,8 @@ OUTEXE = $(OUT).exe
 LOGOUT = $(ERROR).txt
 
 clean:
-#	rm *.txt
-#	g++ -c $(PRECOMP).h -o $(PRECOMP).h.gch 
+	rm *.o *.exe
+	g++ -c $(PRECOMP).h -o $(PRECOMP).h.gch 
 #	g++  $(CPP) -o $(OUT)  $(LINKER) -std=c++14
 
 start: $(OUT) $(OUTEXE)
