@@ -39,8 +39,7 @@
 #define WINDOWWIDTH	"WIDTH"
 #define CENTERHEIGHT	"CENTERY"
 #define CENTERWIDTH	"CENTERX"
-//Engine Statistics
-#define LOGTIME 600000 //10 Minutes
+//Engine Statistics5
 #define CLOCKUP 60000 //1 minute
 //Game Statistics
 #define GAME_NAME "GAME_NAME"
@@ -52,8 +51,7 @@ namespace game_values{
 		win64,	win32,
 		unix,	mac,	
 			bados	};
-	
-	extern int window;
+	extern short window;
 	extern FT_Library library;
 }
 

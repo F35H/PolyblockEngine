@@ -27,7 +27,8 @@ void errorHan::errorSwitch(short int i, std::string st){
 			CompileDirectory(b,FILENAME_MAX);
 			std::string c(b);	c += "\\txt";	mkdir(c.c_str());
 				return;	}
-		case 1:	{	glutDestroyWindow(game_values::window);
+		case 1:	{	
+			glutDestroyWindow(game_values::window);
 			glutCreateWindow("GAME_ERROR");
 			glutReshapeWindow(glutGet(GLUT_SCREEN_WIDTH) * 
 				(0.4),glutGet(GLUT_SCREEN_HEIGHT)*(0.4));
@@ -35,7 +36,7 @@ void errorHan::errorSwitch(short int i, std::string st){
 				(0.4),glutGet(GLUT_SCREEN_HEIGHT)*(0.4));
 			glDisable(GL_LIGHTING);
 			glColor3d(0.1,0.1,0.4);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			st += "\n\n A Severe Error Has Occured. \n\n";
 			st += "A good bug report needs to convey three things:";
 			st += "\n How to reproduce the bug, as precisely as possible, and how often this will make the bug appear";

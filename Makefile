@@ -4,8 +4,8 @@ PRECOMP = game_values
 LINKER = -LG:/Dev/Custom_Engine/src/lib   -lopengl32  -l freeglut -lfreetype.dll -lstdc++
 INCLUDE = -IG:/Dev/Custom_Engine/src/include -IG:/Dev/Custom_Engine/src/ 
 
-CPP =	main.cpp engine_hub.cpp errorhandling.cpp game_values.cpp  
-OBJ =  main.o engine_hub.o  errorhandling.o game_values.o
+CPP =	main.cpp engine_hub.cpp InitCBF.cpp GenCBF.cpp GameCBF.cpp mainmenCBF.cpp errorhandling.cpp game_values.cpp  
+OBJ =  main.o engine_hub.o InitCBF.o GenCBF.o GameCBF.o mainmenCBF.o errorhandling.o game_values.o 
 OUT = engine
 
 COMOBJ = $(OUT) $(OBJ)
@@ -18,18 +18,12 @@ clean:
 #	g++  $(CPP) -o $(OUT)  $(LINKER) -std=c++14
 
 start: $(OUT) $(OUTEXE)
-	$$(start $(OUTEXE))
+	$(OUTEXE)
 
 compile: $(OUT) $(OUTEXE)
 
 create:	
-	echo "" > $(FILE).h
-	echo "" > initCBF.cpp
-	echo "" > genCBF.cpp
-	echo "" > gameCBF.cpp
-	echo "" > initErr.cpp
-	echo "" > genErr.cpp
-	echo "" > gameErr.cpp
+	echo "" > MainMenuCBF.cpp
 	
 upload:
 	git add *
