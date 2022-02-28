@@ -3,7 +3,7 @@
 
 void (*InitCBF::display)() = {	InitCBF::Display	};
 
-void InitCBF::Set()	{
+void InitCBF::settings()	{
 	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH),
 	glutGet(GLUT_SCREEN_WIDTH));
 	glutInitWindowPosition(0,0);

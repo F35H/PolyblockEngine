@@ -4,18 +4,20 @@
 
 
 namespace InitCBF{
-extern void (*display)();
+	extern void (*display)();
 
-void Set();
-void Display();	};
+	void settings();
+	void Display();	};
 namespace MainMenCBF{
-struct subwin{
-	short win1, win2,
-	win3, win4, win5	};
-
-void Init();
-void resize();
-void mouse();
+	struct subwin{
+		short win1, win2,
+		win3, win4, win5;	};
+	
+	void Init();
+	void resize();
+	void mouse();
+	
+	void winFunc();
 };
 namespace GameCBF{
 };

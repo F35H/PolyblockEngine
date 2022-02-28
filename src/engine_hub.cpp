@@ -11,8 +11,8 @@ void engine(int argc,char **argv)	{
 		genCallBackFunctions();
 		glutMainLoop();	} };
 void hub::initCallBackFunctions(int argc, char**argv){
-	using InitCBF;
-	Set();
+	using namespace InitCBF;
+	settings();
 	game_values::window =
 		glutCreateWindow(GAME_NAME);
 	glutDisplayFunc(display);	
