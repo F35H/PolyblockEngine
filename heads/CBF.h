@@ -11,8 +11,7 @@ namespace InitCBF{
 namespace MainMenCBF{
 	struct menBut{
 		short xPos, yPos,
-			width, height; };
-	
+			width, height, win; };
 	
 	
 	extern void (*display)();
