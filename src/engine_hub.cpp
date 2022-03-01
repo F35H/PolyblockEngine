@@ -10,15 +10,26 @@ void engine(int argc,char **argv)	{
 		gameCallBackFunctions();
 		genCallBackFunctions();
 		glutMainLoop();	} };
+		
 void hub::initCallBackFunctions(int argc, char**argv){
 	using namespace InitCBF;
+	
 	settings();
-	game_values::window =
-		glutCreateWindow(GAME_NAME);
+	vars();
+	
 	glutDisplayFunc(display);	
 };
+
 void hub::mainMenCallBackFunctions(){
-	MainMenCBF::Init();	};
+	using namespace MainMenCBF;
+	
+	init();
+	
+	glutDisplayFunc(display);
+	glutReshapeFunc(NULL);
+	glutMouseFunc(NULL);	};
+	
+	
 void hub::gameCallBackFunctions()	{};
 void hub::genCallBackFunctions()	{
 	glutInitErrorFunc(errorHan::errorReturn);

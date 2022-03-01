@@ -9,9 +9,13 @@ namespace InitCBF{
 	void settings();
 	void Display();	};
 namespace MainMenCBF{
-	struct subwin{
-		short win1, win2,
-		win3, win4, win5;	};
+	struct menBut{
+		short xPos, yPos,
+			width, height; };
+	
+	
+	
+	extern void (*display)();
 	
 	void Init();
 	void resize();

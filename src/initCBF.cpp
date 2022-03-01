@@ -10,10 +10,15 @@ void InitCBF::settings()	{
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE |
 		GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glDisable(GL_LIGHTING);	};
+	
+void InitCBF::vars() { 
+	game_values::window =
+		glutCreateWindow(GAME_NAME); };
 
 void InitCBF::Display()	{
 	glColor3d(0.1,0.1,0.4);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	glPushMatrix();
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);
