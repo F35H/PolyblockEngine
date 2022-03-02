@@ -28,6 +28,7 @@
 #include <ctime>
 #include <cstdarg>
 #include <io.h>
+#include <vector>
 
 #include "ft2build.h"
 #include "GL/freeglut.h"
@@ -45,6 +46,7 @@ namespace game_values{
 	enum sceneCheck : short {
 		mainMen, playScreen };
 	
+	extern short scene;
 	extern short window;
 	extern FT_Library library;
 }

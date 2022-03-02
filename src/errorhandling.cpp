@@ -41,13 +41,13 @@ void errorHan::errorSwitch(short int i, std::string st){
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			st += "\n\n A Severe Error Has Occured. \n\n";
 			st += "A good bug report needs to convey three things:";
-			st += "\n How to reproduce the bug, as precisely as possible,"
+			st += "\n How to reproduce the bug, as precisely as possible,";
 			st += "and how often this will make the bug appear";
 			st +=  "\n What should have happened, at least in your opinion";
 			st += "\n What actually happened, or at least as much information as you have recorded";
-			st += "\n \n Please Submit an Error Report to the Developer using the Error Log"
-			st += "provided under the txt folder in the program directory,"
-			st += "\n a Brief Explanation of What Happened, \n How to Reproduce the Bug, \n and" 
+			st += "\n \n Please Submit an Error Report to the Developer using the Error Log";
+			st += "provided under the txt folder in the program directory,";
+			st += "\n a Brief Explanation of What Happened, \n How to Reproduce the Bug, \n and" ;
 			st += "What Should Have Happened. \n Thank You.";
 			const unsigned char* throwString = (const unsigned char*)st.c_str();
 			glPushMatrix();

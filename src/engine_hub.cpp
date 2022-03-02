@@ -3,12 +3,13 @@
 
 void engine(int argc,char **argv)	{	
 	using namespace hub;
-	using game_values::sceneCheck;
+	using namespace game_values;
+	
 	if	(	errorHan::initCheck )	{
 		glutInit(&argc,argv);
 		initCallBackFunctions(argc,argv);
-		switch( scene == mainMen ) {
-			case mainMen { mainMenCallBackFunctions(); 
+		switch( scene ) {
+			case sceneCheck::mainMen: { mainMenCallBackFunctions(); 
 			break; };
 		gameCallBackFunctions();
 		genCallBackFunctions();
@@ -26,11 +27,14 @@ void hub::initCallBackFunctions(int argc, char**argv){
 void hub::mainMenCallBackFunctions(){
 	using namespace MainMenCBF;
 	
-	init();
-	
-	glutDisplayFunc(display);
-	glutReshapeFunc(NULL);
-	glutMouseFunc(NULL);	};
+	try{
+		Init();
+		
+		glutReshapeFunc(NULL);
+		glutMouseFunc(mouse); }
+		catch(std::exception &e) 
+		{ std::string st = e.what(); st += "Found in Main Menu";
+			errorHan::printLog(st); };	};
 	
 	
 void hub::gameCallBackFunctions()	{};
