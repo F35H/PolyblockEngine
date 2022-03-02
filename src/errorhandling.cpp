@@ -6,23 +6,25 @@ void (*errorHan::errorReturn)(const char *fmt,  va_list ap)
 	=	{	errorHan::ErrorReturn	};
 
 bool errorHan::InitCheck()	{	
-	if (	FT_Init_FreeType( &game_values::library ) 	)	{
+	if (FT_Init_FreeType( &game_values::library) 	)	{
 		errorHan::ErrorReturn("FreeType Library Failed");
 			return false;	}
-	else if (	Check == game_values::check::bados	)	{
+	else if (Check == game_values::osCheck::badOS)	{
 		errorHan::ErrorReturn("Unidentified Operating System!");
 			return false; }
-	else if (	true	)	{
+	else if (true)	{
 			return true;	}	};
+			
 void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	
 	printLog((std::string)fmt);	};
 
 void errorHan::ErrorReturn(const char *fmt)	{	
 	printLog((std::string)fmt);	};
-void errorHan::errorSwitch(short int i, std::string st){ 
+	
+void errorHan::errorSwitch(short int i, std::string st){
+	 
 	switch(i)	{
-		default:	{
-				return;	}	
+		default:	{ return; }			
 		case 0:	{	char b[FILENAME_MAX];
 			CompileDirectory(b,FILENAME_MAX);
 			std::string c(b);	c += "\\txt";	mkdir(c.c_str());
@@ -39,10 +41,14 @@ void errorHan::errorSwitch(short int i, std::string st){
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			st += "\n\n A Severe Error Has Occured. \n\n";
 			st += "A good bug report needs to convey three things:";
-			st += "\n How to reproduce the bug, as precisely as possible, and how often this will make the bug appear";
+			st += "\n How to reproduce the bug, as precisely as possible,"
+			st += "and how often this will make the bug appear";
 			st +=  "\n What should have happened, at least in your opinion";
 			st += "\n What actually happened, or at least as much information as you have recorded";
-			st += "\n \n Please Submit an Error Report to the Developer using the Error Log provided under the txt folder in the program directory, \n a Brief Explanation of What Happened, \n How to Reproduce the Bug, \n and What Should Have Happened. \n Thank You.";
+			st += "\n \n Please Submit an Error Report to the Developer using the Error Log"
+			st += "provided under the txt folder in the program directory,"
+			st += "\n a Brief Explanation of What Happened, \n How to Reproduce the Bug, \n and" 
+			st += "What Should Have Happened. \n Thank You.";
 			const unsigned char* throwString = (const unsigned char*)st.c_str();
 			glPushMatrix();
 			glLoadIdentity();
@@ -58,24 +64,26 @@ void errorHan::errorSwitch(short int i, std::string st){
 			glPopMatrix();
 			glutSwapBuffers();
 				return;	}	}	};
+				
 void errorHan::printLog(const std::string st)	{
 	time_t time;	std::string throwString;
 	time = std::time(nullptr);	throwString = std::ctime(&time);
 	throwString += ":";		throwString += st;	throwString += "\n";
 	std::cout << throwString;	outLog(throwString);	};
+	
 void errorHan::outLog(const std::string &st)	{
 	std::ofstream out;	out.open("txt/ErrLog.txt", std::ios::out);
 	for (	int i = -1; i != 2; i++	)	{
 		if (	out.tellp() == 0	)	{
 			out << st << std::endl;
 				return;	}
-		else if (	true	)	{
+		else if (true)	{
 			switch(i)	{	
 				default:	def:	{	out.close();
 					out.open("txt/ErrLog.txt",	std::ios::out |	std::ios::trunc | std::ios::ate);
 						break;	}
-				case 0: {	errorSwitch(i, st);	
-						goto def;	}
+				case 0: { errorSwitch(i, st);	
+						goto def;}
 				case 1: {	errorSwitch(i, st);	
 						break;	}	}	}	}	out.close();	};
 

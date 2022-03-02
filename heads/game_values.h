@@ -34,23 +34,17 @@
 
 #include FT_FREETYPE_H
 
-//Graphical Names
-#define WINDOWHEIGHT	"HEIGHT"
-#define WINDOWWIDTH	"WIDTH"
-#define CENTERHEIGHT	"CENTERY"
-#define CENTERWIDTH	"CENTERX"
-//Engine Statistics5
-#define CLOCKUP 60000 //1 minute
-//Game Statistics
 #define GAME_NAME "GAME_NAME"
-//Error Statistics
-#define FAILEDLOGNAME "FAILED LOG ERROR"
 
 namespace game_values{
-	enum check : short	{
+	enum osCheck : short	{
 		win64,	win32,
 		unix,	mac,	
-			bados	};
+			badOS	};
+	
+	enum sceneCheck : short {
+		mainMen, playScreen };
+	
 	extern short window;
 	extern FT_Library library;
 }

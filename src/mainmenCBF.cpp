@@ -2,18 +2,18 @@
 
 
 namespace MainMenCBF{
- short* win = {
-	  new subwin(1.5),
-		new subwin(1.25),
-		new subwin(1),
-		new subwin(0.75),
-		new subwin(0.5) }; };
+ const short* const win = {
+	  new menBut(1.5),
+		new menBut(1.25),
+		new menBut(1),
+		new menBut(0.75),
+		new menBut(0.5) }; };
 
 void (*MainMenCBF::display)() = {	MainMenCBF::Display	};
 //void (*MainMenCBF::display)() = {	MainMenCBF::Display	};
 //void (*MainMenCBF::display)() = {	MainMenCBF::Display	};
 
-void MainMenCBF::subwin::subwin(yMul) {
+void MainMenCBF::menBut::menBut(yMul) {
 	xPos = glutGet(GLUT_SCREEN_WIDTH)/3;
 	yPos = glutGet(GLUT_SCREEN_HEIGHT)/2;
 	

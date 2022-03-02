@@ -3,13 +3,16 @@
 
 void engine(int argc,char **argv)	{	
 	using namespace hub;
+	using game_values::sceneCheck;
 	if	(	errorHan::initCheck )	{
 		glutInit(&argc,argv);
 		initCallBackFunctions(argc,argv);
-		mainMenCallBackFunctions();
+		switch( scene == mainMen ) {
+			case mainMen { mainMenCallBackFunctions(); 
+			break; };
 		gameCallBackFunctions();
 		genCallBackFunctions();
-		glutMainLoop();	} };
+		glutMainLoop();	} }; };
 		
 void hub::initCallBackFunctions(int argc, char**argv){
 	using namespace InitCBF;
