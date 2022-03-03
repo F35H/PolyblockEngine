@@ -5,7 +5,7 @@ void (*InitCBF::display)() = {	InitCBF::Display	};
 
 void InitCBF::settings()	{
 	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH),
-	glutGet(GLUT_SCREEN_WIDTH));
+		glutGet(GLUT_SCREEN_WIDTH));
 	glutInitWindowPosition(0,0);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE |
 		GLUT_DEPTH | GLUT_MULTISAMPLE);
@@ -18,7 +18,6 @@ void InitCBF::vars() {
 void InitCBF::Display()	{
 	glColor3d(0.1,0.1,0.4);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
 	glPushMatrix();
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);

@@ -14,16 +14,15 @@ namespace MainMenCBF{
 	struct menBut{
 		short xPos, yPos,
 			width, height, winInt;
-			
-			menBut(float yMul);
-	 } __attribute__((packed));
+		
+		void constr(float yMul); };
 	
 	
-//	extern void (*display)();
+	extern void (*display)();
 	extern void (*mouse)(int but, int state, int xPos, int yPos);
 	
 	void Mouse(int but, int state, int xPos, int yPos);
-//	void Display();
+	void Display();
 	
 	void Init();
 	void resize();
