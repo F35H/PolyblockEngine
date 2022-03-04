@@ -30,6 +30,7 @@ void errorHan::errorSwitch(short int i, std::string st){
 			std::string c(b);	c += "\\txt";	mkdir(c.c_str());
 				return;	}
 		case 1:	{	
+//			glutLeaveFullScreen();
 			glutDestroyWindow(game_values::window);
 			glutCreateWindow("GAME_ERROR");
 			glutReshapeWindow(glutGet(GLUT_SCREEN_WIDTH) * 

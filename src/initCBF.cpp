@@ -31,3 +31,5 @@ void InitCBF::Display()	{
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 	glutSwapBuffers();	};
+		
+		
