@@ -4,22 +4,22 @@
 #ifdef _WIN64
 #include <direct.h>
 #define CompileDirectory _getcwd
-#define Check 0
+#define Check true
 #elif _WIN32
 #include <direct.h>
 #define CompileDirectory _getcwd
-#define Check 1
+#define Check true
 #elif unix
 #include <unistd.h>
 #define CompileDirectory getcwd
-#define Check 2
+#define Check true
 #elif __MACH__
 #include <unistd.h>
 #define CompileDirectory getcwd
-#define Check 3
+#define Check true
 #else
 #define CompileDirectory getcwd
-#define Check 4
+#define Check false
 #endif
 
 #include <iostream>
@@ -38,10 +38,6 @@
 #define GAME_NAME "GAME_NAME"
 
 namespace game_values{
-	enum osCheck : short	{
-		win64,	win32,
-		unix,	mac,	
-			badOS	};
 	
 	enum sceneCheck : short {
 		mainMen, playScreen };

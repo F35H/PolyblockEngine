@@ -6,14 +6,13 @@ void (*errorHan::errorReturn)(const char *fmt,  va_list ap)
 	=	{	errorHan::ErrorReturn	};
 
 bool errorHan::InitCheck()	{	
+	if constexpr (Check)	{
+		errorHan::ErrorReturn("Unidentified Operating System!");
+			return false; }
 	if (FT_Init_FreeType( &game_values::library) 	)	{
 		errorHan::ErrorReturn("FreeType Library Failed");
 			return false;	}
-	else if (Check == game_values::osCheck::badOS)	{
-		errorHan::ErrorReturn("Unidentified Operating System!");
-			return false; }
-	else if (true)	{
-			return true;	}	};
+	return true;	};
 			
 void errorHan::ErrorReturn(const char *fmt,  va_list ap)	{	
 	printLog((std::string)fmt);	};
