@@ -1,0 +1,242 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{e17c4b15-a8e0-4184-9a23-0d61f92f9508}</ProjectGuid>
+    <RootNamespace>PolyBlock</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads;C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\libs;C:\gProj\Cpp\PolyblockEngine\PolyBlock\bin\dlls</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads;C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\libs;C:\gProj\Cpp\PolyblockEngine\PolyBlock\bin\dlls</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads;C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\libs;C:\gProj\Cpp\PolyblockEngine\PolyBlock\bin\dlls</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads;C:\gProj\Cpp\PolyblockEngine\PolyBlock\heads\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\gProj\Cpp\PolyblockEngine\PolyBlock\libs;C:\gProj\Cpp\PolyblockEngine\PolyBlock\bin\dlls</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\sole-1.0.4\sole-1.0.4\sole.hpp" />
+    <ClInclude Include="heads\include\common.hpp" />
+    <ClInclude Include="heads\include\exponential.hpp" />
+    <ClInclude Include="heads\include\ext.hpp" />
+    <ClInclude Include="heads\include\fwd.hpp" />
+    <ClInclude Include="heads\include\geometric.hpp" />
+    <ClInclude Include="heads\include\glfw3 (2).h" />
+    <ClInclude Include="heads\include\glfw3.h" />
+    <ClInclude Include="heads\include\glfw3native (2).h" />
+    <ClInclude Include="heads\include\glfw3native.h" />
+    <ClInclude Include="heads\include\glm.hpp" />
+    <ClInclude Include="heads\include\integer.hpp" />
+    <ClInclude Include="heads\include\mat2x2.hpp" />
+    <ClInclude Include="heads\include\mat2x3.hpp" />
+    <ClInclude Include="heads\include\mat2x4.hpp" />
+    <ClInclude Include="heads\include\mat3x2.hpp" />
+    <ClInclude Include="heads\include\mat3x3.hpp" />
+    <ClInclude Include="heads\include\mat3x4.hpp" />
+    <ClInclude Include="heads\include\mat4x2.hpp" />
+    <ClInclude Include="heads\include\mat4x3.hpp" />
+    <ClInclude Include="heads\include\mat4x4.hpp" />
+    <ClInclude Include="heads\include\matrix.hpp" />
+    <ClInclude Include="heads\include\packing.hpp" />
+    <ClInclude Include="heads\include\trigonometric.hpp" />
+    <ClInclude Include="heads\include\vec2.hpp" />
+    <ClInclude Include="heads\include\vec3.hpp" />
+    <ClInclude Include="heads\include\vec4.hpp" />
+    <ClInclude Include="heads\include\vector_relational.hpp" />
+    <ClInclude Include="heads\include\vk_enum_string_helper.h" />
+    <ClInclude Include="heads\include\vk_icd.h" />
+    <ClInclude Include="heads\include\vk_layer.h" />
+    <ClInclude Include="heads\include\vk_platform.h" />
+    <ClInclude Include="heads\include\vk_sdk_platform.h" />
+    <ClInclude Include="heads\include\vulkan.h" />
+    <ClInclude Include="heads\include\vulkan.hpp" />
+    <ClInclude Include="heads\include\vulkan_android.h" />
+    <ClInclude Include="heads\include\vulkan_beta.h" />
+    <ClInclude Include="heads\include\vulkan_core.h" />
+    <ClInclude Include="heads\include\vulkan_directfb.h" />
+    <ClInclude Include="heads\include\vulkan_enums.hpp" />
+    <ClInclude Include="heads\include\vulkan_format_traits.hpp" />
+    <ClInclude Include="heads\include\vulkan_fuchsia.h" />
+    <ClInclude Include="heads\include\vulkan_funcs.hpp" />
+    <ClInclude Include="heads\include\vulkan_ggp.h" />
+    <ClInclude Include="heads\include\vulkan_handles.hpp" />
+    <ClInclude Include="heads\include\vulkan_hash.hpp" />
+    <ClInclude Include="heads\include\vulkan_ios.h" />
+    <ClInclude Include="heads\include\vulkan_macos.h" />
+    <ClInclude Include="heads\include\vulkan_metal.h" />
+    <ClInclude Include="heads\include\vulkan_profiles.h" />
+    <ClInclude Include="heads\include\vulkan_profiles.hpp" />
+    <ClInclude Include="heads\include\vulkan_raii.hpp" />
+    <ClInclude Include="heads\include\vulkan_screen.h" />
+    <ClInclude Include="heads\include\vulkan_static_assertions.hpp" />
+    <ClInclude Include="heads\include\vulkan_structs.hpp" />
+    <ClInclude Include="heads\include\vulkan_to_string.hpp" />
+    <ClInclude Include="heads\include\vulkan_vi.h" />
+    <ClInclude Include="heads\include\vulkan_wayland.h" />
+    <ClInclude Include="heads\include\vulkan_win32.h" />
+    <ClInclude Include="heads\include\vulkan_xcb.h" />
+    <ClInclude Include="heads\include\vulkan_xlib.h" />
+    <ClInclude Include="heads\include\vulkan_xlib_xrandr.h" />
+    <ClInclude Include="heads\pbMacros.h" />
+    <ClInclude Include="heads\PBLCPB.h" />
+    <ClInclude Include="heads\Polyblock.h" />
+    <ClInclude Include="heads\PRVTPB.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\dlls\dxcompiler.dll" />
+    <None Include="bin\dlls\FreeImage.dll" />
+    <None Include="bin\dlls\glfw3.dll" />
+    <None Include="bin\dlls\SDL2.dll" />
+    <None Include="bin\dlls\shaderc_shared.dll" />
+    <None Include="bin\dlls\shaderc_sharedd.dll" />
+    <None Include="bin\dlls\spirv-cross-c-shared.dll" />
+    <None Include="bin\dlls\spirv-cross-c-sharedd.dll" />
+    <None Include="bin\dlls\SPIRV-Tools-shared.dll" />
+    <None Include="bin\dlls\SPIRV-Tools-sharedd.dll" />
+    <None Include="bin\dlls\VkLayer_api_dump.dll" />
+    <None Include="bin\dlls\VkLayer_gfxreconstruct.dll" />
+    <None Include="bin\dlls\VkLayer_khronos_profiles.dll" />
+    <None Include="bin\dlls\VkLayer_khronos_synchronization2.dll" />
+    <None Include="bin\dlls\VkLayer_khronos_validation.dll" />
+    <None Include="bin\dlls\VkLayer_monitor.dll" />
+    <None Include="bin\dlls\VkLayer_screenshot.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="libs\FreeImage.lib" />
+    <Library Include="libs\glfw3.lib" />
+    <Library Include="libs\glfw3dll.lib" />
+    <Library Include="libs\glfw3_mt.lib" />
+    <Library Include="libs\vulkan-1.lib" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
