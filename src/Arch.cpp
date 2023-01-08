@@ -1,6 +1,10 @@
+#include <pbMacros.h>
 #include <PRVTPB.h>
 
 #define PRVTPB //PIMPLE
+
+//BEGIN CLASS MACRO
+
 
 
 //CONFIG
@@ -227,70 +231,124 @@ struct PRIVATEPB::Utils {
 }; //Utils
 
 
-
-//Output & Config
-void pb::Utils::Output::FlushtoLog() {
-  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
-  auto& logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-
-  logfile->flush();
-  cout->flush();
-}; //Output
+class Control {
+}; //Control
 
 
-void pb::Utils::Output::WritetoLog(const std::string str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
-  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-
-  cout->write(str.c_str(), str.length());
-  logfile->write(str.c_str(), str.length());
-
-  cout->write("\n", 2);
-  logfile->write("\n", 2);
-}; //WritetoLog
+class Features {
+}; //Features
 
 
-void pb::Utils::Output::WritetoLog(const char* str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
-  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+void pb::Config::AddConfig(pb::Config::Utils* U) {
+  if (!PRIVATEPB::Client_ptr->GetLatestConfig()->GetWrotetoUtil()) {
 
-  cout->write(str, strlen(str));
-  logfile->write(str, strlen(str));
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->SetUtils(
+        std::move(std::shared_ptr
+          <pb::Config::Utils>(U))
+      ); //SetUtils
 
-  cout->write("\n", 2);
-  logfile->write("\n", 2);
-}; //WritetoLog
+    PRIVATEPB::Client_ptr->GetLatestConfig()->SetWrotetoUtil(true);
+  } //IF
+  else {
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
+  }; //ELSE
 
-
-void pb::Utils::Output::WritetoTimedLog(const char* str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
-  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-
-  cout->write(str, strlen(str));
-  logfile->write(str, strlen(str));
-
-  cout->write("\n", 2);
-  logfile->write("\n", 2);
-}; //WritetoTimedLog
+}; //AddConfig
 
 
-void pb::Utils::Output::WritetoTimedLog(const std::string str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
-  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+void pb::Config::AddConfig(pb::Config::Render* R) {
+  if (!PRIVATEPB::Client_ptr->GetLatestConfig()
+    ->GetWrotetoRender()) {
 
-  cout->write(str.c_str(), str.length());
-  logfile->write(str.c_str(), str.length());
-
-  cout->write("\n", 2);
-  logfile->write("\n", 2);
-}; //WriteToTimedLog
-
-
-std::ostream* pb::Config::Utils::GetLogBuffer() {
-  return logBuffer;
-}; //GetLogBuffer
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->SetRender(
+        std::move(std::shared_ptr
+          <pb::Config::Render>(R))
+      ); //Set Render
 
 
-void pb::Config::Utils::SetLogBuffer(std::ostream* strm) {
-  logBuffer = strm;
-}; //SetLogBuffer
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->SetWrotetoRender(true);
+  } //IF
+  else {
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
+  }; //ELSE
+}; //Add Config
+
+
+void pb::Config::AddConfig(std::shared_ptr<pb::Config::Utils> U) {
+  if (!PRIVATEPB::Client_ptr->GetLatestConfig()
+    ->GetWrotetoUtil()) {
+
+    PRIVATEPB::Client_ptr->GetLatestConfig()->
+      SetUtils(U);
+
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->SetWrotetoUtil(true);
+  } //IF
+  else {
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
+  }; //ELSE
+}; //AddConfig
+
+
+void pb::Config::AddConfig(std::shared_ptr<pb::Config::Render> R) {
+  if (!PRIVATEPB::Client_ptr->GetLatestConfig()
+    ->GetWrotetoRender()) {
+
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->SetRender(R);
+
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->SetWrotetoRender(true);
+
+  } //IF
+  else {
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
+  }; //ELSE
+}; //AddConfig
+
+
+
+void pb::Config::ConfirmConfigs() {
+  PRIVATEPB::Client_ptr->GetLatestConfig()
+    ->SetConfirmed(true);
+
+  auto errBuff = PRIVATEPB::Client_ptr->GetLatestConfig()
+    ->GetErrBuff();
+
+  PRIVATEPB::Client_ptr->NewUtils();
+
+  for (auto& str : errBuff) {
+    pb::Utils::Output::WritetoTimedLog(str);
+  }; //For
+
+  pb::Utils::Output::FlushtoLog();
+}; //ConfirmConfigs
+
+
+void pb::Client::ConfirmClients() {
+  auto vector =
+    PRIVATEPB::Client_ptr
+    ->GetClientVector();
+
+  for (auto& item : vector) {
+    item->SetConfirmed(true);
+  }; //For
+
+  auto errBuff = PRIVATEPB::Client_ptr->GetLatestConfig()
+    ->GetErrBuff();
+
+  PRIVATEPB::Client_ptr->NewUtils();
+
+  for (auto& str : errBuff) {
+    pb::Utils::Output::WritetoTimedLog(str);
+  }; //For
+
+  pb::Utils::Output::FlushtoLog();
+}; //ConfirmConfigs

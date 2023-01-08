@@ -34,9 +34,8 @@ class PRIVATEPB {
   friend void pb::Config::CheckConfigs();
   friend void pb::Config::ConfirmConfigs();
 
-  friend void pb::Client::AddClient();
-  friend void pb::Confirm();
-  friend void pb::Start();
+  friend void pb::Client::ConfirmClients();
+  friend void pb::RunRender();
 
 }; //PRIVATEPB
 

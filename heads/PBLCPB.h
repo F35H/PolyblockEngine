@@ -69,6 +69,13 @@ namespace pb {
 
   }; //UTILS
 
+
+  namespace Client {
+    static void ConfirmClients();
+  };
+
+  static void RunRender();
+
 }; //POLYBLOCK
 
 
