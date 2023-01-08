@@ -6,41 +6,203 @@
 
   //CONFIG
   struct PRIVATEPB::Config {
-    bool Confirmed : 1;
-    bool WrotetoUtil : 1;
-    bool WrotetoRender : 1;
-
-    std::shared_ptr<pb::Config::Utils> U; //Utils
-    std::shared_ptr<pb::Config::Render> R; //Render
-
     Config() :
       Confirmed(0b00),
       WrotetoUtil(0b00),
       WrotetoRender(0b00)
     {}; //Config
 
+
+    ~Config() {};
+
+
+    //Getters
+    std::shared_ptr<pb::Config::Utils> GetUtils() { return U; };
+    std::shared_ptr<pb::Config::Render> GetRender() { return R; };
+    bool GetConfirmed() { return Confirmed;  };
+    bool GetWrotetoUtil() { return WrotetoUtil; };
+    bool GetWrotetoRender() { return WrotetoRender; };
+
+
+    //Setters
+    void SetUtils(std::shared_ptr<pb::Config::Utils> u) { U = u; };
+    void SetRender(std::shared_ptr<pb::Config::Render> r) { R = r; };
+    void SetConfirmed(bool b) { Confirmed = b; };
+    void SetWrotetoUtil(bool b) { WrotetoUtil = b; };
+    void SetWrotetoRender(bool b) { WrotetoRender = b; };
+
+
+  private:
+    bool Confirmed : 1;
+    bool WrotetoUtil : 1;
+    bool WrotetoRender : 1;
+
+    std::shared_ptr<pb::Config::Utils> U; //Utils
+    std::shared_ptr<pb::Config::Render> R; //Render
   }; //Config
 
 
   //CLIENT
   struct PRIVATEPB::Client {
+    std::shared_ptr<PRIVATEPB::Utils> Utils;
 
-    //Make this its own class
-    std::vector<
-      std::shared_ptr<Client>
-    > ClientVector;
+    std::shared_ptr<PRIVATEPB::Config> Conf = 
+      std::make_shared<PRIVATEPB::Config>();
 
-    std::shared_ptr<Config> Conf = std::make_shared<Config>();
-
-
-
-    //CLIENT
-    Client() {
-      ClientVector = std::vector
-        <std::shared_ptr<Client>>();
-    }; //CLIENT
+    ~Client() {};
 
   }; //Client
+
+
+  struct PRIVATEPB::ClientVector {
+    ClientVector() {
+      vector = std::make_shared< std::vector 
+        <std::shared_ptr<PRIVATEPB::Client>>>();
+
+      innerIndice -= 1;
+      outerIndice -= 1;
+
+      NewClient();
+    }; //ClientVector
+
+
+    //New
+    void NewClient() {
+      innerIndice += 1;
+      outerIndice += 1;
+
+      vector->emplace_back(
+        std::make_shared<PRIVATEPB::Client>());
+    }; //AddClient
+
+
+    std::shared_ptr<PRIVATEPB::Utils> NewUtils() { 
+      return vector->operator[](innerIndice)->Utils = 
+        std::make_shared<PRIVATEPB::Utils>();
+    }; //NewUtils
+
+
+    std::shared_ptr<PRIVATEPB::Config> NewConfig() {
+      return vector->operator[](innerIndice)->Conf = 
+        std::make_shared<PRIVATEPB::Config>();
+    }; //NewConfig
+
+
+
+    //Get Items
+    std::shared_ptr<PRIVATEPB::Client> GetClient(UINT indice) {
+      return vector->operator[](indice);
+    }; //GetClient
+
+
+    std::shared_ptr<PRIVATEPB::Client> GetLatestClient() {
+      return vector->operator[](innerIndice);
+    }; //GetClient
+
+
+    std::shared_ptr<PRIVATEPB::Client> GetCurrentClient() {
+      return vector->operator[](currentIndice);
+    }; //GetClient
+
+
+    std::shared_ptr<PRIVATEPB::Config> GetCurrentConfig() {
+      return vector->operator[](currentIndice)->Conf;
+    }; //GetClient
+
+    std::shared_ptr<PRIVATEPB::Config> GetLatestConfig() {
+      return vector->operator[](innerIndice)->Conf;
+    }; //GetClient
+
+
+    std::shared_ptr<PRIVATEPB::Utils> GetLatestUtils() {
+      return vector->operator[](innerIndice)->Utils;
+    }; //GetClient
+
+
+
+    //Set Items
+    std::shared_ptr<PRIVATEPB::Utils> SetLatestUtils(
+      std::shared_ptr<PRIVATEPB::Utils> U) {
+      
+      return vector->operator[](innerIndice)->Utils = U;
+    }; //GetClient
+
+
+    std::shared_ptr<PRIVATEPB::Config> SetLatestConfig(
+      std::shared_ptr<PRIVATEPB::Config> C) {
+      
+      return vector->operator[](innerIndice)->Conf = C;
+    }; //GetClient
+
+
+    ~ClientVector() {};
+
+
+    private:
+      UINT currentIndice = 0;
+      UINT innerIndice = 0;
+      UINT outerIndice = 1;
+
+      std::shared_ptr < 
+        std::vector<
+        std::shared_ptr<PRIVATEPB::Client>
+      >>  vector;
+
+  }; //ClientVector
+
+
+  std::shared_ptr<PRIVATEPB::ClientVector> PRIVATEPB::Client_ptr = std::shared_ptr<ClientVector>(new ClientVector());
+
+
+  struct PRIVATEPB::Utils {
+    std::shared_ptr<std::ofstream> logFile;
+
+    Utils() {
+      std::string uuid = sole::uuid1().str();
+
+      std::string fileName = "logs";
+      fileName += "/log-";
+      fileName += uuid;
+      fileName += ".txt";
+
+      logFile = std::move(
+        std::shared_ptr<std::ofstream>(new std::ofstream(
+          "filename", std::ios::ate | std::ios::out)));
+
+      int i = 0;
+      auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
+      const char* errMsg;
+
+      do { //Create Log File
+        switch (i) {
+        default:
+          errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once";
+          cout->write(errMsg, sizeof(errMsg));
+          continue;
+
+        case 0b01:
+          errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice";
+          cout->write(errMsg, sizeof(errMsg));
+          continue;
+
+        case 0b10:
+          errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice";
+          cout->write(errMsg, sizeof(errMsg));
+          continue;
+
+        case 0b11:
+          errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent";
+          cout->write(errMsg, sizeof(errMsg));
+          abort();
+
+        }; //Switch
+
+        ++i;
+      } while (!logFile->is_open());
+
+    }; //UTILSCONSTRUCTOR
+
+  }; //Utils
 
 
 class Control {
@@ -51,57 +213,38 @@ class Control {
   }; //Features
 
 
-    //Config Functions
-    void PRIVATEPB::Client::PrepareVector() {
-      if (PB->Client_ptr->ClientVector.empty()) {
+  void pb::Config::AddConfig(pb::Config::Utils* U) {
+    if (!PRIVATEPB::Client_ptr->GetLatestConfig()->GetWrotetoUtil()) {
 
-        PB->Client_ptr->ClientVector.emplace_back(
-          std::make_shared<PRIVATEPB::Client>());
-      
-      }; //IF
+      PRIVATEPB::Client_ptr->GetLatestConfig()
+        ->SetUtils(
+          std::move(std::shared_ptr
+            <pb::Config::Utils>(U))
+        ); //SetUtils
 
-    }; //CheckConfigs
+      PRIVATEPB::Client_ptr->GetLatestConfig()->SetWrotetoUtil(true);
+    } //IF
+    else {
+      //WritetoErrorLog
+      terminate();
+    }; //ELSE
 
-
-    void pb::Config::AddConfig(pb::Config::Utils* U) {
-      CheckConfigs();
-
-      if (!PB->Client_ptr->ClientVector[
-        PB->Client_ptr->ClientVector.size() - 1]->
-        Conf->WrotetoUtil) {
-
-        PB->Client_ptr->ClientVector[
-          PB->Client_ptr->ClientVector.size() - 1]->
-          Conf->U = std::move(std::shared_ptr
-            <pb::Config::Utils>(U));
-
-          PB->Client_ptr->ClientVector[
-            PB->Client_ptr->ClientVector.size() - 1]->
-            Conf->WrotetoUtil = true;
-      } //IF
-      else {
-        //WritetoErrorLog
-        terminate();
-      }; //ELSE
-
-    }; //AddConfig
+  }; //AddConfig
 
 
-    void pb::Config::AddConfig(pb::Config::Render* R) {
-      CheckConfigs();
+  void pb::Config::AddConfig(pb::Config::Render* R) {
+      if (!PRIVATEPB::Client_ptr->GetLatestConfig()
+        ->GetWrotetoRender()) {
 
-      if (!PB->Client_ptr->ClientVector[
-        PB->Client_ptr->ClientVector.size() - 1]->
-        Conf->WrotetoRender) {
+        PRIVATEPB::Client_ptr->GetLatestConfig()
+          ->SetRender(
+            std::move(std::shared_ptr
+              <pb::Config::Render>(R))
+          ); //Set Render
 
-        PB->Client_ptr->Client::ClientVector[
-          PB->Client_ptr->ClientVector.size() - 1]->
-          Conf->R = std::move(std::shared_ptr
-            <pb::Config::Render>(R));
 
-          PB->Client_ptr->ClientVector[
-            PB->Client_ptr->ClientVector.size() - 1]->
-          Conf->WrotetoRender = true;
+        PRIVATEPB::Client_ptr->GetLatestConfig()
+            ->SetWrotetoRender(true);
       } //IF
       else {
         //WritetoErrorLog
@@ -110,66 +253,53 @@ class Control {
     }; //Add Config
     
 
-    void pb::Config::AddConfig(std::shared_ptr<pb::Config::Utils> U) {
-      CheckConfigs();
+  void pb::Config::AddConfig(std::shared_ptr<pb::Config::Utils> U) {
+      if (!PRIVATEPB::Client_ptr->GetLatestConfig()
+        ->GetWrotetoUtil()) {
 
-      if (!PB->Client_ptr->ClientVector[
-        PB->Client_ptr->ClientVector.size() - 1]->
-        Conf->WrotetoUtil) {
+        PRIVATEPB::Client_ptr->GetLatestConfig()->
+          SetUtils(U);
 
-        PB->Client_ptr->ClientVector[
-          PB->Client_ptr->ClientVector.size() - 1]->
-          Conf->U = U;
-
-          PB->Client_ptr->ClientVector[
-            PB->Client_ptr->ClientVector.size() - 1]->
-          Conf->WrotetoUtil = true;
+        PRIVATEPB::Client_ptr->GetLatestConfig()
+            ->SetWrotetoUtil(true);
       } //IF
       else {
         //WritetoErrorLog
-
+        terminate();
       }; //ELSE
     }; //AddConfig
     
 
-    void pb::Config::AddConfig(std::shared_ptr<pb::Config::Render> R) {
-      CheckConfigs();
+  void pb::Config::AddConfig(std::shared_ptr<pb::Config::Render> R) {
+      if (!PRIVATEPB::Client_ptr->GetLatestConfig()
+          ->GetWrotetoRender()) {
 
-      if (!PB->Client_ptr->ClientVector[
-        PB->Client_ptr->ClientVector.size() - 1]->
-        Conf->WrotetoRender) {
+        PRIVATEPB::Client_ptr->GetLatestConfig()
+          ->SetRender(R);
 
-        PB->Client_ptr->ClientVector[
-          PB->Client_ptr->ClientVector.size() - 1]->
-          Conf->R = R;
-
-          PB->Client_ptr->ClientVector[
-            PB->Client_ptr->ClientVector.size() - 1]->
-          Conf->WrotetoRender = true;
+        PRIVATEPB::Client_ptr->GetLatestConfig()
+          ->SetWrotetoRender(true);
 
       } //IF
       else {
         //WritetoErrorLog
-
+        terminate();
       }; //ELSE
     }; //AddConfig
 
 
-    void pb::Config::ConfirmConfigs() {
-      
-      PB->Client_ptr->ClientVector[
-        PB->Client_ptr->ClientVector.size() - 1]->
-        Conf->Confirmed = true;
+  void pb::Config::ConfirmConfigs() {
+    PRIVATEPB::Client_ptr->GetLatestConfig()
+        ->SetConfirmed(true);
 
+    PRIVATEPB::Client_ptr->NewUtils();
 
         //ConstructOutput();
-        //Flush Log
+      //pb::Utils::Output::FlushtoLog();
     };
 
 
 namespace pb {
-
-
   //Client
   //inline void Client::Confirm() {
   //  try {
@@ -783,6 +913,8 @@ int main() {
   pb::Config::AddConfig(Utils);
   pb::Config::AddConfig(Render);
   pb::Config::ConfirmConfigs();
+
+  pb::Utils::Output::FlushtoLog();
 
   return 0;
 }

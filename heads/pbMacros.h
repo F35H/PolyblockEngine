@@ -87,6 +87,13 @@
 
  //| >>= == = > <=== = <<|
 
+//OUTPUTS
+#define COUT 0x01
+#define CERR 0x02
+#define FTX 0x03
+
+ //| >>= == = > <=== = <<|
+
 //Solids
 
 //Prisms
@@ -124,22 +131,20 @@
 // Needs:
 // Vulkan Renderer
 // Finish GLFW rendering system
-//Remember to readd in Validation Layers in the macro
-//Add debugging information to Vulkan
+// Move Utils to Client
+// Return pointer in all pointer functions
 // 
 // Ideas:
-// Add Option in pOutput to choose between std::err or std::out
 //Add image output operator in pbOutput
 //Input Time Functions in WritetoTimedLog
-//Add format ability to log function
 //Add OPENGL functions
-//Fix Util functions to not need the namespace 
 //Set default values of screenHeight, Width, etc. in GLFW window creation
-//Make values in Cntx static
 //Finish Metrics
 //Add location for Engine Version and Name
 //Add function to interprit version for App/Engine
+//Give Option for using FTXUI in console.
 // 
 //Release
-//In production, set benchmarking depth to zero
+//In production, set benchmarking depth to zero - add benchmarking depth
 //Add system to add necessary files.
+// Create temporary buffer t hold values while setting utilities config 

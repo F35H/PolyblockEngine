@@ -4,24 +4,40 @@
 //#ifdef  PRVTPB
 class PRIVATEPB {
   struct Config;
-  struct Utils;
-
-  std::unique_ptr<Config> Config_ptr;
-  std::unique_ptr<Utils> Utils_ptr;
-
-public:
   struct Client;
+  struct Utils;
+  struct ClientVector;
 
-  std::unique_ptr<Client> Client_ptr;
+  static std::shared_ptr<ClientVector> Client_ptr;
 
-  PRIVATEPB() :
-    Config_ptr(std::make_unique<Config>()),
-    Client_ptr(std::make_unique<Client>()),
-    Utils_ptr(std::make_unique<Utils>())
-  {}; //PRIVATEPB
+  PRIVATEPB();
+  ~PRIVATEPB() {};
+
+  //InClass
+  friend struct Config;
+  friend struct Client;
+  friend struct Utils;
+  friend struct ClientVector;
+
+
+  //Pb::Class
+  friend struct pb::Utils::Output;
+
+
+  //pb::Functions
+  friend void pb::Config::AddConfig(pb::Config::Render* R);
+  friend void pb::Config::AddConfig(pb::Config::Utils* U);
+
+  friend void pb::Config::AddConfig(std::shared_ptr<pb::Config::Utils> U);
+  friend void pb::Config::AddConfig(std::shared_ptr<pb::Config::Render> R);
+
+  friend void pb::Config::CheckConfigs();
+  friend void pb::Config::ConfirmConfigs();
+
+  friend void pb::Client::AddClient();
+  friend void pb::Confirm();
+  friend void pb::Start();
 
 }; //PRIVATEPB
-
-  static std::shared_ptr<PRIVATEPB> PB = std::make_shared<PRIVATEPB>();
 
 //#endif

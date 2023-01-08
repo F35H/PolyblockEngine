@@ -11,13 +11,9 @@ namespace pb {
     struct Utils {
       void SetLogBuffer(std::ostream* logBuffer);
 
-      void GetLogBuffer(std::ostream* logBuffer);
+      std::ostream* GetLogBuffer();
 
     private:
-      std::shared_ptr<std::ofstream> logFile = std::move(
-        std::shared_ptr<std::ofstream>(new std::ofstream(
-          "logs/log", std::ios::ate | std::ios::out)));
-
       std::ostream* logBuffer = &std::cout;
 
     }; //UTILS
