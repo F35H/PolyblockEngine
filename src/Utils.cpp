@@ -173,23 +173,16 @@ private:
 }; //ClientVector
 
 
-std::shared_ptr<PRIVATEPB::ClientVector> PRIVATEPB::Client_ptr = std::shared_ptr<ClientVector>(new ClientVector());
-
-
 struct PRIVATEPB::Utils {
   std::shared_ptr<std::ofstream> logFile;
 
   Utils() {
-    std::string uuid = sole::uuid1().str();
-
-    std::string fileName = "logs";
-    fileName += "/log-";
-    fileName += uuid;
+    std::string fileName = "gameLog";
     fileName += ".txt";
 
     logFile = std::move(
       std::shared_ptr<std::ofstream>(new std::ofstream(
-        "filename", std::ios::ate | std::ios::out)));
+        fileName, std::ios::ate | std::ios::out)));
 
     int i = 0;
     auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
@@ -198,23 +191,24 @@ struct PRIVATEPB::Utils {
     do { //Create Log File
       switch (i) {
       default:
-        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once";
-        cout->write(errMsg, sizeof(errMsg));
-        continue;
+        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once \n";
+        cout->write(errMsg, strlen(errMsg));
+        logFile->write(errMsg, strlen(errMsg));
+        break;
 
       case 0b01:
-        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice";
-        cout->write(errMsg, sizeof(errMsg));
-        continue;
+        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
 
       case 0b10:
-        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice";
-        cout->write(errMsg, sizeof(errMsg));
-        continue;
+        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
 
       case 0b11:
-        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent";
-        cout->write(errMsg, sizeof(errMsg));
+        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent \n";
+        cout->write(errMsg, strlen(errMsg));
         abort();
 
       }; //Switch
@@ -239,7 +233,7 @@ void pb::Utils::Output::FlushtoLog() {
 
 
 void pb::Utils::Output::WritetoLog(const std::string str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
   cout->write(str.c_str(), str.length());
@@ -251,7 +245,7 @@ void pb::Utils::Output::WritetoLog(const std::string str) {
 
 
 void pb::Utils::Output::WritetoLog(const char* str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
   cout->write(str, strlen(str));
@@ -263,7 +257,7 @@ void pb::Utils::Output::WritetoLog(const char* str) {
 
 
 void pb::Utils::Output::WritetoTimedLog(const char* str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
   cout->write(str, strlen(str));
@@ -275,7 +269,7 @@ void pb::Utils::Output::WritetoTimedLog(const char* str) {
 
 
 void pb::Utils::Output::WritetoTimedLog(const std::string str) {
-  auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
   cout->write(str.c_str(), str.length());

@@ -1,11 +1,6 @@
-#include <pbMacros.h>
 #include <PRVTPB.h>
 
-#define PRVTPB //PIMPLE
-
-//BEGIN CLASS MACRO
-
-
+//PIMPLE IMPLEMENTATION 
 
 //CONFIG
 struct PRIVATEPB::Config {
@@ -14,8 +9,7 @@ struct PRIVATEPB::Config {
     WrotetoUtil(0b00),
     WrotetoRender(0b00),
     errBuffer(
-      std::make_shared<
-      std::vector<std::string>>())
+      &std::vector < const char*> ())
   {}; //Config
 
 
@@ -23,8 +17,8 @@ struct PRIVATEPB::Config {
 
 
   //Getters
-  std::shared_ptr<pb::Config::Utils> GetUtils() { return U; };
-  std::shared_ptr<pb::Config::Render> GetRender() { return R; };
+  pb::Config::Utils* GetUtils() { return U; };
+  pb::Config::Render* GetRender() { return R; };
   bool GetConfirmed() { return Confirmed; };
   bool GetWrotetoUtil() { return WrotetoUtil; };
   bool GetWrotetoRender() { return WrotetoRender; };
@@ -32,8 +26,8 @@ struct PRIVATEPB::Config {
 
 
   //Setters
-  void SetUtils(std::shared_ptr<pb::Config::Utils> u) { U = u; };
-  void SetRender(std::shared_ptr<pb::Config::Render> r) { R = r; };
+  void SetUtils(pb::Config::Utils* u) { U = u; };
+  void SetRender(pb::Config::Render* r) { R = r; };
   void SetConfirmed(bool b) { Confirmed = b; };
   void SetWrotetoUtil(bool b) { WrotetoUtil = b; };
   void SetWrotetoRender(bool b) { WrotetoRender = b; };
@@ -43,9 +37,9 @@ struct PRIVATEPB::Config {
   }; //ExtndErrBuffer
 
 private:
-  std::shared_ptr<std::vector<std::string>> errBuffer;
-  std::shared_ptr<pb::Config::Utils> U; //Utils
-  std::shared_ptr<pb::Config::Render> R; //Render
+  std::vector<const char*>* errBuffer;
+  pb::Config::Utils* U; //Utils
+  pb::Config::Render* R; //Render
 
 
   bool Confirmed : 1;
@@ -59,10 +53,10 @@ private:
 
 //CLIENT
 struct PRIVATEPB::Client {
-  std::shared_ptr<PRIVATEPB::Utils> Utils;
+  PRIVATEPB::Utils* Utils;
 
-  std::shared_ptr<PRIVATEPB::Config> Conf =
-    std::make_shared<PRIVATEPB::Config>();
+  PRIVATEPB::Config* Conf =
+    new PRIVATEPB::Config();
 
   ~Client() {};
 
@@ -77,8 +71,7 @@ private:
 
 struct PRIVATEPB::ClientVector {
   ClientVector() {
-    vector = std::make_shared< std::vector
-      <std::shared_ptr<PRIVATEPB::Client>>>();
+    vector = std::move(& std::vector<PRIVATEPB::Client*>());
 
     innerIndice -= 1;
     outerIndice -= 1;
@@ -93,69 +86,69 @@ struct PRIVATEPB::ClientVector {
     outerIndice += 1;
 
     vector->emplace_back(
-      std::make_shared<PRIVATEPB::Client>());
+      new PRIVATEPB::Client());
   }; //AddClient
 
 
-  std::shared_ptr<PRIVATEPB::Utils> NewUtils() {
+  PRIVATEPB::Utils* NewUtils() {
     return vector->operator[](innerIndice)->Utils =
-      std::make_shared<PRIVATEPB::Utils>();
+      new PRIVATEPB::Utils();
   }; //NewUtils
 
 
-  std::shared_ptr<PRIVATEPB::Config> NewConfig() {
+  PRIVATEPB::Config* NewConfig() {
     return vector->operator[](innerIndice)->Conf =
-      std::make_shared<PRIVATEPB::Config>();
+      new PRIVATEPB::Config();
   }; //NewConfig
 
 
 
   //Get Items
-  std::shared_ptr<PRIVATEPB::Client> GetClient(UINT indice) {
+  PRIVATEPB::Client* GetClient(UINT indice) {
     return vector->operator[](indice);
   }; //GetClient
 
 
-  std::shared_ptr<PRIVATEPB::Client> GetLatestClient() {
+  PRIVATEPB::Client* GetLatestClient() {
     return vector->operator[](innerIndice);
   }; //GetClient
 
 
-  std::shared_ptr<PRIVATEPB::Client> GetCurrentClient() {
+  PRIVATEPB::Client* GetCurrentClient() {
     return vector->operator[](currentIndice);
   }; //GetClient
 
 
-  std::shared_ptr<PRIVATEPB::Config> GetCurrentConfig() {
+  PRIVATEPB::Config* GetCurrentConfig() {
     return vector->operator[](currentIndice)->Conf;
   }; //GetClient
 
-  std::shared_ptr<PRIVATEPB::Config> GetLatestConfig() {
+  PRIVATEPB::Config* GetLatestConfig() {
     return vector->operator[](innerIndice)->Conf;
   }; //GetClient
 
 
-  std::shared_ptr<PRIVATEPB::Utils> GetLatestUtils() {
+  PRIVATEPB::Utils* GetLatestUtils() {
     return vector->operator[](innerIndice)->Utils;
   }; //GetClient
 
 
   std::vector
-    <std::shared_ptr<PRIVATEPB::Client>> GetClientVector() {
-    return *vector.get();
+    <PRIVATEPB::Client*> GetClientVector() {
+    return *vector;
   }; //GetClient
 
 
   //Set Items
-  std::shared_ptr<PRIVATEPB::Utils> SetLatestUtils(
-    std::shared_ptr<PRIVATEPB::Utils> U) {
+  PRIVATEPB::Utils* SetLatestUtils(
+    PRIVATEPB::Utils* U) {
 
     return vector->operator[](innerIndice)->Utils = U;
   }; //GetClient
 
 
-  std::shared_ptr<PRIVATEPB::Config> SetLatestConfig(
-    std::shared_ptr<PRIVATEPB::Config> C) {
+  PRIVATEPB::Config* SetLatestConfig(
+    PRIVATEPB::Config* C) {
 
     return vector->operator[](innerIndice)->Conf = C;
   }; //GetClient
@@ -169,31 +162,23 @@ private:
   UINT innerIndice = 0;
   UINT outerIndice = 1;
 
-  std::shared_ptr <
-    std::vector<
-    std::shared_ptr<PRIVATEPB::Client>
-    >>  vector;
+  std::vector<PRIVATEPB::Client*>* vector;
 
 }; //ClientVector
 
 
-std::shared_ptr<PRIVATEPB::ClientVector> PRIVATEPB::Client_ptr = std::shared_ptr<ClientVector>(new ClientVector());
+PRIVATEPB::ClientVector* PRIVATEPB::Client_ptr = new ClientVector();
 
 
 struct PRIVATEPB::Utils {
-  std::shared_ptr<std::ofstream> logFile;
+  std::ofstream* logFile;
 
   Utils() {
-    std::string uuid = sole::uuid1().str();
-
-    std::string fileName = "logs";
-    fileName += "/log-";
-    fileName += uuid;
+    std::string fileName = "gameLog";
     fileName += ".txt";
 
-    logFile = std::move(
-      std::shared_ptr<std::ofstream>(new std::ofstream(
-        "filename", std::ios::ate | std::ios::out)));
+    logFile = std::move(new std::ofstream(
+        fileName, std::ios::ate | std::ios::out));
 
     int i = 0;
     auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
@@ -202,23 +187,24 @@ struct PRIVATEPB::Utils {
     do { //Create Log File
       switch (i) {
       default:
-        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once";
-        cout->write(errMsg, sizeof(errMsg));
-        continue;
+        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once \n";
+        cout->write(errMsg, strlen(errMsg));
+        logFile->write(errMsg, strlen(errMsg));
+        break;
 
       case 0b01:
-        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice";
-        cout->write(errMsg, sizeof(errMsg));
-        continue;
+        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
 
       case 0b10:
-        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice";
-        cout->write(errMsg, sizeof(errMsg));
-        continue;
+        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
 
       case 0b11:
-        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent";
-        cout->write(errMsg, sizeof(errMsg));
+        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent \n";
+        cout->write(errMsg, strlen(errMsg));
         abort();
 
       }; //Switch
@@ -231,14 +217,14 @@ struct PRIVATEPB::Utils {
 }; //Utils
 
 
-class Control {
-}; //Control
 
 
-class Features {
-}; //Features
 
 
+
+
+
+//PUBLIC IMPLEMENTATION 
 void pb::Config::AddConfig(pb::Config::Utils* U) {
   if (!PRIVATEPB::Client_ptr->GetLatestConfig()->GetWrotetoUtil()) {
 
@@ -319,7 +305,8 @@ void pb::Config::ConfirmConfigs() {
   PRIVATEPB::Client_ptr->GetLatestConfig()
     ->SetConfirmed(true);
 
-  auto errBuff = PRIVATEPB::Client_ptr->GetLatestConfig()
+  auto errBuff = PRIVATEPB::Client_ptr
+    ->GetLatestConfig()
     ->GetErrBuff();
 
   PRIVATEPB::Client_ptr->NewUtils();
@@ -333,6 +320,9 @@ void pb::Config::ConfirmConfigs() {
 
 
 void pb::Client::ConfirmClients() {
+  pb::Utils::Output::WritetoTimedLog(
+    "Attempting Client Vector Confirmation | Enabeling Client Lock | Attempting Once");
+  
   auto vector =
     PRIVATEPB::Client_ptr
     ->GetClientVector();
@@ -341,14 +331,6 @@ void pb::Client::ConfirmClients() {
     item->SetConfirmed(true);
   }; //For
 
-  auto errBuff = PRIVATEPB::Client_ptr->GetLatestConfig()
-    ->GetErrBuff();
-
-  PRIVATEPB::Client_ptr->NewUtils();
-
-  for (auto& str : errBuff) {
-    pb::Utils::Output::WritetoTimedLog(str);
-  }; //For
-
   pb::Utils::Output::FlushtoLog();
 }; //ConfirmConfigs
+

@@ -616,7 +616,7 @@ int main() {
   pb::Config::ConfirmConfigs();
 
   pb::Client::ConfirmClients();
-
+  pb::RunRender();
 
   return 0;
 }

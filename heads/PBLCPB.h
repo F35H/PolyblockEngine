@@ -24,20 +24,20 @@ namespace pb {
         void SetRenderEngine(UINT renderEngine);
         void SetWindowWidth(UINT windowWidth);
         void SetWindowHeight(UINT windowHeight);
-        void SetWindowName(UINT windowName);
-        void SetAppVersion(std::string version);
+        void SetWindowName(const char* windowName);
+        void SetAppVersion(const char* version);
 
 
-        void GetRenderEngine(UINT renderEngine);
-        void GetWindowWidth(UINT windowWidth);
-        void GetWindowHeight(UINT windowHeight);
-        void GetWindowName(UINT windowName);
-        void GetAppVersion(std::string version);
+        UINT GetRenderEngine();
+        UINT GetWindowWidth();
+        UINT GetWindowHeight();
+        const char* GetWindowName();
+        const char* GetAppVersion();
 
 
       private:
-        std::string WindowName = "Polyblock Engine";
-        std::string AppVersion = "0.0.1.0";
+        const char* WindowName = "Polyblock Engine";
+        const char* AppVersion = "0.0.1.0";
         UINT WindowHeight = NULL; 
         UINT WindowWidth = NULL; 
         UINT RenderEngine = VULKAN13;
@@ -50,7 +50,6 @@ namespace pb {
       void AddConfig(std::shared_ptr<pb::Config::Utils> U);
       void AddConfig(std::shared_ptr<pb::Config::Render> R);
 
-      void CheckConfigs();
       void ConfirmConfigs();
 
   }; //CONFIG
@@ -71,10 +70,10 @@ namespace pb {
 
 
   namespace Client {
-    static void ConfirmClients();
+    void ConfirmClients();
   };
 
-  static void RunRender();
+  extern void RunRender();
 
 }; //POLYBLOCK
 

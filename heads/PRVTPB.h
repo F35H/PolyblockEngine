@@ -1,14 +1,15 @@
 #pragma once
 #include <PBLCPB.h>
 
-//#ifdef  PRVTPB
 class PRIVATEPB {
   struct Config;
   struct Client;
   struct Utils;
+  struct GFX;
+
   struct ClientVector;
 
-  static std::shared_ptr<ClientVector> Client_ptr;
+  static ClientVector* Client_ptr;
 
   PRIVATEPB();
   ~PRIVATEPB() {};
@@ -17,8 +18,8 @@ class PRIVATEPB {
   friend struct Config;
   friend struct Client;
   friend struct Utils;
+  friend struct GFX;
   friend struct ClientVector;
-
 
   //Pb::Class
   friend struct pb::Utils::Output;
@@ -31,12 +32,9 @@ class PRIVATEPB {
   friend void pb::Config::AddConfig(std::shared_ptr<pb::Config::Utils> U);
   friend void pb::Config::AddConfig(std::shared_ptr<pb::Config::Render> R);
 
-  friend void pb::Config::CheckConfigs();
   friend void pb::Config::ConfirmConfigs();
 
   friend void pb::Client::ConfirmClients();
   friend void pb::RunRender();
 
 }; //PRIVATEPB
-
-//#endif

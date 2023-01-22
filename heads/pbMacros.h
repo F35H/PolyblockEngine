@@ -39,6 +39,16 @@
 #define NDEBUG false
 #endif
 
+//Packing 
+#ifdef __GNUC__
+  #define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#endif
+
+#ifdef _MSC_VER
+  #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
+#endif
+
+
 //Fast Width Ints
 #define FINT8 int_fast8_t
 #define FINT16 int_fast16_t
@@ -131,10 +141,14 @@
 // Needs:
 // Vulkan Renderer
 // Finish GLFW rendering system
-// Move Utils to Client
 // Return pointer in all pointer functions
+// Pack your structs
+// Add wrapping struct in GLFW to enable easy passing of values
+// 
+// Give Option for Window/Game Name - rename log file, update WIndow Names, etc.
 // 
 // Ideas:
+// Add Some Form of Obfuscation to PRVTPB using Macros
 //Add image output operator in pbOutput
 //Input Time Functions in WritetoTimedLog
 //Add OPENGL functions

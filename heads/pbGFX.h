@@ -20,19 +20,12 @@ namespace pbVulkan {
     private pbCntx::pbCntx {
 
     struct QFamIndices {
-      std::optional<uint32_t> gfxFam;
-      std::optional<uint32_t> presFam;
+
 
       bool isComplete();
 
       QFamIndices() = default;
     }; //QFamIndices
-
-    struct SwapChainSupportDetails {
-      VkSurfaceCapabilitiesKHR capabilities;
-      std::vector<VkSurfaceFormatKHR> formats;
-      std::vector<VkPresentModeKHR> presentModes;
-    }; //Swap Chain Support Details
 
     VkSurfaceKHR surface;
     VkPhysicalDevice physicalDevice;
