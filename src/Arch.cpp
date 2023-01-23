@@ -9,12 +9,8 @@ struct PRIVATEPB::Config {
     WrotetoUtil(0b00),
     WrotetoRender(0b00),
     errBuffer(
-      &std::vector < const char*> ())
+      new std::vector < const char*> ())
   {}; //Config
-
-
-  ~Config() {};
-
 
   //Getters
   pb::Config::Utils* GetUtils() { return U; };
@@ -22,7 +18,7 @@ struct PRIVATEPB::Config {
   bool GetConfirmed() { return Confirmed; };
   bool GetWrotetoUtil() { return WrotetoUtil; };
   bool GetWrotetoRender() { return WrotetoRender; };
-  std::vector<std::string> GetErrBuff() { return *errBuffer.get(); };
+  std::vector<const char*> GetErrBuff() { return *errBuffer; };
 
 
   //Setters
@@ -32,9 +28,15 @@ struct PRIVATEPB::Config {
   void SetWrotetoUtil(bool b) { WrotetoUtil = b; };
   void SetWrotetoRender(bool b) { WrotetoRender = b; };
 
-  void ExtndErrBuff(std::string str) {
+  void ExtndErrBuff(const char* str) {
     errBuffer->emplace_back(str);
   }; //ExtndErrBuffer
+
+  ~Config() {
+    delete U;
+    delete R;
+    delete errBuffer;
+  }; //Config
 
 private:
   std::vector<const char*>* errBuffer;
@@ -46,8 +48,6 @@ private:
   bool WrotetoUtil : 1;
   bool WrotetoRender : 1;
 
-
-
 }; //Config
 
 
@@ -58,20 +58,72 @@ struct PRIVATEPB::Client {
   PRIVATEPB::Config* Conf =
     new PRIVATEPB::Config();
 
-  ~Client() {};
-
   void SetConfirmed(bool b) { Confirmed = b; };
   bool GetConfirmed(bool b) { return Confirmed; };
 
 private:
   bool Confirmed;
 
+  ~Client() {
+    delete Utils;
+    delete Conf;
+  }; //Client
+
 }; //Client
 
+struct PRIVATEPB::Utils {
+  std::ofstream* logFile;
+
+  Utils(pb::Config::Utils* U) {
+    std::string fileName = "gameLog";
+    fileName += ".txt";
+
+    logFile = new std::ofstream(
+      fileName, std::ios::ate | std::ios::out);
+
+    int i = 0;
+    auto cout = U->GetLogBuffer();
+    const char* errMsg;
+
+    do { //Create Log File
+      switch (i) {
+      default:
+        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once \n";
+        cout->write(errMsg, strlen(errMsg));
+        logFile->write(errMsg, strlen(errMsg));
+        break;
+
+      case 0b01:
+        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
+
+      case 0b10:
+        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
+
+      case 0b11:
+        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent \n";
+        cout->write(errMsg, strlen(errMsg));
+        abort();
+
+      }; //Switch
+
+      ++i;
+    } while (!logFile->is_open());
+
+  }; //UTILSCONSTRUCTOR
+
+  ~Utils() {
+    delete logFile;
+  }; //Utils
+
+}; //Utils
 
 struct PRIVATEPB::ClientVector {
   ClientVector() {
-    vector = std::move(& std::vector<PRIVATEPB::Client*>());
+    vector = new std::vector<PRIVATEPB::Client*>();
 
     innerIndice -= 1;
     outerIndice -= 1;
@@ -92,7 +144,9 @@ struct PRIVATEPB::ClientVector {
 
   PRIVATEPB::Utils* NewUtils() {
     return vector->operator[](innerIndice)->Utils =
-      new PRIVATEPB::Utils();
+      new PRIVATEPB::Utils(
+        GetLatestConfig()
+        ->GetUtils());
   }; //NewUtils
 
 
@@ -154,7 +208,9 @@ struct PRIVATEPB::ClientVector {
   }; //GetClient
 
 
-  ~ClientVector() {};
+  ~ClientVector() {
+    delete vector;
+  }; //ClientVector
 
 
 private:
@@ -166,61 +222,7 @@ private:
 
 }; //ClientVector
 
-
 PRIVATEPB::ClientVector* PRIVATEPB::Client_ptr = new ClientVector();
-
-
-struct PRIVATEPB::Utils {
-  std::ofstream* logFile;
-
-  Utils() {
-    std::string fileName = "gameLog";
-    fileName += ".txt";
-
-    logFile = std::move(new std::ofstream(
-        fileName, std::ios::ate | std::ios::out));
-
-    int i = 0;
-    auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
-    const char* errMsg;
-
-    do { //Create Log File
-      switch (i) {
-      default:
-        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once \n";
-        cout->write(errMsg, strlen(errMsg));
-        logFile->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b01:
-        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice \n";
-        cout->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b10:
-        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice \n";
-        cout->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b11:
-        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent \n";
-        cout->write(errMsg, strlen(errMsg));
-        abort();
-
-      }; //Switch
-
-      ++i;
-    } while (!logFile->is_open());
-
-  }; //UTILSCONSTRUCTOR
-
-}; //Utils
-
-
-
-
-
-
 
 
 
@@ -228,76 +230,44 @@ struct PRIVATEPB::Utils {
 void pb::Config::AddConfig(pb::Config::Utils* U) {
   if (!PRIVATEPB::Client_ptr->GetLatestConfig()->GetWrotetoUtil()) {
 
-    PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->SetUtils(
-        std::move(std::shared_ptr
-          <pb::Config::Utils>(U))
-      ); //SetUtils
+    PRIVATEPB::Client_ptr
+      ->GetLatestConfig()
+      ->SetUtils(U);
 
-    PRIVATEPB::Client_ptr->GetLatestConfig()->SetWrotetoUtil(true);
+    PRIVATEPB::Client_ptr
+      ->GetLatestConfig()
+      ->SetWrotetoUtil(true);
+
   } //IF
   else {
     PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
+      ->ExtndErrBuff(
+        "Util Already Wrriten to in Config \n");
   }; //ELSE
 
 }; //AddConfig
 
 
 void pb::Config::AddConfig(pb::Config::Render* R) {
-  if (!PRIVATEPB::Client_ptr->GetLatestConfig()
+  if (!PRIVATEPB::Client_ptr
+    ->GetLatestConfig()
     ->GetWrotetoRender()) {
 
-    PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->SetRender(
-        std::move(std::shared_ptr
-          <pb::Config::Render>(R))
-      ); //Set Render
+    PRIVATEPB::Client_ptr
+      ->GetLatestConfig()
+      ->SetRender(R);
 
 
-    PRIVATEPB::Client_ptr->GetLatestConfig()
+    PRIVATEPB::Client_ptr
+      ->GetLatestConfig()
       ->SetWrotetoRender(true);
+
   } //IF
   else {
     PRIVATEPB::Client_ptr->GetLatestConfig()
       ->ExtndErrBuff("Util Already Wrriten to in Config \n");
   }; //ELSE
 }; //Add Config
-
-
-void pb::Config::AddConfig(std::shared_ptr<pb::Config::Utils> U) {
-  if (!PRIVATEPB::Client_ptr->GetLatestConfig()
-    ->GetWrotetoUtil()) {
-
-    PRIVATEPB::Client_ptr->GetLatestConfig()->
-      SetUtils(U);
-
-    PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->SetWrotetoUtil(true);
-  } //IF
-  else {
-    PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
-  }; //ELSE
-}; //AddConfig
-
-
-void pb::Config::AddConfig(std::shared_ptr<pb::Config::Render> R) {
-  if (!PRIVATEPB::Client_ptr->GetLatestConfig()
-    ->GetWrotetoRender()) {
-
-    PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->SetRender(R);
-
-    PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->SetWrotetoRender(true);
-
-  } //IF
-  else {
-    PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
-  }; //ELSE
-}; //AddConfig
 
 
 
@@ -309,7 +279,8 @@ void pb::Config::ConfirmConfigs() {
     ->GetLatestConfig()
     ->GetErrBuff();
 
-  PRIVATEPB::Client_ptr->NewUtils();
+  PRIVATEPB::Client_ptr
+    ->NewUtils();
 
   for (auto& str : errBuff) {
     pb::Utils::Output::WritetoTimedLog(str);

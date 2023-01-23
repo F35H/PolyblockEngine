@@ -140,10 +140,14 @@
 //Current Tasks:
 // Needs:
 // Vulkan Renderer
+// -> Fix Switch Statement to be in GFX and not Vulkan Constructor
+// -> Set up deletion for union, GFX, and Vulkan
 // Finish GLFW rendering system
 // Return pointer in all pointer functions
+// -> Pointers in Vulkan Init
+// -> Pointers in Vulkan Pipe
+// -> Pointers in Vulkan Cmnd
 // Pack your structs
-// Add wrapping struct in GLFW to enable easy passing of values
 // 
 // Give Option for Window/Game Name - rename log file, update WIndow Names, etc.
 // 

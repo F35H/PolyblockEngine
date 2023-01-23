@@ -11,8 +11,10 @@ class PRIVATEPB {
 
   static ClientVector* Client_ptr;
 
-  PRIVATEPB();
-  ~PRIVATEPB() {};
+  PRIVATEPB() {};
+  ~PRIVATEPB() {
+    delete Client_ptr;
+  }; //PrivatePB
 
   //InClass
   friend struct Config;
@@ -28,9 +30,6 @@ class PRIVATEPB {
   //pb::Functions
   friend void pb::Config::AddConfig(pb::Config::Render* R);
   friend void pb::Config::AddConfig(pb::Config::Utils* U);
-
-  friend void pb::Config::AddConfig(std::shared_ptr<pb::Config::Utils> U);
-  friend void pb::Config::AddConfig(std::shared_ptr<pb::Config::Render> R);
 
   friend void pb::Config::ConfirmConfigs();
 

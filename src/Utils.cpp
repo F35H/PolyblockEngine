@@ -10,57 +10,54 @@ struct PRIVATEPB::Config {
     WrotetoUtil(0b00),
     WrotetoRender(0b00),
     errBuffer(
-      std::make_shared<
-      std::vector<std::string>>())
+      new std::vector < const char*>())
   {}; //Config
 
-
-  ~Config() {};
-
-
   //Getters
-  std::shared_ptr<pb::Config::Utils> GetUtils() { return U; };
-  std::shared_ptr<pb::Config::Render> GetRender() { return R; };
+  pb::Config::Utils* GetUtils() { return U; };
+  pb::Config::Render* GetRender() { return R; };
   bool GetConfirmed() { return Confirmed; };
   bool GetWrotetoUtil() { return WrotetoUtil; };
   bool GetWrotetoRender() { return WrotetoRender; };
-  std::vector<std::string> GetErrBuff() { return *errBuffer.get(); };
+  std::vector<const char*> GetErrBuff() { return *errBuffer; };
 
 
   //Setters
-  void SetUtils(std::shared_ptr<pb::Config::Utils> u) { U = u; };
-  void SetRender(std::shared_ptr<pb::Config::Render> r) { R = r; };
+  void SetUtils(pb::Config::Utils* u) { U = u; };
+  void SetRender(pb::Config::Render* r) { R = r; };
   void SetConfirmed(bool b) { Confirmed = b; };
   void SetWrotetoUtil(bool b) { WrotetoUtil = b; };
   void SetWrotetoRender(bool b) { WrotetoRender = b; };
 
-  void ExtndErrBuff(std::string str) {
+  void ExtndErrBuff(const char* str) {
     errBuffer->emplace_back(str);
   }; //ExtndErrBuffer
 
+  ~Config() {
+    delete U;
+    delete R;
+    delete errBuffer;
+  }; //Config
+
 private:
-  std::shared_ptr<std::vector<std::string>> errBuffer;
-  std::shared_ptr<pb::Config::Utils> U; //Utils
-  std::shared_ptr<pb::Config::Render> R; //Render
+  std::vector<const char*>* errBuffer;
+  pb::Config::Utils* U; //Utils
+  pb::Config::Render* R; //Render
 
 
   bool Confirmed : 1;
   bool WrotetoUtil : 1;
   bool WrotetoRender : 1;
 
-
-
 }; //Config
 
 
 //CLIENT
 struct PRIVATEPB::Client {
-  std::shared_ptr<PRIVATEPB::Utils> Utils;
+  PRIVATEPB::Utils* Utils;
 
-  std::shared_ptr<PRIVATEPB::Config> Conf =
-    std::make_shared<PRIVATEPB::Config>();
-
-  ~Client() {};
+  PRIVATEPB::Config* Conf =
+    new PRIVATEPB::Config();
 
   void SetConfirmed(bool b) { Confirmed = b; };
   bool GetConfirmed(bool b) { return Confirmed; };
@@ -68,124 +65,25 @@ struct PRIVATEPB::Client {
 private:
   bool Confirmed;
 
+  ~Client() {
+    delete Utils;
+    delete Conf;
+  }; //Client
+
 }; //Client
 
-
-struct PRIVATEPB::ClientVector {
-  ClientVector() {
-    vector = std::make_shared< std::vector
-      <std::shared_ptr<PRIVATEPB::Client>>>();
-
-    innerIndice -= 1;
-    outerIndice -= 1;
-
-    NewClient();
-  }; //ClientVector
-
-
-  //New
-  void NewClient() {
-    innerIndice += 1;
-    outerIndice += 1;
-
-    vector->emplace_back(
-      std::make_shared<PRIVATEPB::Client>());
-  }; //AddClient
-
-
-  std::shared_ptr<PRIVATEPB::Utils> NewUtils() {
-    return vector->operator[](innerIndice)->Utils =
-      std::make_shared<PRIVATEPB::Utils>();
-  }; //NewUtils
-
-
-  std::shared_ptr<PRIVATEPB::Config> NewConfig() {
-    return vector->operator[](innerIndice)->Conf =
-      std::make_shared<PRIVATEPB::Config>();
-  }; //NewConfig
-
-
-
-  //Get Items
-  std::shared_ptr<PRIVATEPB::Client> GetClient(UINT indice) {
-    return vector->operator[](indice);
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Client> GetLatestClient() {
-    return vector->operator[](innerIndice);
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Client> GetCurrentClient() {
-    return vector->operator[](currentIndice);
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Config> GetCurrentConfig() {
-    return vector->operator[](currentIndice)->Conf;
-  }; //GetClient
-
-  std::shared_ptr<PRIVATEPB::Config> GetLatestConfig() {
-    return vector->operator[](innerIndice)->Conf;
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Utils> GetLatestUtils() {
-    return vector->operator[](innerIndice)->Utils;
-  }; //GetClient
-
-
-  std::vector
-    <std::shared_ptr<PRIVATEPB::Client>> GetClientVector() {
-    return *vector.get();
-  }; //GetClient
-
-
-  //Set Items
-  std::shared_ptr<PRIVATEPB::Utils> SetLatestUtils(
-    std::shared_ptr<PRIVATEPB::Utils> U) {
-
-    return vector->operator[](innerIndice)->Utils = U;
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Config> SetLatestConfig(
-    std::shared_ptr<PRIVATEPB::Config> C) {
-
-    return vector->operator[](innerIndice)->Conf = C;
-  }; //GetClient
-
-
-  ~ClientVector() {};
-
-
-private:
-  UINT currentIndice = 0;
-  UINT innerIndice = 0;
-  UINT outerIndice = 1;
-
-  std::shared_ptr <
-    std::vector<
-    std::shared_ptr<PRIVATEPB::Client>
-    >>  vector;
-
-}; //ClientVector
-
-
 struct PRIVATEPB::Utils {
-  std::shared_ptr<std::ofstream> logFile;
+  std::ofstream* logFile;
 
-  Utils() {
+  Utils(pb::Config::Utils* U) {
     std::string fileName = "gameLog";
     fileName += ".txt";
 
-    logFile = std::move(
-      std::shared_ptr<std::ofstream>(new std::ofstream(
-        fileName, std::ios::ate | std::ios::out)));
+    logFile = new std::ofstream(
+      fileName, std::ios::ate | std::ios::out);
 
     int i = 0;
-    auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
+    auto cout = U->GetLogBuffer();
     const char* errMsg;
 
     do { //Create Log File
@@ -218,7 +116,113 @@ struct PRIVATEPB::Utils {
 
   }; //UTILSCONSTRUCTOR
 
+  ~Utils() {
+    delete logFile;
+  }; //Utils
+
 }; //Utils
+
+struct PRIVATEPB::ClientVector {
+  ClientVector() {
+    vector = new std::vector<PRIVATEPB::Client*>();
+
+    innerIndice -= 1;
+    outerIndice -= 1;
+
+    NewClient();
+  }; //ClientVector
+
+
+  //New
+  void NewClient() {
+    innerIndice += 1;
+    outerIndice += 1;
+
+    vector->emplace_back(
+      new PRIVATEPB::Client());
+  }; //AddClient
+
+
+  PRIVATEPB::Utils* NewUtils() {
+    return vector->operator[](innerIndice)->Utils =
+      new PRIVATEPB::Utils(
+        GetLatestConfig()
+        ->GetUtils());
+  }; //NewUtils
+
+
+  PRIVATEPB::Config* NewConfig() {
+    return vector->operator[](innerIndice)->Conf =
+      new PRIVATEPB::Config();
+  }; //NewConfig
+
+
+
+  //Get Items
+  PRIVATEPB::Client* GetClient(UINT indice) {
+    return vector->operator[](indice);
+  }; //GetClient
+
+
+  PRIVATEPB::Client* GetLatestClient() {
+    return vector->operator[](innerIndice);
+  }; //GetClient
+
+
+  PRIVATEPB::Client* GetCurrentClient() {
+    return vector->operator[](currentIndice);
+  }; //GetClient
+
+
+  PRIVATEPB::Config* GetCurrentConfig() {
+    return vector->operator[](currentIndice)->Conf;
+  }; //GetClient
+
+  PRIVATEPB::Config* GetLatestConfig() {
+    return vector->operator[](innerIndice)->Conf;
+  }; //GetClient
+
+
+  PRIVATEPB::Utils* GetLatestUtils() {
+    return vector->operator[](innerIndice)->Utils;
+  }; //GetClient
+
+
+  std::vector
+    <PRIVATEPB::Client*> GetClientVector() {
+    return *vector;
+  }; //GetClient
+
+
+  //Set Items
+  PRIVATEPB::Utils* SetLatestUtils(
+    PRIVATEPB::Utils* U) {
+
+    return vector->operator[](innerIndice)->Utils = U;
+  }; //GetClient
+
+
+  PRIVATEPB::Config* SetLatestConfig(
+    PRIVATEPB::Config* C) {
+
+    return vector->operator[](innerIndice)->Conf = C;
+  }; //GetClient
+
+
+  ~ClientVector() {
+    delete vector;
+  }; //ClientVector
+
+
+private:
+  UINT currentIndice = 0;
+  UINT innerIndice = 0;
+  UINT outerIndice = 1;
+
+  std::vector<PRIVATEPB::Client*>* vector;
+
+}; //ClientVector
+
 
 
 

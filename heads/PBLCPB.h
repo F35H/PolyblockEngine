@@ -26,29 +26,30 @@ namespace pb {
         void SetWindowHeight(UINT windowHeight);
         void SetWindowName(const char* windowName);
         void SetAppVersion(const char* version);
+        void SetFullscreenBool(bool fScreen);
 
 
         UINT GetRenderEngine();
         UINT GetWindowWidth();
         UINT GetWindowHeight();
+        bool GetFullscreenBool();
         const char* GetWindowName();
         const char* GetAppVersion();
 
 
       private:
-        const char* WindowName = "Polyblock Engine";
-        const char* AppVersion = "0.0.1.0";
         UINT WindowHeight = NULL; 
         UINT WindowWidth = NULL; 
         UINT RenderEngine = VULKAN13;
+        bool FullScreen = false;
+        const char* AppVersion = "0.0.1.0";
+        const char* WindowName = "Polyblock Engine";
 
       }; //RENDER
 
 
       void AddConfig(pb::Config::Utils* U);
       void AddConfig(pb::Config::Render* R);
-      void AddConfig(std::shared_ptr<pb::Config::Utils> U);
-      void AddConfig(std::shared_ptr<pb::Config::Render> R);
 
       void ConfirmConfigs();
 

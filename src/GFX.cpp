@@ -7,57 +7,54 @@ struct PRIVATEPB::Config {
     WrotetoUtil(0b00),
     WrotetoRender(0b00),
     errBuffer(
-      std::make_shared<
-      std::vector<std::string>>())
+      new std::vector < const char*>())
   {}; //Config
 
-
-  ~Config() {};
-
-
   //Getters
-  std::shared_ptr<pb::Config::Utils> GetUtils() { return U; };
-  std::shared_ptr<pb::Config::Render> GetRender() { return R; };
+  pb::Config::Utils* GetUtils() { return U; };
+  pb::Config::Render* GetRender() { return R; };
   bool GetConfirmed() { return Confirmed; };
   bool GetWrotetoUtil() { return WrotetoUtil; };
   bool GetWrotetoRender() { return WrotetoRender; };
-  std::vector<std::string> GetErrBuff() { return *errBuffer.get(); };
+  std::vector<const char*> GetErrBuff() { return *errBuffer; };
 
 
   //Setters
-  void SetUtils(std::shared_ptr<pb::Config::Utils> u) { U = u; };
-  void SetRender(std::shared_ptr<pb::Config::Render> r) { R = r; };
+  void SetUtils(pb::Config::Utils* u) { U = u; };
+  void SetRender(pb::Config::Render* r) { R = r; };
   void SetConfirmed(bool b) { Confirmed = b; };
   void SetWrotetoUtil(bool b) { WrotetoUtil = b; };
   void SetWrotetoRender(bool b) { WrotetoRender = b; };
 
-  void ExtndErrBuff(std::string str) {
+  void ExtndErrBuff(const char* str) {
     errBuffer->emplace_back(str);
   }; //ExtndErrBuffer
 
+  ~Config() {
+    delete U;
+    delete R;
+    delete errBuffer;
+  }; //Config
+
 private:
-  std::shared_ptr<std::vector<std::string>> errBuffer;
-  std::shared_ptr<pb::Config::Utils> U; //Utils
-  std::shared_ptr<pb::Config::Render> R; //Render
+  std::vector<const char*>* errBuffer;
+  pb::Config::Utils* U; //Utils
+  pb::Config::Render* R; //Render
 
 
   bool Confirmed : 1;
   bool WrotetoUtil : 1;
   bool WrotetoRender : 1;
 
-
-
 }; //Config
 
 
 //CLIENT
 struct PRIVATEPB::Client {
-  std::shared_ptr<PRIVATEPB::Utils> Utils;
+  PRIVATEPB::Utils* Utils;
 
-  std::shared_ptr<PRIVATEPB::Config> Conf =
-    std::make_shared<PRIVATEPB::Config>();
-
-  ~Client() {};
+  PRIVATEPB::Config* Conf =
+    new PRIVATEPB::Config();
 
   void SetConfirmed(bool b) { Confirmed = b; };
   bool GetConfirmed(bool b) { return Confirmed; };
@@ -65,124 +62,25 @@ struct PRIVATEPB::Client {
 private:
   bool Confirmed;
 
+  ~Client() {
+    delete Utils;
+    delete Conf;
+  }; //Client
+
 }; //Client
 
-
-struct PRIVATEPB::ClientVector {
-  ClientVector() {
-    vector = std::make_shared< std::vector
-      <std::shared_ptr<PRIVATEPB::Client>>>();
-
-    innerIndice -= 1;
-    outerIndice -= 1;
-
-    NewClient();
-  }; //ClientVector
-
-
-  //New
-  void NewClient() {
-    innerIndice += 1;
-    outerIndice += 1;
-
-    vector->emplace_back(
-      std::make_shared<PRIVATEPB::Client>());
-  }; //AddClient
-
-
-  std::shared_ptr<PRIVATEPB::Utils> NewUtils() {
-    return vector->operator[](innerIndice)->Utils =
-      std::make_shared<PRIVATEPB::Utils>();
-  }; //NewUtils
-
-
-  std::shared_ptr<PRIVATEPB::Config> NewConfig() {
-    return vector->operator[](innerIndice)->Conf =
-      std::make_shared<PRIVATEPB::Config>();
-  }; //NewConfig
-
-
-
-  //Get Items
-  std::shared_ptr<PRIVATEPB::Client> GetClient(UINT indice) {
-    return vector->operator[](indice);
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Client> GetLatestClient() {
-    return vector->operator[](innerIndice);
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Client> GetCurrentClient() {
-    return vector->operator[](currentIndice);
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Config> GetCurrentConfig() {
-    return vector->operator[](currentIndice)->Conf;
-  }; //GetClient
-
-  std::shared_ptr<PRIVATEPB::Config> GetLatestConfig() {
-    return vector->operator[](innerIndice)->Conf;
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Utils> GetLatestUtils() {
-    return vector->operator[](innerIndice)->Utils;
-  }; //GetClient
-
-
-  std::vector
-    <std::shared_ptr<PRIVATEPB::Client>> GetClientVector() {
-    return *vector.get();
-  }; //GetClient
-
-
-  //Set Items
-  std::shared_ptr<PRIVATEPB::Utils> SetLatestUtils(
-    std::shared_ptr<PRIVATEPB::Utils> U) {
-
-    return vector->operator[](innerIndice)->Utils = U;
-  }; //GetClient
-
-
-  std::shared_ptr<PRIVATEPB::Config> SetLatestConfig(
-    std::shared_ptr<PRIVATEPB::Config> C) {
-
-    return vector->operator[](innerIndice)->Conf = C;
-  }; //GetClient
-
-
-  ~ClientVector() {};
-
-
-private:
-  UINT currentIndice = 0;
-  UINT innerIndice = 0;
-  UINT outerIndice = 1;
-
-  std::shared_ptr <
-    std::vector<
-    std::shared_ptr<PRIVATEPB::Client>
-    >>  vector;
-
-}; //ClientVector
-
-
 struct PRIVATEPB::Utils {
-  std::shared_ptr<std::ofstream> logFile;
+  std::ofstream* logFile;
 
-  Utils() {
+  Utils(pb::Config::Utils* U) {
     std::string fileName = "gameLog";
     fileName += ".txt";
 
-    logFile = std::move(
-      std::shared_ptr<std::ofstream>(new std::ofstream(
-        fileName, std::ios::ate | std::ios::out)));
+    logFile = new std::ofstream(
+      fileName, std::ios::ate | std::ios::out);
 
     int i = 0;
-    auto cout = PRIVATEPB::Client_ptr->GetLatestConfig()->GetUtils()->GetLogBuffer();
+    auto cout = U->GetLogBuffer();
     const char* errMsg;
 
     do { //Create Log File
@@ -215,11 +113,120 @@ struct PRIVATEPB::Utils {
 
   }; //UTILSCONSTRUCTOR
 
+  ~Utils() {
+    delete logFile;
+  }; //Utils
+
 }; //Utils
 
-class GLFW {
+struct PRIVATEPB::ClientVector {
+  ClientVector() {
+    vector = new std::vector<PRIVATEPB::Client*>();
 
+    innerIndice -= 1;
+    outerIndice -= 1;
+
+    NewClient();
+  }; //ClientVector
+
+
+  //New
+  void NewClient() {
+    innerIndice += 1;
+    outerIndice += 1;
+
+    vector->emplace_back(
+      new PRIVATEPB::Client());
+  }; //AddClient
+
+
+  PRIVATEPB::Utils* NewUtils() {
+    return vector->operator[](innerIndice)->Utils =
+      new PRIVATEPB::Utils(
+        GetLatestConfig()
+        ->GetUtils());
+  }; //NewUtils
+
+
+  PRIVATEPB::Config* NewConfig() {
+    return vector->operator[](innerIndice)->Conf =
+      new PRIVATEPB::Config();
+  }; //NewConfig
+
+
+
+  //Get Items
+  PRIVATEPB::Client* GetClient(UINT indice) {
+    return vector->operator[](indice);
+  }; //GetClient
+
+
+  PRIVATEPB::Client* GetLatestClient() {
+    return vector->operator[](innerIndice);
+  }; //GetClient
+
+
+  PRIVATEPB::Client* GetCurrentClient() {
+    return vector->operator[](currentIndice);
+  }; //GetClient
+
+
+  PRIVATEPB::Config* GetCurrentConfig() {
+    return vector->operator[](currentIndice)->Conf;
+  }; //GetClient
+
+  PRIVATEPB::Config* GetLatestConfig() {
+    return vector->operator[](innerIndice)->Conf;
+  }; //GetClient
+
+
+  PRIVATEPB::Utils* GetLatestUtils() {
+    return vector->operator[](innerIndice)->Utils;
+  }; //GetClient
+
+
+  std::vector
+    <PRIVATEPB::Client*> GetClientVector() {
+    return *vector;
+  }; //GetClient
+
+
+  //Set Items
+  PRIVATEPB::Utils* SetLatestUtils(
+    PRIVATEPB::Utils* U) {
+
+    return vector->operator[](innerIndice)->Utils = U;
+  }; //GetClient
+
+
+  PRIVATEPB::Config* SetLatestConfig(
+    PRIVATEPB::Config* C) {
+
+    return vector->operator[](innerIndice)->Conf = C;
+  }; //GetClient
+
+
+  ~ClientVector() {
+    delete vector;
+  }; //ClientVector
+
+
+private:
+  UINT currentIndice = 0;
+  UINT innerIndice = 0;
+  UINT outerIndice = 1;
+
+  std::vector<PRIVATEPB::Client*>* vector;
+
+}; //ClientVector
+
+
+
+class GLFW {
 protected:
+  struct GLFWData {
+  }; //
+  
   GLFWmonitor* mon;
   GLFWwindow* win;
   const GLFWvidmode* vidMode;
@@ -227,7 +234,7 @@ protected:
   INT winYPos;
   INT monWidth;
   INT monHeight;
-  std::shared_ptr<pb::Config::Render> rendConf;
+  pb::Config::Render* rendConf;
   
   GLFW() {
     pb::Utils::Output::WritetoTimedLog(
@@ -244,18 +251,23 @@ protected:
     mon = glfwGetPrimaryMonitor();
     vidMode = glfwGetVideoMode(mon);
 
-    glfwGetMonitorWorkarea(mon, &winXPos, &winYPos, &monWidth, &monHeight);
-
-
+    glfwGetMonitorWorkarea(
+      mon, &winXPos, &winYPos,
+      &monWidth, &monHeight);
   }; //GLFW
 
-  void createWindow(FINT8 winWidth, FINT8 winHeight, const char* winName) {
+  void createWindow(FINT16 winWidth, FINT16 winHeight, const char* winName) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     pb::Utils::Output::WritetoTimedLog(
       "Creating Window | Creating Window | Creating Window");
 
-    win = glfwCreateWindow(winWidth, winHeight, winName, mon, nullptr);
+    if (rendConf->GetFullscreenBool()) {
+      win = glfwCreateWindow(winWidth, winHeight, winName, mon, nullptr);
+    }
+    else {
+      win = glfwCreateWindow(winWidth, winHeight, winName, mon, nullptr);
+    } //ifFullscreen
 
     if (!win) {
       throw std::runtime_error(
@@ -265,11 +277,15 @@ protected:
 
   void createWindow(const char* winName) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
     pb::Utils::Output::WritetoTimedLog(
       "Creating Window | Creating Window | Creating Window");
 
-    win = glfwCreateWindow(monWidth, monHeight, winName, mon, nullptr);
+    if (rendConf->GetFullscreenBool()) {
+      win = glfwCreateWindow(monWidth, monHeight, winName, mon, nullptr);
+    }
+    else {
+      win = glfwCreateWindow(monWidth, monHeight, winName, mon, nullptr);
+    } //ifFullscreen
 
     if (!win) {
       throw std::runtime_error(
@@ -280,7 +296,10 @@ protected:
     rendConf->SetWindowWidth(monWidth);
   }; //createWindow
 
+  ~GLFW() {};
+
 }; //GLFW
+
 
 
 struct Vulkan :
@@ -301,7 +320,7 @@ struct Vulkan :
       VkSurfaceCapabilitiesKHR capabilities;
       std::vector<VkSurfaceFormatKHR> formats;
       std::vector<VkPresentModeKHR> presentModes;
-    };
+    }; //SwapChainSupportDetails
 
     struct QueueFamilyIndices {
       std::optional<uint32_t> graphicsFamily;
@@ -309,8 +328,8 @@ struct Vulkan :
 
       bool isComplete() {
         return graphicsFamily.has_value() && presentFamily.has_value();
-      }
-    };
+      } //isComplete
+    }; //QueueFamilyIndices
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
       std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
@@ -348,7 +367,7 @@ struct Vulkan :
       }
 
       return details;
-    }
+    } //SwapChainSupportDetails
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
       QueueFamilyIndices indices;
@@ -380,15 +399,15 @@ struct Vulkan :
       }
 
       return indices;
-    }
+    } //QueueFamilyIndices
 
     const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
-    };
+    }; //ValidationLayers
 
     const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
+    }; //deviceExtensions
 
     void CheckDebug() {
       if (DEBUG) {
@@ -418,13 +437,13 @@ struct Vulkan :
       }; // if (DEBUG)
     }; //checkDebug
     
-    void CreateInstance(const char* appName) {
+    void CreateInstance(pb::Config::Render* rendConf) {
       pb::Utils::Output::WritetoTimedLog(
         "Initializing Vulkan | Creating Program Instance | Writing Struct");
 
       VkApplicationInfo appInfo{};
       appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-      appInfo.pApplicationName = appName;
+      appInfo.pApplicationName = rendConf->GetWindowName();
       appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
       appInfo.pEngineName = "PolyBlock Engine";
       appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -623,6 +642,8 @@ struct Vulkan :
 
         vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
         vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+
+        abort();
     }; //createLogicalDevice
   
     friend class Vulkan;
@@ -630,11 +651,11 @@ struct Vulkan :
 
 
   class VulkanPipe {
-    void createSwapChain();
-    void createImageViews();
-    void createRenderPass();
-    void createDescriptorSetLayout();
-    void createGraphicsPipeline();
+    void CreateSwapChain();
+    void CreateImageViews();
+    void CreateRenderPass();
+    void CreateDescriptorSetLayout();
+    void CreateGraphicsPipeline();
   }; //VulkanPipe
 
   class VulkanCmnd {
@@ -653,61 +674,56 @@ struct Vulkan :
     void createSyncObjects();
   }; //VulkanCmnd
 
-  Vulkan(std::shared_ptr<pb::Config::Render> RendConf) {
+  Vulkan::VulkanInit* VInit = new VulkanInit();
+  Vulkan::VulkanPipe* VPipe = new VulkanPipe();
+  //Vulkan::VulkanCmnd* VInit = new VulkanCmnd();
+
+  Vulkan(pb::Config::Render* RendConf) {
     GLFW::rendConf = RendConf;
 
     pb::Utils::Output::WritetoTimedLog(
       "Creating Window | Selecting Window | Collecting Configurations");
 
-    FINT16 winHeight = rendConf->GetWindowHeight();
-    FINT16 winWidth = rendConf->GetWindowWidth();
-    const char* winName = rendConf->GetWindowName();
+    FINT16 winHeight = RendConf->GetWindowHeight();
+    FINT16 winWidth = RendConf->GetWindowWidth();
+    const char* winName = RendConf->GetWindowName();
 
-    if (winHeight & winWidth) {
+    if (winHeight && winWidth) {
       createWindow(winHeight,winWidth, winName);
     }
     else {
       createWindow(winName);
     } //Else
-
-    Vulkan::VulkanInit* VInit = new VulkanInit();
-    //Vulkan::VulkanPipe* VInit = new VulkanPipe();
-    //Vulkan::VulkanCmnd* VInit = new VulkanCmnd();
-
-
-    switch (rendConf->GetRenderEngine()) {
-    case VULKAN13:
-    default:
-      VInit->CheckDebug();
-      VInit->CreateInstance(rendConf->GetWindowName());
-      VInit->SetupDebugMessenger();
-      VInit->CreateSurface(GLFW::win);
-      VInit->PickPhysicalDevice();
-      VInit->CreateLogicalDevice();
-
-      //VPipe->createSwapChain();
-      //VPipe->createImageViews();
-      //VPipe->createRenderPass();
-      //VPipe->createDescriptorSetLayout();
-      //VPipe->createGraphicsPipeline();
-
-      //VCmnd->createCommandPool();
-      //VCmnd->createDepthResources();
-      //VCmnd->createFramebuffers();
-      //VCmnd->createTextureImage();
-      //VCmnd->createTextureImageView();
-      //VCmnd->createTextureSampler();
-      //VCmnd->createVertexBuffer();
-      //VCmnd->createIndexBuffer();
-      //VCmnd->createUniformBuffers();
-      //VCmnd->createDescriptorPool();
-      //VCmnd->createDescriptorSets();
-      //VCmnd->createCommandBuffers();
-      //VCmnd->createSyncObjects();
-      break;
-    } //Switch
-
   }; //Vulkan Constructor
+
+  void Vulkan13() {
+    VInit->CheckDebug();
+    VInit->CreateInstance(GLFW::rendConf);
+    VInit->SetupDebugMessenger();
+    VInit->CreateSurface(GLFW::win);
+    VInit->PickPhysicalDevice();
+    VInit->CreateLogicalDevice();
+
+    VPipe->CreateSwapChain();
+    VPipe->CreateImageViews();
+    VPipe->CreateRenderPass();
+    VPipe->CreateDescriptorSetLayout();
+    VPipe->CreateGraphicsPipeline();
+
+    //VCmnd->createCommandPool();
+    //VCmnd->createDepthResources();
+    //VCmnd->createFramebuffers();
+    //VCmnd->createTextureImage();
+    //VCmnd->createTextureImageView();
+    //VCmnd->createTextureSampler();
+    //VCmnd->createVertexBuffer();
+    //VCmnd->createIndexBuffer();
+    //VCmnd->createUniformBuffers();
+    //VCmnd->createDescriptorPool();
+    //VCmnd->createDescriptorSets();
+    //VCmnd->createCommandBuffers();
+    //VCmnd->createSyncObjects();
+  }; //Vulkan13
 
 }; //Vulkan
 
@@ -721,32 +737,41 @@ class OpenGL {
 
 struct PRIVATEPB::GFX {
   union API {
-    Vulkan V;
-    DirectX D;
-    OpenGL O;
+    Vulkan* V;
+    DirectX* D;
+    OpenGL* O;
 
-    API() {};
+    ~API(){};
   }; //Union
 
-  GFX() {
-    UINT rend = 1;
+  API* rendClass = new API();
 
+  GFX() {
     auto Client = PRIVATEPB::Client_ptr->GetCurrentClient();
     auto RendConf = Client->Conf->GetRender();
+    
+    UINT rend = RendConf->GetRenderEngine();
+    bool init = 0;
 
-    API* rendClass = new API();
 
     pb::Utils::Output::WritetoTimedLog(
       "Initializing Render Engine | Selecting Engine | Beginning Render Segments");
 
-    while (rend) {
-      try {
-        rend = RendConf->GetRenderEngine();
-
-        switch (rend)
-        {
+    //Rewritting Try-Catch Statement
+    try {
+      while (rend) {
+        if (!init) {
+          switch (rend) {
+          case VULKAN13:
+            rendClass->V = new Vulkan(RendConf);
+            rend = true;
+            break;
+          } //Switch
+        } //If init
+        
+        switch (rend) {
         case VULKAN13:
-          rendClass->V = Vulkan(RendConf);
+          rendClass->V->Vulkan13();
           break;
 
         default:
@@ -756,27 +781,33 @@ struct PRIVATEPB::GFX {
           terminate();
 
         } //Switch
-      } //Try
+      } //While
+    } //Try
+    catch (const std::exception& exc) {
+      pb::Utils::Output::WritetoTimedLog(exc.what());
+      
+      //Put If Statement deciding to activate Init and delete union variables
+      
+      rend -= 1;
 
-      catch (const std::exception& exc) {
-        pb::Utils::Output::WritetoTimedLog(exc.what());
-        rend -= 1;
+      Client->Conf
+        ->GetRender()
+        ->SetRenderEngine(rend);
+    } //Catch
 
-        Client->Conf
-          ->GetRender()
-          ->SetRenderEngine(rend);
-      } //Catch
+    catch (...) {
+      pb::Utils::Output::WritetoTimedLog("Unknown Exception Triggered");
+      rend -= 1;
 
-      catch (...) {
-        pb::Utils::Output::WritetoTimedLog("Unknown Exception Triggered");
-        rend -= 1;
+      Client->Conf
+        ->GetRender()
+        ->SetRenderEngine(rend);
+    } //Catch
+  }; //GFX Constrct
 
-        Client->Conf
-          ->GetRender()
-          ->SetRenderEngine(rend);
-      } //Catch
-    } //While
-  };
+  ~GFX() {
+    delete rendClass;
+  }; //GFX
 };
 
 inline void pb::RunRender() {
@@ -789,9 +820,11 @@ void pb::Config::Render::SetWindowWidth(UINT windowWidth) { WindowWidth = window
 void pb::Config::Render::SetWindowHeight(UINT windowHeight) { WindowHeight = windowHeight; };
 void pb::Config::Render::SetWindowName(const char* windowName) { WindowName = windowName; };
 void pb::Config::Render::SetAppVersion(const char* version) { AppVersion = version; };
+void pb::Config::Render::SetFullscreenBool(bool fScreen) { FullScreen = fScreen; };
 
 UINT pb::Config::Render::GetRenderEngine() { return RenderEngine; };
 UINT pb::Config::Render::GetWindowWidth() { return WindowWidth; };
 UINT pb::Config::Render::GetWindowHeight() { return WindowHeight; };
 const char* pb::Config::Render::GetWindowName() { return WindowName; };
 const char* pb::Config::Render::GetAppVersion() { return AppVersion; };
+bool pb::Config::Render::GetFullscreenBool() { return FullScreen; };

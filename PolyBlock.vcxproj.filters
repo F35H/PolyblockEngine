@@ -21,6 +21,12 @@
     <ClCompile Include="src\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\GFX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Arch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="heads\include\common.hpp">
@@ -212,13 +218,13 @@
     <ClInclude Include="heads\pbMacros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Users\micha\Downloads\sole-1.0.4\sole-1.0.4\sole.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="heads\PRVTPB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="heads\Polyblock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\sole.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
