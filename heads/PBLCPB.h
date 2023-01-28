@@ -64,8 +64,13 @@ namespace pb {
       static void WritetoLog(const char* str);
       static void WritetoTimedLog(const std::string str);
       static void WritetoTimedLog(const char* str);
-
     }; //OUTPUT
+
+    struct Input {
+    private:
+      static void ShaderFromFile(const std::string str);
+      static void ShaderFromFile(const char* str);
+    };
 
   }; //UTILS
 

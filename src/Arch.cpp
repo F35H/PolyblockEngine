@@ -35,6 +35,11 @@ struct PRIVATEPB::Config {
   ~Config() {
     delete U;
     delete R;
+    
+    for (auto err : *errBuffer) {
+      delete err;
+    }; //For
+
     delete errBuffer;
   }; //Config
 
@@ -42,7 +47,6 @@ private:
   std::vector<const char*>* errBuffer;
   pb::Config::Utils* U; //Utils
   pb::Config::Render* R; //Render
-
 
   bool Confirmed : 1;
   bool WrotetoUtil : 1;
@@ -61,13 +65,13 @@ struct PRIVATEPB::Client {
   void SetConfirmed(bool b) { Confirmed = b; };
   bool GetConfirmed(bool b) { return Confirmed; };
 
-private:
-  bool Confirmed;
-
   ~Client() {
     delete Utils;
     delete Conf;
   }; //Client
+
+private:
+  bool Confirmed;
 
 }; //Client
 
@@ -209,6 +213,10 @@ struct PRIVATEPB::ClientVector {
 
 
   ~ClientVector() {
+    for (auto c : *vector) {
+      delete c;
+    };
+
     delete vector;
   }; //ClientVector
 

@@ -33,6 +33,11 @@ struct PRIVATEPB::Config {
   ~Config() {
     delete U;
     delete R;
+
+    for (auto err : *errBuffer) {
+      delete err;
+    }; //For
+
     delete errBuffer;
   }; //Config
 
@@ -40,7 +45,6 @@ private:
   std::vector<const char*>* errBuffer;
   pb::Config::Utils* U; //Utils
   pb::Config::Render* R; //Render
-
 
   bool Confirmed : 1;
   bool WrotetoUtil : 1;
@@ -59,13 +63,13 @@ struct PRIVATEPB::Client {
   void SetConfirmed(bool b) { Confirmed = b; };
   bool GetConfirmed(bool b) { return Confirmed; };
 
-private:
-  bool Confirmed;
-
   ~Client() {
     delete Utils;
     delete Conf;
   }; //Client
+
+private:
+  bool Confirmed;
 
 }; //Client
 
@@ -207,6 +211,10 @@ struct PRIVATEPB::ClientVector {
 
 
   ~ClientVector() {
+    for (auto c : *vector) {
+      delete c;
+    };
+
     delete vector;
   }; //ClientVector
 
@@ -266,7 +274,7 @@ protected:
       win = glfwCreateWindow(winWidth, winHeight, winName, mon, nullptr);
     }
     else {
-      win = glfwCreateWindow(winWidth, winHeight, winName, mon, nullptr);
+      win = glfwCreateWindow(winWidth, winHeight, winName, nullptr, nullptr);
     } //ifFullscreen
 
     if (!win) {
@@ -284,7 +292,7 @@ protected:
       win = glfwCreateWindow(monWidth, monHeight, winName, mon, nullptr);
     }
     else {
-      win = glfwCreateWindow(monWidth, monHeight, winName, mon, nullptr);
+      win = glfwCreateWindow(monWidth, monHeight, winName, nullptr, nullptr);
     } //ifFullscreen
 
     if (!win) {
@@ -305,6 +313,7 @@ protected:
 namespace Vulkan{
   class Comm {
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    std::vector<VkImageView> swapChainImageViews;
     VkSurfaceKHR surface;
     VkDevice device;
 
@@ -536,11 +545,11 @@ namespace Vulkan{
       }; //If Debug
     }; //setupDebugMessenger
 
-    void CreateSurface(GLFWwindow* win, VkSurfaceKHR* surface) {
+    void CreateSurface(GLFWwindow* win) {
       pb::Utils::Output::WritetoTimedLog(
         "Initializing Vulkan | Creating Window Surface | Creating and Confirming");
 
-      if (glfwCreateWindowSurface(instance, win, nullptr, surface) != VK_SUCCESS) {
+      if (glfwCreateWindowSurface(instance, win, nullptr, &Cmn->surface) != VK_SUCCESS) {
         throw std::runtime_error(
           "Initializing Vulkan | Creating Window Surface | Creation Failed");
       } //If Surface
@@ -663,10 +672,10 @@ namespace Vulkan{
 
   class Pipe {
     Comm* Cmn;
+    GLFWwindow* window;
     VkSwapchainKHR swapChain;
     VkRenderPass renderPass;
     std::vector<VkImage> swapChainImages;
-    std::vector<VkImageView> swapChainImageViews;
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
     VkDescriptorSetLayout descriptorSetLayout;
@@ -721,7 +730,7 @@ namespace Vulkan{
       return buffer;
     }
 
-    Pipe(Comm* C) : Cmn(C) {}
+    Pipe(Comm* C, GLFWwindow* win) : Cmn(C), window(win) {};
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
       for (const auto& availableFormat : availableFormats) {
@@ -778,16 +787,32 @@ namespace Vulkan{
     }
 
     void CreateSwapChain() {
-      Comm::SwapChainSupportDetails swapChainSupport = Cmn->querySwapChainSupport(Cmn->physicalDevice);
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Chain | Checking for GPU Support");
 
-      VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-      VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-      VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+      Comm::SwapChainSupportDetails swapChainSupport = 
+        Cmn->querySwapChainSupport(Cmn->physicalDevice);
 
-      uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Chain | Setting GPU Options");
+
+      VkSurfaceFormatKHR surfaceFormat = 
+        chooseSwapSurfaceFormat(swapChainSupport.formats);
+      VkPresentModeKHR presentMode = 
+        chooseSwapPresentMode(swapChainSupport.presentModes);
+      VkExtent2D extent = 
+        chooseSwapExtent(swapChainSupport.capabilities);
+
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Chain | Setting Chain Length");
+
+      UINT32 imageCount = swapChainSupport.capabilities.minImageCount + 1;
       if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
         imageCount = swapChainSupport.capabilities.maxImageCount;
       }
+
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Chain | Informing Chain");
 
       VkSwapchainCreateInfoKHR createInfo{};
       createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -801,7 +826,7 @@ namespace Vulkan{
       createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
       Comm::QueueFamilyIndices indices = Cmn->FindQueueFamilies(Cmn->physicalDevice);
-      uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+      UINT32 queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
       if (indices.graphicsFamily != indices.presentFamily) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -818,8 +843,11 @@ namespace Vulkan{
       createInfo.clipped = VK_TRUE;
 
       if (vkCreateSwapchainKHR(Cmn->device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create swap chain!");
+        throw std::runtime_error("Creating Vulkan Pipeline | Creating Image Chain | Chain Creation Failed");
       }
+
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Chain | Preparing Final Chain");
 
       vkGetSwapchainImagesKHR(Cmn->device, swapChain, &imageCount, nullptr);
       swapChainImages.resize(imageCount);
@@ -830,7 +858,10 @@ namespace Vulkan{
     }; //CreateSwapChain
 
     void CreateImageViews() {
-      swapChainImageViews.resize(swapChainImages.size());
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Interfaces | Informing Interfaces");
+
+      Cmn->swapChainImageViews.resize(swapChainImages.size());
 
       for (size_t i = 0; i < swapChainImages.size(); i++) {
         VkImageViewCreateInfo createInfo{};
@@ -848,13 +879,16 @@ namespace Vulkan{
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(Cmn->device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
-          throw std::runtime_error("failed to create image views!");
-        }
-      }
+        if (vkCreateImageView(Cmn->device, &createInfo, nullptr, &Cmn->swapChainImageViews[i]) != VK_SUCCESS) {
+          throw std::runtime_error("Creating Vulkan Pipeline | Creating Image Interfaces | Informing Image Interfaces Failed");
+        } //If Success
+      } //For Every Image
     }; //CreateImageView
 
     void CreateRenderPass() {
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Processors | Assigning Image Processors");
+
       VkAttachmentDescription colorAttachment{};
       colorAttachment.format = swapChainImageFormat;
       colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -891,12 +925,18 @@ namespace Vulkan{
       renderPassInfo.dependencyCount = 1;
       renderPassInfo.pDependencies = &dependency;
 
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image Processors | Confirming Image Processors");
+
       if (vkCreateRenderPass(Cmn->device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create render pass!");
+        throw std::runtime_error("Creating Vulkan Pipeline | Creating Image Processors | Image Processor Creation Failed");
       }
     }; //CreateRenderPass
 
     void CreateDescriptorSetLayout() {
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image SubProcessors | Assigning Image SubProcessors");
+
       VkDescriptorSetLayoutBinding uboLayoutBinding{};
       uboLayoutBinding.binding = 0;
       uboLayoutBinding.descriptorCount = 1;
@@ -909,17 +949,29 @@ namespace Vulkan{
       layoutInfo.bindingCount = 1;
       layoutInfo.pBindings = &uboLayoutBinding;
 
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Image SubProcessors | Confirming Image SubProcessors");
+
       if (vkCreateDescriptorSetLayout(Cmn->device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor set layout!");
+        throw std::runtime_error("Creating Vulkan Pipeline | Creating Image SubProcessors | Subprocessor Creation Failed");
       }
     }; //CreateDescriptorLayout
 
     void CreateGraphicsPipeline() {
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Reading SPIR-V");
+
       auto vertShaderCode = readFile("shaders/vert.spv");
       auto fragShaderCode = readFile("shaders/frag.spv");
 
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Creating Shaders Interface");
+
       VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
       VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Setting Shader Uses");
 
       VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
       vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -933,10 +985,16 @@ namespace Vulkan{
       fragShaderStageInfo.module = fragShaderModule;
       fragShaderStageInfo.pName = "main";
 
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Creating Shader Stages");
+
       VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
       VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
       vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Creating Shader Interfaces");
 
       auto bindingDescription = Vertex::getBindingDescription();
       auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -1000,9 +1058,15 @@ namespace Vulkan{
       pipelineLayoutInfo.setLayoutCount = 1;
       pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Confirming Interfaces");
+
       if (vkCreatePipelineLayout(Cmn->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create pipeline layout!");
+        throw std::runtime_error("Creating Vulkan Pipeline | Creating Graphics Pipeline | Interface Confirmation Failed");
       }
+
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Assigning Shader Stages");
 
       VkGraphicsPipelineCreateInfo pipelineInfo{};
       pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1020,57 +1084,66 @@ namespace Vulkan{
       pipelineInfo.subpass = 0;
       pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-      if (vkCreateGraphicsPipelines(Cmn->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create graphics pipeline!");
-      }
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Confirming Graphic Pipeline");
 
-      vkDestroyShaderModule(Cmn->device, fragShaderModule, nullptr);
-      vkDestroyShaderModule(Cmn->device, vertShaderModule, nullptr);
+      if (vkCreateGraphicsPipelines(Cmn->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+        throw std::runtime_error("Creating Vulkan Pipeline | Creating Graphics Pipeline | Graphics Pipeline Confirmation Failed");
+      } //If
+
+      pb::Utils::Output::WritetoTimedLog(
+        "Creating Vulkan Pipeline | Creating Graphics Pipeline | Clearing Unecessary Assets");
+
+      vkDestroyShaderModule(
+        Cmn->device, fragShaderModule, nullptr);
+      vkDestroyShaderModule(
+        Cmn->device, vertShaderModule, nullptr);
     }; //CreateGraphicsPipeline
-    
+
     friend class Center;
   }; //VulkanPipe
 
   class Cmnd {
     Comm* Cmn;
+    VkCommandPool commandPool;
 
     Cmnd(Comm* C) : Cmn(C) {};
 
-    void CreateFramebuffers() {
-      swapChainFramebuffers.resize(swapChainImageViews.size());
-
-      for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-        VkImageView attachments[] = {
-            swapChainImageViews[i]
-        };
-
-        VkFramebufferCreateInfo framebufferInfo{};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = renderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = swapChainExtent.width;
-        framebufferInfo.height = swapChainExtent.height;
-        framebufferInfo.layers = 1;
-
-        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-          throw std::runtime_error("failed to create framebuffer!");
-        }
-      }
-    }; //CreateFrameBuffers
-
     void CreateCommandPool() {
-      QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+      Comm::QueueFamilyIndices queueFamilyIndices = Cmn->FindQueueFamilies(Cmn->physicalDevice);
 
       VkCommandPoolCreateInfo poolInfo{};
       poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
       poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
       poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-      if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+      if (vkCreateCommandPool(Cmn->device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics command pool!");
       }
     }; //CreateCommandPool
+
+    void CreateFramebuffers() {
+      swapChainFramebuffers.resize(Cmn->swapChainImageViews.size());
+
+      for (size_t i = 0; i < Cmn->swapChainImageViews.size(); i++) {
+        VkImageView attachments[] = {
+            Cmn->swapChainImageViews[i]
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = Cmn->renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.width = Cmn->swapChainExtent.width;
+        framebufferInfo.height = Cmn->swapChainExtent.height;
+        framebufferInfo.layers = 1;
+
+        if (vkCreateFramebuffer(Cmn->device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+          throw std::runtime_error("failed to create framebuffer!");
+        }
+      }
+    }; //CreateFrameBuffers
 
     void CreateTextureImage() {
       int texWidth, texHeight, texChannels;
@@ -1086,9 +1159,9 @@ namespace Vulkan{
       createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
       void* data;
-      vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+      vkMapMemory(Cmn->device, stagingBufferMemory, 0, imageSize, 0, &data);
       memcpy(data, pixels, static_cast<size_t>(imageSize));
-      vkUnmapMemory(device, stagingBufferMemory);
+      vkUnmapMemory(Cmn->device, stagingBufferMemory);
 
       stbi_image_free(pixels);
 
@@ -1098,8 +1171,8 @@ namespace Vulkan{
       copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
       transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-      vkDestroyBuffer(device, stagingBuffer, nullptr);
-      vkFreeMemory(device, stagingBufferMemory, nullptr);
+      vkDestroyBuffer(Cmn->device, stagingBuffer, nullptr);
+      vkFreeMemory(Cmn->device, stagingBufferMemory, nullptr);
     }; //CreateTextureImage
 
     void CreateVertexBuffer() {
@@ -1279,7 +1352,7 @@ namespace Vulkan{
       }
     }; //CreateSyncObjects
 
-    friend class Vulkan;
+    friend class Center;
   }; //VulkanCmnd
 
   struct Center :
@@ -1311,7 +1384,7 @@ namespace Vulkan{
     
       Cmn = new Comm();
       VInit = new Init(Cmn);
-      VPipe = new Pipe(Cmn);
+      VPipe = new Pipe(Cmn, GLFW::win);
       VCmnd = new Cmnd(Cmn);
     }; //Vulkan Constructor
 
@@ -1329,19 +1402,16 @@ namespace Vulkan{
       VPipe->CreateDescriptorSetLayout();
       VPipe->CreateGraphicsPipeline();
 
-      //VCmnd->createCommandPool();
-      //VCmnd->createDepthResources();
-      //VCmnd->createFramebuffers();
-      //VCmnd->createTextureImage();
-      //VCmnd->createTextureImageView();
-      //VCmnd->createTextureSampler();
-      //VCmnd->createVertexBuffer();
-      //VCmnd->createIndexBuffer();
-      //VCmnd->createUniformBuffers();
-      //VCmnd->createDescriptorPool();
-      //VCmnd->createDescriptorSets();
-      //VCmnd->createCommandBuffers();
-      //VCmnd->createSyncObjects();
+      VCmnd->CreateCommandPool();
+      VCmnd->CreateFramebuffers();
+      VCmnd->CreateTextureImage();
+      VCmnd->CreateVertexBuffer();
+      VCmnd->CreateIndexBuffer();
+      VCmnd->CreateUniformBuffers();
+      VCmnd->CreateDescriptorPool();
+      VCmnd->CreateDescriptorSets();
+      VCmnd->CreateCommandBuffers();
+      VCmnd->CreateSyncObjects();
     }; //Vulkan13
 
     ~Center() {
@@ -1366,7 +1436,7 @@ class OpenGL {
 
 struct PRIVATEPB::GFX {
   union API {
-    Vulkan* V;
+    Vulkan::Center* V;
     DirectX* D;
     OpenGL* O;
 
@@ -1386,21 +1456,25 @@ struct PRIVATEPB::GFX {
     pb::Utils::Output::WritetoTimedLog(
       "Initializing Render Engine | Selecting Engine | Beginning Render Segments");
 
-    //Rewritting Try-Catch Statement
     try {
-      while (rend) {
+      //Consistent Loop
+      while (1) {
+
+        //If we have not switched Engines
         if (!init) {
           switch (rend) {
           case VULKAN13:
-            rendClass->V = new Vulkan(RendConf);
-            rend = true;
+            init = true;
+            rendClass->V = new Vulkan::Center(RendConf);
             break;
           } //Switch
         } //If init
         
+        //Select Version Here
         switch (rend) {
         case VULKAN13:
           rendClass->V->Vulkan13();
+          return;
           break;
 
         default:
@@ -1412,9 +1486,12 @@ struct PRIVATEPB::GFX {
         } //Switch
       } //While
     } //Try
+
+    //If Error Found
     catch (const std::exception& exc) {
       pb::Utils::Output::WritetoTimedLog(exc.what());
       
+      //Check if last engine
       if (rend == VULKAN13) {
         delete rendClass->V;
         init = false;
