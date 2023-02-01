@@ -148,6 +148,8 @@
 // -> Fix Segmented logs to enforce value length using char buffers
 // -> Add Micro and Meso Segmented Functions
 // -> Add Delimiter Option
+// -> Add Segment Option
+// -> Fix changing clients the logfile is replaced
 // Vulkan Renderer
 // -> Update Logs to use new Segmented Log
 // Finish GLFW rendering system

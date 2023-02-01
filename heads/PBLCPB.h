@@ -10,13 +10,22 @@ namespace pb {
     //PUBLIC UTIL CONFIG
     struct Utils {
       void SetLogBuffer(std::ostream* logBuffer) noexcept;
-      void SetTimed(bool timed) noexcept;
+      void SetLogDelimiter(std::string delimeter) noexcept;
+      void SetLogSegments(INT segment) noexcept;
+      void SetLogTimed(bool timed) noexcept;
 
       std::ostream* GetLogBuffer() noexcept;
-      bool IsTimed() noexcept;
+      std::string GetLogDelimiter() noexcept;
+      INT GetLogSegments() noexcept;
+      bool IsLogTimed() noexcept;
 
     private:
-      std::ostream* logBuffer = &std::cout;
+      std::ostream* LogBuffer = &std::cout;
+      
+      std::string Delimeter = " | ";
+      
+      INT Segments = 3;
+
       bool Timed = true;
 
     }; //UTILS

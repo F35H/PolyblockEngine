@@ -124,11 +124,31 @@ struct PRIVATEPB::Utils {
   }; //UTILSCONSTRUCTOR
 
   void InternalLog(const char* macro, const char* meso, const char* micro) noexcept {
-    if (utilConf->IsTimed()) {
-      pb::Utils::Output::WritetoTimedLog(macro, meso, micro);
-    }
-    else {
-      pb::Utils::Output::WritetoLog(macro, meso, micro);
+    switch (utilConf->GetLogSegments()) {
+    case 1:
+      if (utilConf->IsLogTimed()) {
+        pb::Utils::Output::WritetoTimedLog(micro);
+      }
+      else {
+        pb::Utils::Output::WritetoLog(micro);
+      }
+      break;
+    case 2:
+      if (utilConf->IsLogTimed()) {
+        pb::Utils::Output::WritetoTimedLog(macro, micro);
+      }
+      else {
+        pb::Utils::Output::WritetoLog(macro, micro);
+      }
+      break;
+    case 3:
+      if (utilConf->IsLogTimed()) {
+        pb::Utils::Output::WritetoTimedLog(macro, meso, micro);
+      }
+      else {
+        pb::Utils::Output::WritetoLog(macro, meso, micro);
+      }
+      break;
     }
   }; //InternalLog
 
@@ -494,21 +514,30 @@ pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filenam
 }; //TextureFromFile
 
 
-bool pb::Config::Utils::IsTimed() noexcept {
+bool pb::Config::Utils::IsLogTimed() noexcept {
   return Timed;
 }; //GetLogBuffer
 
 
 std::ostream* pb::Config::Utils::GetLogBuffer() noexcept{
-  return logBuffer;
+  return LogBuffer;
 }; //GetLogBuffer
 
 
-void pb::Config::Utils::SetTimed(bool timed) noexcept {
+INT pb::Config::Utils::GetLogSegments() noexcept {
+  return Segments;
+}; //GetLogBuffer
+
+
+void pb::Config::Utils::SetLogDelimiter(std::string delimeter) noexcept {
+  Delimeter = delimeter;
+}; //GetLogBuffer
+
+void pb::Config::Utils::SetLogTimed(bool timed) noexcept {
   Timed = timed;
 }; //GetLogBuffer
 
 
 void pb::Config::Utils::SetLogBuffer(std::ostream* strm) noexcept {
-  logBuffer = strm;
+  LogBuffer = strm;
 }; //SetLogBuffer
