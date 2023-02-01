@@ -9,12 +9,15 @@ namespace pb {
 
     //PUBLIC UTIL CONFIG
     struct Utils {
-      void SetLogBuffer(std::ostream* logBuffer);
+      void SetLogBuffer(std::ostream* logBuffer) noexcept;
+      void SetTimed(bool timed) noexcept;
 
-      std::ostream* GetLogBuffer();
+      std::ostream* GetLogBuffer() noexcept;
+      bool IsTimed() noexcept;
 
     private:
       std::ostream* logBuffer = &std::cout;
+      bool Timed = true;
 
     }; //UTILS
 
@@ -60,10 +63,10 @@ namespace pb {
   namespace Utils {
     struct Output {
       static void FlushtoLog();
-      static void WritetoLog(const std::string str);
-      static void WritetoLog(const char* str);
-      static void WritetoTimedLog(const std::string str);
-      static void WritetoTimedLog(const char* str);
+      static void WritetoLog(const std::string str) noexcept;
+      static void WritetoLog(const char* str) noexcept;
+      static void WritetoTimedLog(const std::string str) noexcept;
+      static void WritetoTimedLog(const char* str) noexcept;
     }; //OUTPUT
 
     struct Input {

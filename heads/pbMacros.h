@@ -18,10 +18,13 @@
 #include <format>
 #include <array>
 #include <filesystem>
+#include <ctime>
+#include <ratio>
+#include <chrono>
 
 //Third-Party Misc
 #include <sole.hpp>
-//#include <FreeImage.h
+#include <FreeImage.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -141,15 +144,19 @@
 
 //Current Tasks:
 // Needs:
+// Utils
+// -> Fix Segmented logs to enforce value length using char buffers
+// -> Add Micro and Meso Segmented Functions
+// -> Add Delimiter Option
 // Vulkan Renderer
-// -> Fix Switch Statement to be in GFX and not Vulkan Constructor
-// -> Set up deletion for union, GFX, and Vulkan
+// -> Update Logs to use new Segmented Log
 // Finish GLFW rendering system
 // Return pointer in all pointer functions
 // -> Pointers in Vulkan Init
 // -> Pointers in Vulkan Pipe
 // -> Pointers in Vulkan Cmnd
 // Pack your structs
+// 
 // 
 // Give Option for Window/Game Name - rename log file, update WIndow Names, etc.
 // 

@@ -78,6 +78,7 @@ private:
 
 struct PRIVATEPB::Utils {
   std::ofstream* logFile;
+  pb::Config::Utils* utilConf;
 
   Utils(pb::Config::Utils* U) {
     std::string fileName = "gameLog";
@@ -89,6 +90,8 @@ struct PRIVATEPB::Utils {
     int i = 0;
     auto cout = U->GetLogBuffer();
     const char* errMsg;
+
+    utilConf = U;
 
     do { //Create Log File
       switch (i) {
@@ -119,6 +122,15 @@ struct PRIVATEPB::Utils {
     } while (!logFile->is_open());
 
   }; //UTILSCONSTRUCTOR
+
+  void InternalLog(const char* macro, const char* meso, const char* micro) noexcept {
+    if (utilConf->IsTimed()) {
+      pb::Utils::Output::WritetoTimedLog(macro, meso, micro);
+    }
+    else {
+      pb::Utils::Output::WritetoLog(macro, meso, micro);
+    }
+  }; //InternalLog
 
   ~Utils() {
     delete logFile;
@@ -242,7 +254,7 @@ void pb::Utils::Output::FlushtoLog() {
 }; //Output
 
 
-void pb::Utils::Output::WritetoLog(const std::string str) {
+void pb::Utils::Output::WritetoLog(const std::string str) noexcept {
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
@@ -254,7 +266,7 @@ void pb::Utils::Output::WritetoLog(const std::string str) {
 }; //WritetoLog
 
 
-void pb::Utils::Output::WritetoLog(const char* str) {
+void pb::Utils::Output::WritetoLog(const char* str) noexcept {
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
@@ -266,83 +278,237 @@ void pb::Utils::Output::WritetoLog(const char* str) {
 }; //WritetoLog
 
 
-void pb::Utils::Output::WritetoTimedLog(const char* str) {
+void pb::Utils::Output::WritetoTimedLog(const char* str) noexcept {
+  using namespace std::chrono;
+  
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
-  cout->write(str, strlen(str));
-  logfile->write(str, strlen(str));
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  char rtrnStr[0xFFF]; //4096
+
+  auto timeStr = ctime(&rtrnTime);
+
+  timeStr[strlen(timeStr) - 1] = '\0';
+  strcpy(rtrnStr, timeStr);
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, str);
+
+  cout->write(rtrnStr, strlen(rtrnStr));
+  logfile->write(rtrnStr, strlen(rtrnStr));
 
   cout->write("\n", 2);
   logfile->write("\n", 2);
 }; //WritetoTimedLog
 
 
-void pb::Utils::Output::WritetoTimedLog(const std::string str) {
+void pb::Utils::Output::WritetoTimedLog(std::string str) noexcept {
+  using namespace std::chrono;
+  
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
-  cout->write(str.c_str(), str.length());
-  logfile->write(str.c_str(), str.length());
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  std::string rtrnStr = ctime(&rtrnTime);
+  rtrnStr.pop_back();
+  rtrnStr += " | ";
+  rtrnStr += str;
+
+  cout->write(rtrnStr.c_str(), str.length());
+  logfile->write(rtrnStr.c_str(), str.length());
 
   cout->write("\n", 2);
   logfile->write("\n", 2);
 }; //WriteToTimedLog
 
 
-//pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filename) {
-//  auto t = new Texture();
-//  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-//  FIBITMAP* dib = 0;
+//void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string meso, std::string micro) noexcept {
+//  using namespace std::chrono;
+//  
+//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 //
-//  char buffer[256];
-//  strncpy(buffer, "Gathering Texture ( ", sizeof(buffer));
-//  strncat(buffer, filename, sizeof(filename));
-//  strncat(buffer, " ) | Gathering Filetype | Filetype Ungatherable", sizeof(
-//    " ) | Gathering Filetype | Filetype Ungatherable"));
+//  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+//  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
+//  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
 //
-//  fif = FreeImage_GetFileType(filename, 0);
-//  if (fif == FIF_UNKNOWN)
-//    fif = FreeImage_GetFIFFromFilename(filename);
-//  if (fif == FIF_UNKNOWN)
-//    throw std::runtime_error(buffer);
+//  cout->write("\n", 2);
+//  logfile->write("\n", 2);
+//}; //WriteToLog
 //
-//  strncpy(buffer, "Gathering Texture ( ", sizeof(buffer));
-//  strncat(buffer, filename, sizeof(filename));
-//  strncat(buffer, " ) | Checking Filetype | Wrong Filetype", sizeof(
-//    " ) | Checking Filetype | Wrong Filetype"));
 //
-//  if (FreeImage_FIFSupportsReading(fif))
-//    dib = FreeImage_Load(fif, filename);
-//  if (!dib)
-//    throw std::runtime_error(buffer);
+//void pb::Utils::Output::WritetoTimedLog(const char* macro, const char* meso, const char* micro) noexcept {
+//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 //
-//  strncpy(buffer, "Gathering Texture ( ", sizeof(buffer));
-//  strncat(buffer, filename, sizeof(filename));
-//  strncat(buffer, " ) | Checking Upload | Upload Failed", sizeof(
-//    " ) | Checking Upload | Upload Failed"));
+//  char rtrn[256];
 //
-//  FreeImage_ConvertTo32Bits(dib);
+//  if (strlen(macro) > 64) {
+//    strncpy(rtrn,
+//      "String Length > 64 Chars",
+//      strlen("String Length > 64 Chars"));
+//  }
+//  else {
+//    strncpy(rtrn, macro, strlen(macro));
+//  }; //if Macro
 //
-//  t->bits = FreeImage_GetBits(dib);
-//  t->width = FreeImage_GetWidth(dib);
-//  t->height = FreeImage_GetHeight(dib);
-//  if ((t->bits == 0) || (t->width == 0) || (t->height == 0))
-//    throw std::runtime_error(buffer);
+//  strncat(rtrn, " | ", 3);
 //
-//  FreeImage_Unload(dib);
+//  if (strlen(meso) > 64) {
+//    strncat(rtrn,
+//      "String Length > 64 Chars",
+//      strlen("String Length > 64 Chars"));
+//  }
+//  else {
+//    strncat(rtrn, meso, strlen(meso));
+//  }; //if Meso
 //
-//  return t;
-//}; //TextureFromFile
+//  strncat(rtrn, " | ", 3);
+//
+//  if (strlen(micro) > 64) {
+//    strncat(rtrn, micro, strlen(micro));
+//  }
+//  else {
+//    strncat(rtrn,
+//      "String Length > 64 Chars",
+//      strlen("String Length > 64 Chars"));
+//  }; //if Micro
+//
+//  cout->write(rtrn, strlen(rtrn));
+//  logfile->write(rtrn, strlen(rtrn));
+//
+//  cout->write("\n", 2);
+//  logfile->write("\n", 2);
+//}; //WritetoLog
+//
+//
+//void pb::Utils::Output::WritetoLog(std::string macro, std::string meso, std::string micro) noexcept {
+//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+//
+//  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+//  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
+//  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+//
+//  auto rtrnStr = std::move(macro);
+//  rtrnStr += " | ";
+//  rtrnStr += std::move(meso);
+//  rtrnStr += " | ";
+//  rtrnStr += std::move(micro);
+//
+//  cout->write(rtrnStr.c_str(), rtrnStr.length());
+//  logfile->write(rtrnStr.c_str(), rtrnStr.length());
+//
+//  cout->write("\n", 2);
+//  logfile->write("\n", 2);
+//}; //WriteToLog
+//
+//
+//void pb::Utils::Output::WritetoLog(const char* macro, const char* meso, const char* micro) noexcept {
+//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+//
+//  char rtrn[256]; 
+//
+//  if (strlen(macro) > 64) {
+//    strncpy(rtrn, 
+//      "String Length > 64 Chars", 
+//      strlen("String Length > 64 Chars"));
+//  }
+//  else {
+//    strncpy(rtrn, macro, strlen(macro));
+//  }; //if Macro
+//
+//  strncat(rtrn, " | ", 3);
+//
+//  if (strlen(meso) > 64) {
+//    strncat(rtrn,
+//      "String Length > 64 Chars",
+//      strlen("String Length > 64 Chars"));
+//  }
+//  else {
+//    strncat(rtrn, meso, strlen(meso));
+//  }; //if Meso
+//
+//  strncat(rtrn, " | ", 3);
+//
+//  if (strlen(micro) > 64) {
+//    strncat(rtrn, micro, strlen(micro));
+//  }
+//  else {
+//    strncat(rtrn,
+//      "String Length > 64 Chars",
+//      strlen("String Length > 64 Chars"));
+//  }; //if Micro
+//
+//  cout->write(rtrn, strlen(rtrn));
+//  logfile->write(rtrn, strlen(rtrn));
+//
+//  cout->write("\n", 2);
+//  logfile->write("\n", 2);
+//}; //WritetoLog
 
 
+pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filename) {
+  auto t = new Texture();
+  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+  FIBITMAP* dib = 0;
+
+  char buffer[256];
+  strcpy(buffer, "Gathering Texture ( ");
+  strcat(buffer, filename);
+  strcat(buffer, " ) | Gathering Filetype | Filetype Ungatherable");
+
+  fif = FreeImage_GetFileType(filename, 0);
+  if (fif == FIF_UNKNOWN)
+    fif = FreeImage_GetFIFFromFilename(filename);
+  if (fif == FIF_UNKNOWN)
+    throw std::runtime_error(buffer);
+
+  strcpy(buffer, "Gathering Texture ( ");
+  strcat(buffer, filename);
+  strcat(buffer, " ) | Checking Filetype | Wrong Filetype");
+
+  if (FreeImage_FIFSupportsReading(fif))
+    dib = FreeImage_Load(fif, filename);
+  if (!dib)
+    throw std::runtime_error(buffer);
+
+  strcpy(buffer, "Gathering Texture ( ");
+  strcat(buffer, filename);
+  strcat(buffer, " ) | Checking Upload | Upload Failed");
+
+  FreeImage_ConvertTo32Bits(dib);
+
+  t->bits = FreeImage_GetBits(dib);
+  t->width = FreeImage_GetWidth(dib);
+  t->height = FreeImage_GetHeight(dib);
+  if ((t->bits == 0) || (t->width == 0) || (t->height == 0))
+    throw std::runtime_error(buffer);
+
+  FreeImage_Unload(dib);
+
+  return t;
+}; //TextureFromFile
 
 
-std::ostream* pb::Config::Utils::GetLogBuffer() {
+bool pb::Config::Utils::IsTimed() noexcept {
+  return Timed;
+}; //GetLogBuffer
+
+
+std::ostream* pb::Config::Utils::GetLogBuffer() noexcept{
   return logBuffer;
 }; //GetLogBuffer
 
 
-void pb::Config::Utils::SetLogBuffer(std::ostream* strm) {
+void pb::Config::Utils::SetTimed(bool timed) noexcept {
+  Timed = timed;
+}; //GetLogBuffer
+
+
+void pb::Config::Utils::SetLogBuffer(std::ostream* strm) noexcept {
   logBuffer = strm;
 }; //SetLogBuffer
