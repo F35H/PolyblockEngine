@@ -67,10 +67,14 @@ namespace pb {
     }; //OUTPUT
 
     struct Input {
-    private:
-      static void ShaderFromFile(const std::string str);
-      static void ShaderFromFile(const char* str);
-    };
+      struct Texture {
+        UINT height = 0;
+        UINT width = 0;
+        BYTE* bits = 0;
+      };
+
+      static Texture* TextureFromFile(const char* filename);
+    }; //Input
 
   }; //UTILS
 

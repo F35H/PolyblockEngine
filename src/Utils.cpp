@@ -290,6 +290,54 @@ void pb::Utils::Output::WritetoTimedLog(const std::string str) {
 }; //WriteToTimedLog
 
 
+//pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filename) {
+//  auto t = new Texture();
+//  FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+//  FIBITMAP* dib = 0;
+//
+//  char buffer[256];
+//  strncpy(buffer, "Gathering Texture ( ", sizeof(buffer));
+//  strncat(buffer, filename, sizeof(filename));
+//  strncat(buffer, " ) | Gathering Filetype | Filetype Ungatherable", sizeof(
+//    " ) | Gathering Filetype | Filetype Ungatherable"));
+//
+//  fif = FreeImage_GetFileType(filename, 0);
+//  if (fif == FIF_UNKNOWN)
+//    fif = FreeImage_GetFIFFromFilename(filename);
+//  if (fif == FIF_UNKNOWN)
+//    throw std::runtime_error(buffer);
+//
+//  strncpy(buffer, "Gathering Texture ( ", sizeof(buffer));
+//  strncat(buffer, filename, sizeof(filename));
+//  strncat(buffer, " ) | Checking Filetype | Wrong Filetype", sizeof(
+//    " ) | Checking Filetype | Wrong Filetype"));
+//
+//  if (FreeImage_FIFSupportsReading(fif))
+//    dib = FreeImage_Load(fif, filename);
+//  if (!dib)
+//    throw std::runtime_error(buffer);
+//
+//  strncpy(buffer, "Gathering Texture ( ", sizeof(buffer));
+//  strncat(buffer, filename, sizeof(filename));
+//  strncat(buffer, " ) | Checking Upload | Upload Failed", sizeof(
+//    " ) | Checking Upload | Upload Failed"));
+//
+//  FreeImage_ConvertTo32Bits(dib);
+//
+//  t->bits = FreeImage_GetBits(dib);
+//  t->width = FreeImage_GetWidth(dib);
+//  t->height = FreeImage_GetHeight(dib);
+//  if ((t->bits == 0) || (t->width == 0) || (t->height == 0))
+//    throw std::runtime_error(buffer);
+//
+//  FreeImage_Unload(dib);
+//
+//  return t;
+//}; //TextureFromFile
+
+
+
+
 std::ostream* pb::Config::Utils::GetLogBuffer() {
   return logBuffer;
 }; //GetLogBuffer
