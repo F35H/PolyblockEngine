@@ -123,35 +123,6 @@ struct PRIVATEPB::Utils {
 
   }; //UTILSCONSTRUCTOR
 
-  void InternalLog(const char* macro, const char* meso, const char* micro) noexcept {
-    switch (utilConf->GetLogSegments()) {
-    case 1:
-      if (utilConf->IsLogTimed()) {
-        pb::Utils::Output::WritetoTimedLog(micro);
-      }
-      else {
-        pb::Utils::Output::WritetoLog(micro);
-      }
-      break;
-    case 2:
-      if (utilConf->IsLogTimed()) {
-        pb::Utils::Output::WritetoTimedLog(macro, micro);
-      }
-      else {
-        pb::Utils::Output::WritetoLog(macro, micro);
-      }
-      break;
-    case 3:
-      if (utilConf->IsLogTimed()) {
-        pb::Utils::Output::WritetoTimedLog(macro, meso, micro);
-      }
-      else {
-        pb::Utils::Output::WritetoLog(macro, meso, micro);
-      }
-      break;
-    }
-  }; //InternalLog
-
   ~Utils() {
     delete logFile;
   }; //Utils
@@ -264,6 +235,38 @@ private:
 }; //ClientVector
 
 
+void IL(const char* macro, const char* meso, const char* micro) noexcept {
+  auto utilConf = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils();
+  
+  switch (utilConf->GetLogSegments()) {
+  case 1:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::WritetoTimedLog(micro);
+    }
+    else {
+      pb::Utils::Output::WritetoLog(micro);
+    }
+    break;
+  case 2:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::WritetoTimedLog(macro, micro);
+    }
+    else {
+      pb::Utils::Output::WritetoLog(macro, micro);
+    }
+    break;
+  case 3:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::WritetoTimedLog(macro, meso, micro);
+    }
+    else {
+      pb::Utils::Output::WritetoLog(macro, meso, micro);
+    }
+    break;
+  }
+}; //InternalLog
+
+
 //Output & Config
 void pb::Utils::Output::FlushtoLog() {
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
@@ -272,18 +275,6 @@ void pb::Utils::Output::FlushtoLog() {
   logfile->flush();
   cout->flush();
 }; //Output
-
-
-void pb::Utils::Output::WritetoLog(const std::string str) noexcept {
-  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
-  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-
-  cout->write(str.c_str(), str.length());
-  logfile->write(str.c_str(), str.length());
-
-  cout->write("\n", 2);
-  logfile->write("\n", 2);
-}; //WritetoLog
 
 
 void pb::Utils::Output::WritetoLog(const char* str) noexcept {
@@ -297,6 +288,65 @@ void pb::Utils::Output::WritetoLog(const char* str) noexcept {
   logfile->write("\n", 2);
 }; //WritetoLog
 
+void pb::Utils::Output::WritetoLog(const char* macro, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  char rtrnStr[0xFFF]; //4096
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  cout->write(rtrnStr, strlen(rtrnStr));
+  logfile->write(rtrnStr, strlen(rtrnStr));
+
+  cout->write("\n", 2);
+  logfile->write("\n", 2);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::WritetoLog(const char* macro, const char* meso, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  char rtrnStr[0xFFF];
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, meso);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  cout->write(rtrnStr, strlen(rtrnStr));
+  logfile->write(rtrnStr, strlen(rtrnStr));
+
+  cout->write("\n", 1);
+  logfile->write("\n", 1);
+}; //WritetoTimedLog
 
 void pb::Utils::Output::WritetoTimedLog(const char* str) noexcept {
   using namespace std::chrono;
@@ -322,6 +372,163 @@ void pb::Utils::Output::WritetoTimedLog(const char* str) noexcept {
   logfile->write("\n", 2);
 }; //WritetoTimedLog
 
+void pb::Utils::Output::WritetoTimedLog(const char* macro, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  char rtrnStr[0xFFF]; //4096
+
+  auto timeStr = ctime(&rtrnTime);
+
+  timeStr[strlen(timeStr) - 1] = '\0';
+  strcpy(rtrnStr, timeStr);
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  cout->write(rtrnStr, strlen(rtrnStr));
+  logfile->write(rtrnStr, strlen(rtrnStr));
+
+  cout->write("\n", 2);
+  logfile->write("\n", 2);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::WritetoTimedLog(const char* macro, const char* meso, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  char rtrnStr[0xFFF]; //4096
+
+  auto timeStr = ctime(&rtrnTime);
+
+  timeStr[strlen(timeStr) - 1] = '\0';
+  strcpy(rtrnStr, timeStr);
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, meso);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  cout->write(rtrnStr, strlen(rtrnStr));
+  logfile->write(rtrnStr, strlen(rtrnStr));
+
+  cout->write("\n", 2);
+  logfile->write("\n", 2);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::WritetoLog(const std::string str) noexcept {
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  cout->write(str.c_str(), str.length());
+  logfile->write(str.c_str(), str.length());
+
+  cout->write("\n", 2);
+  logfile->write("\n", 2);
+}; //WritetoLog
+
+void pb::Utils::Output::WritetoLog(std::string macro, std::string micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if micro
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  cout->write(rtrnStr.c_str(), rtrnStr.length());
+  logfile->write(rtrnStr.c_str(), rtrnStr.length());
+
+  cout->write("\n", 1);
+  logfile->write("\n", 1);
+}; //WriteToLog
+
+void pb::Utils::Output::WritetoLog(std::string macro, std::string meso, std::string micro) noexcept {
+  using namespace std::chrono;
+  
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (meso.length() < 64) {
+    for (FINT16 i = 0; (64 - meso.length()); ++i) {
+      meso.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(meso);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  cout->write(rtrnStr.c_str(), rtrnStr.length());
+  logfile->write(rtrnStr.c_str(), rtrnStr.length());
+
+  cout->write("\n", 1);
+  logfile->write("\n", 1);
+}; //WriteToLog
 
 void pb::Utils::Output::WritetoTimedLog(std::string str) noexcept {
   using namespace std::chrono;
@@ -343,133 +550,407 @@ void pb::Utils::Output::WritetoTimedLog(std::string str) noexcept {
   logfile->write("\n", 2);
 }; //WriteToTimedLog
 
+void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string micro) noexcept {
+  using namespace std::chrono;
 
-//void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string meso, std::string micro) noexcept {
-//  using namespace std::chrono;
-//  
-//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
-//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-//
-//  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
-//  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
-//  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
-//
-//  cout->write("\n", 2);
-//  logfile->write("\n", 2);
-//}; //WriteToLog
-//
-//
-//void pb::Utils::Output::WritetoTimedLog(const char* macro, const char* meso, const char* micro) noexcept {
-//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
-//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-//
-//  char rtrn[256];
-//
-//  if (strlen(macro) > 64) {
-//    strncpy(rtrn,
-//      "String Length > 64 Chars",
-//      strlen("String Length > 64 Chars"));
-//  }
-//  else {
-//    strncpy(rtrn, macro, strlen(macro));
-//  }; //if Macro
-//
-//  strncat(rtrn, " | ", 3);
-//
-//  if (strlen(meso) > 64) {
-//    strncat(rtrn,
-//      "String Length > 64 Chars",
-//      strlen("String Length > 64 Chars"));
-//  }
-//  else {
-//    strncat(rtrn, meso, strlen(meso));
-//  }; //if Meso
-//
-//  strncat(rtrn, " | ", 3);
-//
-//  if (strlen(micro) > 64) {
-//    strncat(rtrn, micro, strlen(micro));
-//  }
-//  else {
-//    strncat(rtrn,
-//      "String Length > 64 Chars",
-//      strlen("String Length > 64 Chars"));
-//  }; //if Micro
-//
-//  cout->write(rtrn, strlen(rtrn));
-//  logfile->write(rtrn, strlen(rtrn));
-//
-//  cout->write("\n", 2);
-//  logfile->write("\n", 2);
-//}; //WritetoLog
-//
-//
-//void pb::Utils::Output::WritetoLog(std::string macro, std::string meso, std::string micro) noexcept {
-//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
-//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-//
-//  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
-//  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
-//  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
-//
-//  auto rtrnStr = std::move(macro);
-//  rtrnStr += " | ";
-//  rtrnStr += std::move(meso);
-//  rtrnStr += " | ";
-//  rtrnStr += std::move(micro);
-//
-//  cout->write(rtrnStr.c_str(), rtrnStr.length());
-//  logfile->write(rtrnStr.c_str(), rtrnStr.length());
-//
-//  cout->write("\n", 2);
-//  logfile->write("\n", 2);
-//}; //WriteToLog
-//
-//
-//void pb::Utils::Output::WritetoLog(const char* macro, const char* meso, const char* micro) noexcept {
-//  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
-//  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
-//
-//  char rtrn[256]; 
-//
-//  if (strlen(macro) > 64) {
-//    strncpy(rtrn, 
-//      "String Length > 64 Chars", 
-//      strlen("String Length > 64 Chars"));
-//  }
-//  else {
-//    strncpy(rtrn, macro, strlen(macro));
-//  }; //if Macro
-//
-//  strncat(rtrn, " | ", 3);
-//
-//  if (strlen(meso) > 64) {
-//    strncat(rtrn,
-//      "String Length > 64 Chars",
-//      strlen("String Length > 64 Chars"));
-//  }
-//  else {
-//    strncat(rtrn, meso, strlen(meso));
-//  }; //if Meso
-//
-//  strncat(rtrn, " | ", 3);
-//
-//  if (strlen(micro) > 64) {
-//    strncat(rtrn, micro, strlen(micro));
-//  }
-//  else {
-//    strncat(rtrn,
-//      "String Length > 64 Chars",
-//      strlen("String Length > 64 Chars"));
-//  }; //if Micro
-//
-//  cout->write(rtrn, strlen(rtrn));
-//  logfile->write(rtrn, strlen(rtrn));
-//
-//  cout->write("\n", 2);
-//  logfile->write("\n", 2);
-//}; //WritetoLog
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  std::string rtrnStr = ctime(&rtrnTime);
+  rtrnStr.pop_back();
+  rtrnStr += " | ";
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  cout->write(rtrnStr.c_str(), rtrnStr.length());
+  logfile->write(rtrnStr.c_str(), rtrnStr.length());
+
+  cout->write("\n", 1);
+  logfile->write("\n", 1);
+}; //WriteToLog
+
+void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string meso, std::string micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (meso.length() < 64) {
+    for (FINT16 i = 0; (64 - meso.length()); ++i) {
+      meso.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  std::string rtrnStr = ctime(&rtrnTime);
+  rtrnStr.pop_back();
+  rtrnStr += " | ";
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(meso);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  cout->write(rtrnStr.c_str(), rtrnStr.length());
+  logfile->write(rtrnStr.c_str(), rtrnStr.length());
+
+  cout->write("\n", 1);
+  logfile->write("\n", 1);
+}; //WriteToLog
+
+
+void pb::Utils::Output::ThrowError(const char* str) noexcept {
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  cout->write(str, strlen(str));
+  logfile->write(str, strlen(str));
+
+  throw std::runtime_error(str);
+}; //WritetoLog
+
+void pb::Utils::Output::ThrowError(const char* macro, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  char rtrnStr[0xFFF]; //4096
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  throw std::runtime_error(rtrnStr);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::ThrowError(const char* macro, const char* meso, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  char rtrnStr[0xFFF];
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, meso);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  throw std::runtime_error(rtrnStr);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::ThrowError(const std::string str) noexcept {
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  cout->write(str.c_str(), str.length());
+  logfile->write(str.c_str(), str.length());
+
+  throw std::runtime_error(str);
+}; //WritetoLog
+
+void pb::Utils::Output::ThrowError(std::string macro, std::string micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if micro
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  throw std::runtime_error(rtrnStr);
+}; //WriteToLog
+
+void pb::Utils::Output::ThrowError(std::string macro, std::string meso, std::string micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (meso.length() < 64) {
+    for (FINT16 i = 0; (64 - meso.length()); ++i) {
+      meso.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(meso);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  throw std::runtime_error(rtrnStr);
+}; //WriteToLog
+
+void pb::Utils::Output::ThrowTimedError(const char* str) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  char rtrnStr[0xFFF]; //4096
+
+  auto timeStr = ctime(&rtrnTime);
+
+  timeStr[strlen(timeStr) - 1] = '\0';
+  strcpy(rtrnStr, timeStr);
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, str);
+
+  throw std::runtime_error(rtrnStr);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::ThrowTimedError(const char* macro, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  char rtrnStr[0xFFF]; //4096
+
+  auto timeStr = ctime(&rtrnTime);
+
+  timeStr[strlen(timeStr) - 1] = '\0';
+  strcpy(rtrnStr, timeStr);
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  throw std::runtime_error(rtrnStr);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::ThrowTimedError(const char* macro, const char* meso, const char* micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  char rtrnStr[0xFFF]; //4096
+
+  auto timeStr = ctime(&rtrnTime);
+
+  timeStr[strlen(timeStr) - 1] = '\0';
+  strcpy(rtrnStr, timeStr);
+
+  char buffer[0x40];
+  strcpy(buffer, macro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, meso);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  memset(buffer, 0, 0x40);
+  strcpy(buffer, micro);
+
+  strcat(rtrnStr, " | ");
+  strcat(rtrnStr, buffer);
+
+  throw std::runtime_error(rtrnStr);
+}; //WritetoTimedLog
+
+void pb::Utils::Output::ThrowTimedError(std::string str) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  std::string rtrnStr = ctime(&rtrnTime);
+  rtrnStr.pop_back();
+  rtrnStr += " | ";
+  rtrnStr += str;
+
+  throw std::runtime_error(rtrnStr);
+}; //WriteToTimedLog
+
+void pb::Utils::Output::ThrowTimedError(std::string macro, std::string micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  std::string rtrnStr = ctime(&rtrnTime);
+  rtrnStr.pop_back();
+  rtrnStr += " | ";
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  throw std::runtime_error(rtrnStr);
+}; //ThrowTimedError
+
+void pb::Utils::Output::ThrowTimedError(std::string macro, std::string meso, std::string micro) noexcept {
+  using namespace std::chrono;
+
+  auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
+  auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
+
+  macro = (macro.length() > 64) ? "String Length > 64 Chars" : macro;
+  meso = (meso.length() > 64) ? "String Length > 64 Chars" : meso;
+  micro = (micro.length() > 64) ? "String Length > 64 Chars" : micro;
+
+  if (macro.length() < 64) {
+    for (FINT16 i = 0; (64 - macro.length()); ++i) {
+      macro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (meso.length() < 64) {
+    for (FINT16 i = 0; (64 - meso.length()); ++i) {
+      meso.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  if (micro.length() < 64) {
+    for (FINT16 i = 0; (64 - micro.length()); ++i) {
+      micro.append(" ");
+    }; //for FINT
+  }; //if macro
+
+  auto time = system_clock::now();
+  auto rtrnTime = system_clock::to_time_t(time);
+  std::string rtrnStr = ctime(&rtrnTime);
+  rtrnStr.pop_back();
+  rtrnStr += " | ";
+
+  auto rtrnStr = std::move(macro);
+  rtrnStr += " | ";
+  rtrnStr += std::move(meso);
+  rtrnStr += " | ";
+  rtrnStr += std::move(micro);
+
+  throw std::runtime_error(rtrnStr);
+}; //ThrowTimedError
 
 pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filename) {
   auto t = new Texture();
@@ -479,26 +960,18 @@ pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filenam
   char buffer[256];
   strcpy(buffer, "Gathering Texture ( ");
   strcat(buffer, filename);
-  strcat(buffer, " ) | Gathering Filetype | Filetype Ungatherable");
+  strcat(buffer, " )");
 
   fif = FreeImage_GetFileType(filename, 0);
   if (fif == FIF_UNKNOWN)
     fif = FreeImage_GetFIFFromFilename(filename);
   if (fif == FIF_UNKNOWN)
-    throw std::runtime_error(buffer);
-
-  strcpy(buffer, "Gathering Texture ( ");
-  strcat(buffer, filename);
-  strcat(buffer, " ) | Checking Filetype | Wrong Filetype");
+    IR(buffer, "Checking Filetype", "Unknown Filetype");
 
   if (FreeImage_FIFSupportsReading(fif))
     dib = FreeImage_Load(fif, filename);
   if (!dib)
-    throw std::runtime_error(buffer);
-
-  strcpy(buffer, "Gathering Texture ( ");
-  strcat(buffer, filename);
-  strcat(buffer, " ) | Checking Upload | Upload Failed");
+    IR(buffer, "Checking Filetype Support", "No Filetype Support Found");
 
   FreeImage_ConvertTo32Bits(dib);
 
@@ -506,7 +979,7 @@ pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filenam
   t->width = FreeImage_GetWidth(dib);
   t->height = FreeImage_GetHeight(dib);
   if ((t->bits == 0) || (t->width == 0) || (t->height == 0))
-    throw std::runtime_error(buffer);
+    IR(buffer, "Checking Upload", "Upload Failed");
 
   FreeImage_Unload(dib);
 
@@ -541,3 +1014,67 @@ void pb::Config::Utils::SetLogTimed(bool timed) noexcept {
 void pb::Config::Utils::SetLogBuffer(std::ostream* strm) noexcept {
   LogBuffer = strm;
 }; //SetLogBuffer
+
+
+//Internal 
+void IL(const char* macro, const char* meso, const char* micro) noexcept {
+  auto utilConf = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils();
+
+  switch (utilConf->GetLogSegments()) {
+  case 1:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::WritetoTimedLog(micro);
+    }
+    else {
+      pb::Utils::Output::WritetoLog(micro);
+    }
+    break;
+  case 2:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::WritetoTimedLog(macro, micro);
+    }
+    else {
+      pb::Utils::Output::WritetoLog(macro, micro);
+    }
+    break;
+  case 3:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::WritetoTimedLog(macro, meso, micro);
+    }
+    else {
+      pb::Utils::Output::WritetoLog(macro, meso, micro);
+    }
+    break;
+  }
+}; //InternalLog
+
+void IR(const char* macro, const char* meso, const char* micro) noexcept {
+  auto utilConf = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils();
+
+  switch (utilConf->GetLogSegments()) {
+  case 1:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::ThrowTimedError(micro);
+    }
+    else {
+      pb::Utils::Output::ThrowError(micro);
+    }
+    break;
+  case 2:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::ThrowTimedError(macro, micro);
+    }
+    else {
+      pb::Utils::Output::ThrowError(macro, micro);
+    }
+    break;
+  case 3:
+    if (utilConf->IsLogTimed()) {
+      pb::Utils::Output::ThrowTimedError(macro, meso, micro);
+    }
+    else {
+      pb::Utils::Output::ThrowError(macro, meso, micro);
+    }
+    break;
+  }
+}; //InternalLog

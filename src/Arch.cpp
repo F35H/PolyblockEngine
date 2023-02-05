@@ -250,7 +250,7 @@ void pb::Config::AddConfig(pb::Config::Utils* U) {
   else {
     PRIVATEPB::Client_ptr->GetLatestConfig()
       ->ExtndErrBuff(
-        "Util Already Wrriten to in Config \n");
+        "Util Conf Assignment Failed: Client Aleready Written to!");
   }; //ELSE
 
 }; //AddConfig
@@ -273,7 +273,7 @@ void pb::Config::AddConfig(pb::Config::Render* R) {
   } //IF
   else {
     PRIVATEPB::Client_ptr->GetLatestConfig()
-      ->ExtndErrBuff("Util Already Wrriten to in Config \n");
+      ->ExtndErrBuff("Render Conf Assignment Failed: Client Aleready Written to!");
   }; //ELSE
 }; //Add Config
 
@@ -291,7 +291,7 @@ void pb::Config::ConfirmConfigs() {
     ->NewUtils();
 
   for (auto& str : errBuff) {
-    pb::Utils::Output::WritetoTimedLog(str);
+    IR("Writing Configurations", "Assigning Conf to Client", str);
   }; //For
 
   pb::Utils::Output::FlushtoLog();
@@ -299,8 +299,7 @@ void pb::Config::ConfirmConfigs() {
 
 
 void pb::Client::ConfirmClients() {
-  pb::Utils::Output::WritetoTimedLog(
-    "Attempting Client Vector Confirmation | Enabeling Client Lock | Attempting Once");
+  IR("Attempting Client Vector Confirmation", "Enabeling Client Lock", "Attempting Once");
   
   auto vector =
     PRIVATEPB::Client_ptr

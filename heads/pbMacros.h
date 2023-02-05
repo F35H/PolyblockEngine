@@ -145,10 +145,7 @@
 //Current Tasks:
 // Needs:
 // Utils
-// -> Fix Segmented logs to enforce value length using char buffers
-// -> Add Micro and Meso Segmented Functions
 // -> Add Delimiter Option
-// -> Add Segment Option
 // -> Fix changing clients the logfile is replaced
 // Vulkan Renderer
 // -> Update Logs to use new Segmented Log
@@ -158,11 +155,16 @@
 // -> Pointers in Vulkan Pipe
 // -> Pointers in Vulkan Cmnd
 // Pack your structs
+// Architecutre
+// -> REWORK THE ENTIRE PIMPLE SYSTEM
 // 
+// PRVTPB
+// -> Remove Comments on disguised functions;
 // 
 // Give Option for Window/Game Name - rename log file, update WIndow Names, etc.
 // 
 // Ideas:
+// Update ErrbuffExtnd in Update Conf to include Client Number and Conf Appropriately
 // Add Some Form of Obfuscation to PRVTPB using Macros
 //Add image output operator in pbOutput
 //Input Time Functions in WritetoTimedLog

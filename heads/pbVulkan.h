@@ -1,308 +1,6 @@
 #include <PRVTPB.h>
 
-//CONFIG
-struct PRIVATEPB::Config {
-  Config() :
-    Confirmed(0b00),
-    WrotetoUtil(0b00),
-    WrotetoRender(0b00),
-    errBuffer(
-      new std::vector < const char*>())
-  {}; //Config
-
-  //Getters
-  pb::Config::Utils* GetUtils() { return U; };
-  pb::Config::Render* GetRender() { return R; };
-  bool GetConfirmed() { return Confirmed; };
-  bool GetWrotetoUtil() { return WrotetoUtil; };
-  bool GetWrotetoRender() { return WrotetoRender; };
-  std::vector<const char*> GetErrBuff() { return *errBuffer; };
-
-
-  //Setters
-  void SetUtils(pb::Config::Utils* u) { U = u; };
-  void SetRender(pb::Config::Render* r) { R = r; };
-  void SetConfirmed(bool b) { Confirmed = b; };
-  void SetWrotetoUtil(bool b) { WrotetoUtil = b; };
-  void SetWrotetoRender(bool b) { WrotetoRender = b; };
-
-  void ExtndErrBuff(const char* str) {
-    errBuffer->emplace_back(str);
-  }; //ExtndErrBuffer
-
-  ~Config() {
-    delete U;
-    delete R;
-
-    for (auto err : *errBuffer) {
-      delete err;
-    }; //For
-
-    delete errBuffer;
-  }; //Config
-
-private:
-  std::vector<const char*>* errBuffer;
-  pb::Config::Utils* U; //Utils
-  pb::Config::Render* R; //Render
-
-  bool Confirmed : 1;
-  bool WrotetoUtil : 1;
-  bool WrotetoRender : 1;
-
-}; //Config
-
-
-//CLIENT
-struct PRIVATEPB::Client {
-  PRIVATEPB::Utils* Utils;
-
-  PRIVATEPB::Config* Conf =
-    new PRIVATEPB::Config();
-
-  void SetConfirmed(bool b) { Confirmed = b; };
-  bool GetConfirmed(bool b) { return Confirmed; };
-
-  ~Client() {
-    delete Utils;
-    delete Conf;
-  }; //Client
-
-private:
-  bool Confirmed;
-
-}; //Client
-
-struct PRIVATEPB::Utils {
-  std::ofstream* logFile;
-
-  Utils(pb::Config::Utils* U) {
-    std::string fileName = "gameLog";
-    fileName += ".txt";
-
-    logFile = new std::ofstream(
-      fileName, std::ios::ate | std::ios::out);
-
-    int i = 0;
-    auto cout = U->GetLogBuffer();
-    const char* errMsg;
-
-    do { //Create Log File
-      switch (i) {
-      default:
-        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once \n";
-        cout->write(errMsg, strlen(errMsg));
-        logFile->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b01:
-        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice \n";
-        cout->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b10:
-        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice \n";
-        cout->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b11:
-        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent \n";
-        cout->write(errMsg, strlen(errMsg));
-        abort();
-
-      }; //Switch
-
-      ++i;
-    } while (!logFile->is_open());
-
-  }; //UTILSCONSTRUCTOR
-
-  ~Utils() {
-    delete logFile;
-  }; //Utils
-
-}; //Utils
-
-struct PRIVATEPB::ClientVector {
-  ClientVector() {
-    vector = new std::vector<PRIVATEPB::Client*>();
-
-    innerIndice -= 1;
-    outerIndice -= 1;
-
-    NewClient();
-  }; //ClientVector
-
-
-  //New
-  void NewClient() {
-    innerIndice += 1;
-    outerIndice += 1;
-
-    vector->emplace_back(
-      new PRIVATEPB::Client());
-  }; //AddClient
-
-
-  PRIVATEPB::Utils* NewUtils() {
-    return vector->operator[](innerIndice)->Utils =
-      new PRIVATEPB::Utils(
-        GetLatestConfig()
-        ->GetUtils());
-  }; //NewUtils
-
-
-  PRIVATEPB::Config* NewConfig() {
-    return vector->operator[](innerIndice)->Conf =
-      new PRIVATEPB::Config();
-  }; //NewConfig
-
-
-
-  //Get Items
-  PRIVATEPB::Client* GetClient(UINT indice) {
-    return vector->operator[](indice);
-  }; //GetClient
-
-
-  PRIVATEPB::Client* GetLatestClient() {
-    return vector->operator[](innerIndice);
-  }; //GetClient
-
-
-  PRIVATEPB::Client* GetCurrentClient() {
-    return vector->operator[](currentIndice);
-  }; //GetClient
-
-
-  PRIVATEPB::Config* GetCurrentConfig() {
-    return vector->operator[](currentIndice)->Conf;
-  }; //GetClient
-
-  PRIVATEPB::Config* GetLatestConfig() {
-    return vector->operator[](innerIndice)->Conf;
-  }; //GetClient
-
-
-  PRIVATEPB::Utils* GetLatestUtils() {
-    return vector->operator[](innerIndice)->Utils;
-  }; //GetClient
-
-
-  std::vector
-    <PRIVATEPB::Client*> GetClientVector() {
-    return *vector;
-  }; //GetClient
-
-
-  //Set Items
-  PRIVATEPB::Utils* SetLatestUtils(
-    PRIVATEPB::Utils* U) {
-
-    return vector->operator[](innerIndice)->Utils = U;
-  }; //GetClient
-
-
-  PRIVATEPB::Config* SetLatestConfig(
-    PRIVATEPB::Config* C) {
-
-    return vector->operator[](innerIndice)->Conf = C;
-  }; //GetClient
-
-
-  ~ClientVector() {
-    for (auto c : *vector) {
-      delete c;
-    };
-
-    delete vector;
-  }; //ClientVector
-
-
-private:
-  UINT currentIndice = 0;
-  UINT innerIndice = 0;
-  UINT outerIndice = 1;
-
-  std::vector<PRIVATEPB::Client*>* vector;
-
-}; //ClientVector
-
-
-class GLFW {
-protected:
-  struct GLFWData {
-  }; //
-  
-  GLFWmonitor* mon;
-  GLFWwindow* win;
-  const GLFWvidmode* vidMode;
-  INT winXPos;
-  INT winYPos;
-  INT monWidth;
-  INT monHeight;
-  pb::Config::Render* rendConf;
-  
-  GLFW() {
-    IL("Creating Window", "Initializing GLFW","Initializing");
-
-    if (!glfwInit()){
-      IR("Creating Window", "Initializing GLFW","Initialization Failed");
-    }
-
-    IL("Creating Window", "Creating Monitor", "Collecting Stats");
-
-    mon = glfwGetPrimaryMonitor();
-    vidMode = glfwGetVideoMode(mon);
-
-    glfwGetMonitorWorkarea(
-      mon, &winXPos, &winYPos,
-      &monWidth, &monHeight);
-  }; //GLFW
-
-  void createWindow(FINT16 winWidth, FINT16 winHeight, const char* winName) {
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-    IL("Creating Window", "Creating Window", "Creating Window");
-
-    if (rendConf->GetFullscreenBool()) {
-      win = glfwCreateWindow(winWidth, winHeight, winName, mon, nullptr);
-    }
-    else {
-      win = glfwCreateWindow(winWidth, winHeight, winName, nullptr, nullptr);
-    } //ifFullscreen
-
-    if (!win) {
-      IR("Creating Window", "Creating Window", "Window Creation Failed");
-    }
-  }; //createWindow
-
-  void createWindow(const char* winName) {
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    
-    IL("Creating Window " , " Creating Window " , " Creating Window");
-
-    if (rendConf->GetFullscreenBool()) {
-      win = glfwCreateWindow(monWidth, monHeight, winName, mon, nullptr);
-    }
-    else {
-      win = glfwCreateWindow(monWidth, monHeight, winName, nullptr, nullptr);
-    } //ifFullscreen
-
-    if (!win) {
-      IR("Creating Window " , " Creating Window " , " Window Creation Failed");
-    }
-
-    rendConf->SetWindowHeight(monHeight);
-    rendConf->SetWindowWidth(monWidth);
-  }; //createWindow
-
-  ~GLFW() {};
-
-}; //GLFW
-
-
-namespace Vulkan{
+namespace Vulkan {
   class Comm {
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     std::vector<VkImageView> swapChainImageViews;
@@ -355,7 +53,7 @@ namespace Vulkan{
         }
 
         i++;
-      } 
+      }
 
       return indices;
     } //QueueFamilyIndices
@@ -476,14 +174,14 @@ namespace Vulkan{
           }
 
           if (!layerFound) {
-            IR("Initializing Vulkan " , " Confirming Validation Layers " , " Failure");
+            IR("Initializing Vulkan ", " Confirming Validation Layers ", " Failure");
           }
         }
       }; // if (DEBUG)
     }; //checkDebug
 
     void CreateInstance(pb::Config::Render* rendConf) {
-      IL("Initializing Vulkan " , " Creating Program Instance " , " Writing Struct");
+      IL("Initializing Vulkan ", " Creating Program Instance ", " Writing Struct");
 
       VkApplicationInfo appInfo{};
       appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -498,7 +196,7 @@ namespace Vulkan{
       createInfo.pApplicationInfo = &appInfo;
 
 
-      IL("Initializing Vulkan " , " Creating Program Instance " , " Collecting Extensions");
+      IL("Initializing Vulkan ", " Creating Program Instance ", " Collecting Extensions");
 
       UINT32 glfwExtensionCount = 0;
       const char** glfwExtensions;
@@ -514,7 +212,7 @@ namespace Vulkan{
       createInfo.ppEnabledExtensionNames = extensions.data();
 
 
-      IL("Initializing Vulkan " , " Creating Program Instance " , " Collecting Vulkan Debug Data");
+      IL("Initializing Vulkan ", " Creating Program Instance ", " Collecting Vulkan Debug Data");
 
       VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
       if (DEBUG) {
@@ -531,10 +229,10 @@ namespace Vulkan{
       }
 
 
-      IL("Creating Program Instance " , " Creating Virtual Instance " , " Appoving Instance");
+      IL("Creating Program Instance ", " Creating Virtual Instance ", " Appoving Instance");
 
       if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-        IR("Creating Program Instance " , " Creating Virtual Instance " , " Instance Creation Failed");
+        IR("Creating Program Instance ", " Creating Virtual Instance ", " Instance Creation Failed");
       }
     }; //createInstance
 
@@ -543,7 +241,7 @@ namespace Vulkan{
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
 
-        IL("Initializing Vulkan " , " Creating Debug Messenger " , " Creating Debugger");
+        IL("Initializing Vulkan ", " Creating Debug Messenger ", " Creating Debugger");
 
         auto b = VK_ERROR_EXTENSION_NOT_PRESENT;
 
@@ -552,37 +250,37 @@ namespace Vulkan{
           b = func(instance, &createInfo, nullptr, &debugMessenger);
         }
 
-        IL("Initializing Vulkan " , " Confirming Debugger " , " Confirming Debugger");
+        IL("Initializing Vulkan ", " Confirming Debugger ", " Confirming Debugger");
 
         if (b != VK_SUCCESS) {
-          IR("Initializing Vulkan " , " Confirming Debugger " , " Confirmation Failed");
+          IR("Initializing Vulkan ", " Confirming Debugger ", " Confirmation Failed");
 
         } // If CeateMessenger
       }; //If Debug
     }; //setupDebugMessenger
 
     void CreateSurface(GLFWwindow* win) {
-      IL("Initializing Vulkan " , " Creating Window Surface " , " Creating and Confirming");
+      IL("Initializing Vulkan ", " Creating Window Surface ", " Creating and Confirming");
 
       if (glfwCreateWindowSurface(instance, win, nullptr, &Cmn->surface) != VK_SUCCESS) {
-        IR("Initializing Vulkan " , " Creating Window Surface " , " Creation Failed");
+        IR("Initializing Vulkan ", " Creating Window Surface ", " Creation Failed");
       } //If Surface
     }; //Create Surface
 
     void PickPhysicalDevice() {
-      IL("Initializing Vulkan " , " Picking Physical Device " , " Enumerating GPUs");
+      IL("Initializing Vulkan ", " Picking Physical Device ", " Enumerating GPUs");
 
       UINT32 deviceCount = 0;
       vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
       if (deviceCount == 0) {
-        IR("Initializing Vulkan " , " Picking Physical Device " , " No GPU Support Found");
+        IR("Initializing Vulkan ", " Picking Physical Device ", " No GPU Support Found");
       }
 
       std::vector<VkPhysicalDevice> devices(deviceCount);
       vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-      IL("Initializing Vulkan " , " Picking Physical Device " , " Testing Pipelines");
+      IL("Initializing Vulkan ", " Picking Physical Device ", " Testing Pipelines");
 
       for (const auto& device : devices) {
         Comm::QueueFamilyIndices indices = Cmn->FindQueueFamilies(device);
@@ -611,22 +309,22 @@ namespace Vulkan{
         }
       }
 
-      IL("Initializing Vulkan " , " Picking Physical Device " , " Confirming Pipeline Support");
+      IL("Initializing Vulkan ", " Picking Physical Device ", " Confirming Pipeline Support");
 
       if (Cmn->physicalDevice == VK_NULL_HANDLE) {
-        IR("Initializing Vulkan " , " Picking Physical Device " , " No Pipeline Support Found");
+        IR("Initializing Vulkan ", " Picking Physical Device ", " No Pipeline Support Found");
       }
     }; //pickPhysicalDevice
 
     void CreateLogicalDevice() {
-      IL("Initializing Vulkan " , " Creating Device Interface " , " Queueing Devices");
+      IL("Initializing Vulkan ", " Creating Device Interface ", " Queueing Devices");
 
       Comm::QueueFamilyIndices indices = Cmn->FindQueueFamilies(Cmn->physicalDevice);
 
       std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
       std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
-      IL("Initializing Vulkan " , " Creating Device Interface " , " Staging Info");
+      IL("Initializing Vulkan ", " Creating Device Interface ", " Staging Info");
 
       float queuePriority = 1.0f;
       for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -660,13 +358,13 @@ namespace Vulkan{
         createInfo.enabledLayerCount = 0;
       }
 
-      IL("Initializing Vulkan " , " Creating Device Interface " , " Confirming Virtual Interface");
+      IL("Initializing Vulkan ", " Creating Device Interface ", " Confirming Virtual Interface");
 
       if (vkCreateDevice(Cmn->physicalDevice, &createInfo, nullptr, &Cmn->device) != VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!");
       }
 
-      IL("Initializing Vulkan " , " Creating Device Interface " , " Applying Interface to Device");
+      IL("Initializing Vulkan ", " Creating Device Interface ", " Applying Interface to Device");
 
       vkGetDeviceQueue(Cmn->device, indices.graphicsFamily.value(), 0, &Cmn->graphicsQueue);
       vkGetDeviceQueue(Cmn->device, indices.presentFamily.value(), 0, &presentQueue);
@@ -760,28 +458,28 @@ namespace Vulkan{
     }
 
     void CreateSwapChain() {
-      IL("Creating Vulkan Pipeline " , " Creating Image Chain " , " Checking for GPU Support");
+      IL("Creating Vulkan Pipeline ", " Creating Image Chain ", " Checking for GPU Support");
 
-      Comm::SwapChainSupportDetails swapChainSupport = 
+      Comm::SwapChainSupportDetails swapChainSupport =
         Cmn->querySwapChainSupport(Cmn->physicalDevice);
 
-      IL("Creating Vulkan Pipeline " , " Creating Image Chain " , " Setting GPU Options");
+      IL("Creating Vulkan Pipeline ", " Creating Image Chain ", " Setting GPU Options");
 
-      VkSurfaceFormatKHR surfaceFormat = 
+      VkSurfaceFormatKHR surfaceFormat =
         chooseSwapSurfaceFormat(swapChainSupport.formats);
-      VkPresentModeKHR presentMode = 
+      VkPresentModeKHR presentMode =
         chooseSwapPresentMode(swapChainSupport.presentModes);
-      VkExtent2D extent = 
+      VkExtent2D extent =
         chooseSwapExtent(swapChainSupport.capabilities);
 
-      IL("Creating Vulkan Pipeline " , " Creating Image Chain " , " Setting Chain Length");
+      IL("Creating Vulkan Pipeline ", " Creating Image Chain ", " Setting Chain Length");
 
       UINT32 imageCount = swapChainSupport.capabilities.minImageCount + 1;
       if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
         imageCount = swapChainSupport.capabilities.maxImageCount;
       }
 
-      IL("Creating Vulkan Pipeline " , " Creating Image Chain " , " Informing Chain");
+      IL("Creating Vulkan Pipeline ", " Creating Image Chain ", " Informing Chain");
 
       VkSwapchainCreateInfoKHR createInfo{};
       createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -812,10 +510,10 @@ namespace Vulkan{
       createInfo.clipped = VK_TRUE;
 
       if (vkCreateSwapchainKHR(Cmn->device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
-        IR("Creating Vulkan Pipeline " , " Creating Image Chain " , " Chain Creation Failed");
+        IR("Creating Vulkan Pipeline ", " Creating Image Chain ", " Chain Creation Failed");
       }
 
-      IL("Creating Vulkan Pipeline " , " Creating Image Chain " , " Preparing Final Chain");
+      IL("Creating Vulkan Pipeline ", " Creating Image Chain ", " Preparing Final Chain");
 
       vkGetSwapchainImagesKHR(Cmn->device, swapChain, &imageCount, nullptr);
       swapChainImages.resize(imageCount);
@@ -826,7 +524,7 @@ namespace Vulkan{
     }; //CreateSwapChain
 
     void CreateImageViews() {
-      IL("Creating Vulkan Pipeline " , " Creating Image Interfaces " , " Informing Interfaces");
+      IL("Creating Vulkan Pipeline ", " Creating Image Interfaces ", " Informing Interfaces");
 
       Cmn->swapChainImageViews.resize(swapChainImages.size());
 
@@ -847,13 +545,13 @@ namespace Vulkan{
         createInfo.subresourceRange.layerCount = 1;
 
         if (vkCreateImageView(Cmn->device, &createInfo, nullptr, &Cmn->swapChainImageViews[i]) != VK_SUCCESS) {
-          IR("Creating Vulkan Pipeline " , " Creating Image Interfaces " , " Informing Image Interfaces Failed");
+          IR("Creating Vulkan Pipeline ", " Creating Image Interfaces ", " Informing Image Interfaces Failed");
         } //If Success
       } //For Every Image
     }; //CreateImageView
 
     void CreateRenderPass() {
-      IL("Creating Vulkan Pipeline " , " Creating Image Processors " , " Assigning Image Processors");
+      IL("Creating Vulkan Pipeline ", " Creating Image Processors ", " Assigning Image Processors");
 
       VkAttachmentDescription colorAttachment{};
       colorAttachment.format = swapChainImageFormat;
@@ -891,15 +589,15 @@ namespace Vulkan{
       renderPassInfo.dependencyCount = 1;
       renderPassInfo.pDependencies = &dependency;
 
-      IL("Creating Vulkan Pipeline " , " Creating Image Processors " , " Confirming Image Processors");
+      IL("Creating Vulkan Pipeline ", " Creating Image Processors ", " Confirming Image Processors");
 
       if (vkCreateRenderPass(Cmn->device, &renderPassInfo, nullptr, &Cmn->renderPass) != VK_SUCCESS) {
-        IR("Creating Vulkan Pipeline " , " Creating Image Processors " , " Image Processor Creation Failed");
+        IR("Creating Vulkan Pipeline ", " Creating Image Processors ", " Image Processor Creation Failed");
       }
     }; //CreateRenderPass
 
     void CreateDescriptorSetLayout() {
-      IL("Creating Vulkan Pipeline " , " Creating Image SubProcessors " , " Assigning Image SubProcessors");
+      IL("Creating Vulkan Pipeline ", " Creating Image SubProcessors ", " Assigning Image SubProcessors");
 
       VkDescriptorSetLayoutBinding uboLayoutBinding{};
       uboLayoutBinding.binding = 0;
@@ -914,25 +612,25 @@ namespace Vulkan{
       layoutInfo.pBindings = &uboLayoutBinding;
 
       IL(
-        "Creating Vulkan Pipeline " , " Creating Image SubProcessors " , " Confirming Image SubProcessors");
+        "Creating Vulkan Pipeline ", " Creating Image SubProcessors ", " Confirming Image SubProcessors");
 
       if (vkCreateDescriptorSetLayout(Cmn->device, &layoutInfo, nullptr, &Cmn->descriptorSetLayout) != VK_SUCCESS) {
-        IR("Creating Vulkan Pipeline " , " Creating Image SubProcessors " , " Subprocessor Creation Failed");
+        IR("Creating Vulkan Pipeline ", " Creating Image SubProcessors ", " Subprocessor Creation Failed");
       }
     }; //CreateDescriptorLayout
 
     void CreateGraphicsPipeline() {
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Reading SPIR-V");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Reading SPIR-V");
 
       auto vertShaderCode = readFile("shaders/vert.spv");
       auto fragShaderCode = readFile("shaders/frag.spv");
 
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Creating Shaders Interface");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Creating Shaders Interface");
 
       VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
       VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Setting Shader Uses");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Setting Shader Uses");
 
       VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
       vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -946,14 +644,14 @@ namespace Vulkan{
       fragShaderStageInfo.module = fragShaderModule;
       fragShaderStageInfo.pName = "main";
 
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Creating Shader Stages");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Creating Shader Stages");
 
       VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
       VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
       vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Creating Shader Interfaces");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Creating Shader Interfaces");
 
       auto bindingDescription = Vertex::getBindingDescription();
       auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -1017,14 +715,14 @@ namespace Vulkan{
       pipelineLayoutInfo.setLayoutCount = 1;
       pipelineLayoutInfo.pSetLayouts = &Cmn->descriptorSetLayout;
 
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Confirming Interfaces");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Confirming Interfaces");
 
       if (vkCreatePipelineLayout(Cmn->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        IR("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Interface Confirmation Failed");
+        IR("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Interface Confirmation Failed");
       }
 
       IL(
-        "Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Assigning Shader Stages");
+        "Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Assigning Shader Stages");
 
       VkGraphicsPipelineCreateInfo pipelineInfo{};
       pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1042,13 +740,13 @@ namespace Vulkan{
       pipelineInfo.subpass = 0;
       pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Confirming Graphic Pipeline");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Confirming Graphic Pipeline");
 
       if (vkCreateGraphicsPipelines(Cmn->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
-        IR("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Graphics Pipeline Confirmation Failed");
+        IR("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Graphics Pipeline Confirmation Failed");
       } //If
 
-      IL("Creating Vulkan Pipeline " , " Creating Graphics Pipeline " , " Clearing Unecessary Assets");
+      IL("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Clearing Unecessary Assets");
 
       vkDestroyShaderModule(
         Cmn->device, fragShaderModule, nullptr);
@@ -1057,7 +755,7 @@ namespace Vulkan{
     }; //CreateGraphicsPipeline
 
     void CreateFramebuffers() {
-      IL("Creating Vulkan Pipeline " , " Creating Image Interface " , " Setting Image Interface");
+      IL("Creating Vulkan Pipeline ", " Creating Image Interface ", " Setting Image Interface");
 
       swapChainFramebuffers.resize(Cmn->swapChainImageViews.size());
 
@@ -1076,10 +774,10 @@ namespace Vulkan{
         framebufferInfo.layers = 1;
 
         IL(
-          "Creating Vulkan Pipeline " , " Creating Image Interface " , " Checking Image Interface");
+          "Creating Vulkan Pipeline ", " Creating Image Interface ", " Checking Image Interface");
 
         if (vkCreateFramebuffer(Cmn->device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-          IR("Creating Vulkan Pipeline " , " Creating Image Interface " , " Checking Image Interface Failed");
+          IR("Creating Vulkan Pipeline ", " Creating Image Interface ", " Checking Image Interface Failed");
         }
       }
     }; //CreateFrameBuffers
@@ -1323,7 +1021,7 @@ namespace Vulkan{
       strcpy(mesoLog, "Creating Threads");
 
       IL(macroLog, mesoLog, " Creating Threadpool");
-      
+
       Comm::QueueFamilyIndices queueFamilyIndices = Cmn->FindQueueFamilies(Cmn->physicalDevice);
 
       VkCommandPoolCreateInfo poolInfo{};
@@ -1331,10 +1029,10 @@ namespace Vulkan{
       poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
       poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-      IL(macroLog , mesoLog," Checking Theadpool");
+      IL(macroLog, mesoLog, " Checking Theadpool");
 
       if (vkCreateCommandPool(Cmn->device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-        IR(macroLog , mesoLog, " Threapool Creation Failed");
+        IR(macroLog, mesoLog, " Threapool Creation Failed");
       }
     }; //CreateCommandPool
 
@@ -1343,7 +1041,7 @@ namespace Vulkan{
       strcpy(mesoLog, "Creating Texture Interface");
 
       IL(macroLog, mesoLog, "Creating Texture");
-      
+
       auto t = pb::Utils::Input::TextureFromFile("textures/texture.jpg");
 
       VkDeviceSize imageSize = t->width * t->height * 3;
@@ -1632,7 +1330,7 @@ namespace Vulkan{
       GLFW::rendConf = RendConf;
 
       IL(
-        "Creating Window " , " Selecting Window " , " Collecting Configurations");
+        "Creating Window ", " Selecting Window ", " Collecting Configurations");
 
       FINT16 winHeight = RendConf->GetWindowHeight();
       FINT16 winWidth = RendConf->GetWindowWidth();
@@ -1644,7 +1342,7 @@ namespace Vulkan{
       else {
         GLFW::createWindow(winName);
       } //Else
-    
+
       Cmn = new Comm();
       VInit = new Init(Cmn);
       VPipe = new Pipe(Cmn, GLFW::win);
@@ -1674,7 +1372,7 @@ namespace Vulkan{
       VCmnd->CreateDescriptorPool();
       VCmnd->CreateDescriptorSets();
       VCmnd->CreateCommandBuffers();
-      
+
       VCmnd->MainLoop();
     }; //Vulkan13
 
@@ -1688,119 +1386,6 @@ namespace Vulkan{
   }; //Vulkan
 }
 
+void PRIVATEPB::runVulkan() {
 
-
-class DirectX {
-
-}; //DirectX
-
-class OpenGL {
-
-}; //OpenGL
-
-struct PRIVATEPB::GFX {
-  union API {
-    Vulkan::Center* V;
-    DirectX* D;
-    OpenGL* O;
-
-    ~API(){};
-  }; //Union
-
-  API* rendClass = new API();
-
-  GFX() {
-    auto Client = PRIVATEPB::Client_ptr->GetCurrentClient();
-    auto RendConf = Client->Conf->GetRender();
-    
-    UINT rend = RendConf->GetRenderEngine();
-    bool init = 0;
-
-
-    IL("Initializing Render Engine " , " Selecting Engine " , " Beginning Render Segments");
-
-    try {
-      //Consistent Loop
-      while (1) {
-
-        //If we have not switched Engines
-        if (!init) {
-          switch (rend) {
-          case VULKAN13:
-            init = true;
-            rendClass->V = new Vulkan::Center(RendConf);
-            break;
-          } //Switch
-        } //If init
-        
-        //Select Version Here
-        switch (rend) {
-        case VULKAN13:
-          rendClass->V->Vulkan13();
-          return;
-          break;
-
-        default:
-          IL("Initializing Render Engine "," Selecting Engine "," All Possible Renders Failed!");
-          pb::Utils::Output::FlushtoLog();
-          terminate();
-
-        } //Switch
-      } //While
-    } //Try
-
-    //If Error Found
-    catch (const std::exception& exc) {
-      IL("Initializing Render Engine ", " Selecting Engine ", exc.what());
-      
-      //Check if last engine
-      if (rend == VULKAN13) {
-        delete rendClass->V;
-        init = false;
-      } //if (rend == Vulkan13)
-
-      rend -= 1;
-
-      Client->Conf
-        ->GetRender()
-        ->SetRenderEngine(rend);
-    } //Catch
-
-    catch (...) {
-      IL("Initializing Render Engine "," Selecting Engine ","Unknown Exception Triggered");
-
-      if (rend == VULKAN13) {
-        delete rendClass->V;
-        init = false;
-      } //if (rend == Vulkan13)
-
-      Client->Conf
-        ->GetRender()
-        ->SetRenderEngine(rend);
-    } //Catch
-  }; //GFX Constrct
-
-  ~GFX() {
-    delete rendClass;
-  }; //GFX
 };
-
-inline void pb::RunRender() {
-  auto g = new PRIVATEPB::GFX();
-  delete g;
-}; //RunRender
-
-
-void pb::Config::Render::SetRenderEngine(UINT renderEngine) { RenderEngine = renderEngine; };
-void pb::Config::Render::SetWindowWidth(UINT windowWidth) { WindowWidth = windowWidth; };
-void pb::Config::Render::SetWindowHeight(UINT windowHeight) { WindowHeight = windowHeight; };
-void pb::Config::Render::SetWindowName(const char* windowName) { WindowName = windowName; };
-void pb::Config::Render::SetAppVersion(const char* version) { AppVersion = version; };
-void pb::Config::Render::SetFullscreenBool(bool fScreen) { FullScreen = fScreen; };
-
-UINT pb::Config::Render::GetRenderEngine() { return RenderEngine; };
-UINT pb::Config::Render::GetWindowWidth() { return WindowWidth; };
-UINT pb::Config::Render::GetWindowHeight() { return WindowHeight; };
-const char* pb::Config::Render::GetWindowName() { return WindowName; };
-const char* pb::Config::Render::GetAppVersion() { return AppVersion; };
-bool pb::Config::Render::GetFullscreenBool() { return FullScreen; };

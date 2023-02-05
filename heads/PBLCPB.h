@@ -72,10 +72,39 @@ namespace pb {
   namespace Utils {
     struct Output {
       static void FlushtoLog();
-      static void WritetoLog(const std::string str) noexcept;
+      
+      static void WritetoLog(std::string str) noexcept;
+      static void WritetoLog(std::string macro, std::string micro) noexcept;
+      static void WritetoLog(std::string macro, std::string meso, std::string micro) noexcept;
+      
       static void WritetoLog(const char* str) noexcept;
-      static void WritetoTimedLog(const std::string str) noexcept;
+      static void WritetoLog(const char* macro, const char* micro) noexcept;
+      static void WritetoLog(const char* macro, const char* meso, const char* micro) noexcept;
+
       static void WritetoTimedLog(const char* str) noexcept;
+      static void WritetoTimedLog(std::string macro, std::string micro) noexcept;
+      static void WritetoTimedLog(std::string macro, std::string meso, std::string micro) noexcept;
+
+      static void WritetoTimedLog(std::string str) noexcept;
+      static void WritetoTimedLog(const char* macro, const char* micro) noexcept;
+      static void WritetoTimedLog(const char* macro, const char* meso, const char* micro) noexcept;
+
+
+      static void ThrowError(std::string str) noexcept;
+      static void ThrowError(std::string macro, std::string micro) noexcept;
+      static void ThrowError(std::string macro, std::string meso, std::string micro) noexcept;
+
+      static void ThrowError(const char* str) noexcept;
+      static void ThrowError(const char* macro, const char* micro) noexcept;
+      static void ThrowError(const char* macro, const char* meso, const char* micro) noexcept;
+
+      static void ThrowTimedError(const char* str) noexcept;
+      static void ThrowTimedError(std::string macro, std::string micro) noexcept;
+      static void ThrowTimedError(std::string macro, std::string meso, std::string micro) noexcept;
+
+      static void ThrowTimedError(std::string str) noexcept;
+      static void ThrowTimedError(const char* macro, const char* micro) noexcept;
+      static void ThrowTimedError(const char* macro, const char* meso, const char* micro) noexcept;
     }; //OUTPUT
 
     struct Input {
