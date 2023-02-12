@@ -4,13 +4,12 @@
 
 //CONFIG
 struct PRIVATEPB::Config {
-  Config() :
-    Confirmed(0b00),
-    WrotetoUtil(0b00),
-    WrotetoRender(0b00),
-    errBuffer(
-      new std::vector < const char*> ())
-  {}; //Config
+  Config() {
+    Confirmed = 0x00; 
+    WrotetoUtil = 0x00; 
+    WrotetoRender = 0x00; 
+    errBuffer = new std::vector < const char*>();
+  }; //Config
 
   //Getters
   pb::Config::Utils* GetUtils() { return U; };
@@ -74,56 +73,6 @@ private:
   bool Confirmed;
 
 }; //Client
-
-struct PRIVATEPB::Utils {
-  std::ofstream* logFile;
-
-  Utils(pb::Config::Utils* U) {
-    std::string fileName = "gameLog";
-    fileName += ".txt";
-
-    logFile = new std::ofstream(
-      fileName, std::ios::ate | std::ios::out);
-
-    int i = 0;
-    auto cout = U->GetLogBuffer();
-    const char* errMsg;
-
-    do { //Create Log File
-      switch (i) {
-      default:
-        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once \n";
-        cout->write(errMsg, strlen(errMsg));
-        logFile->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b01:
-        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice \n";
-        cout->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b10:
-        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice \n";
-        cout->write(errMsg, strlen(errMsg));
-        break;
-
-      case 0b11:
-        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent \n";
-        cout->write(errMsg, strlen(errMsg));
-        abort();
-
-      }; //Switch
-
-      ++i;
-    } while (!logFile->is_open());
-
-  }; //UTILSCONSTRUCTOR
-
-  ~Utils() {
-    delete logFile;
-  }; //Utils
-
-}; //Utils
 
 struct PRIVATEPB::ClientVector {
   ClientVector() {
@@ -229,6 +178,8 @@ private:
   std::vector<PRIVATEPB::Client*>* vector;
 
 }; //ClientVector
+
+
 
 PRIVATEPB::ClientVector* PRIVATEPB::Client_ptr = new ClientVector();
 
