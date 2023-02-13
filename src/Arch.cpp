@@ -1,7 +1,5 @@
 #include <PRVTPB.h>
 
-//PIMPLE IMPLEMENTATION 
-
 //CONFIG
 struct PRIVATEPB::Config {
   Config() {
@@ -53,6 +51,55 @@ private:
 
 }; //Config
 
+struct PRIVATEPB::Utils {
+  std::ofstream* logFile;
+
+  Utils(pb::Config::Utils* U) {
+    std::string fileName = "gameLog";
+    fileName += ".txt";
+
+    logFile = new std::ofstream(
+      fileName, std::ios::ate | std::ios::out);
+
+    int i = 0;
+    auto cout = U->GetLogBuffer();
+    const char* errMsg;
+
+    do { //Create Log File
+      switch (i) {
+      default:
+        errMsg = "Attempting Log File Creation | File Creation Imminent | Attempting Once \n";
+        cout->write(errMsg, strlen(errMsg));
+        logFile->write(errMsg, strlen(errMsg));
+        break;
+
+      case 0b01:
+        errMsg = "Log File Creation Failed | File Creation Primary Attempt | Attempting Twice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
+
+      case 0b10:
+        errMsg = "Log File Creation Failed | File Creation Secondary Attempt | Attempting Trice \n";
+        cout->write(errMsg, strlen(errMsg));
+        break;
+
+      case 0b11:
+        errMsg = "Log File Creation Failed | File Creation Tertiary Attempt | Termination Imminent \n";
+        cout->write(errMsg, strlen(errMsg));
+        abort();
+
+      }; //Switch
+
+      ++i;
+    } while (!logFile->is_open());
+
+  }; //UTILSCONSTRUCTOR
+
+  ~Utils() {
+    delete logFile;
+  }; //Utils
+
+}; //Utils
 
 //CLIENT
 struct PRIVATEPB::Client {
@@ -179,8 +226,6 @@ private:
 
 }; //ClientVector
 
-
-
 PRIVATEPB::ClientVector* PRIVATEPB::Client_ptr = new ClientVector();
 
 
@@ -242,7 +287,7 @@ void pb::Config::ConfirmConfigs() {
     ->NewUtils();
 
   for (auto& str : errBuff) {
-    IR("Writing Configurations", "Assigning Conf to Client", str);
+    InternalLog("Writing Configurations", "Assigning Conf to Client", str);
   }; //For
 
   pb::Utils::Output::FlushtoLog();
@@ -250,7 +295,7 @@ void pb::Config::ConfirmConfigs() {
 
 
 void pb::Client::ConfirmClients() {
-  IR("Attempting Client Vector Confirmation", "Enabeling Client Lock", "Attempting Once");
+  InternalLog("Attempting Client Vector Confirmation", "Enabeling Client Lock", "Attempting Once");
   
   auto vector =
     PRIVATEPB::Client_ptr
@@ -263,3 +308,11 @@ void pb::Client::ConfirmClients() {
   pb::Utils::Output::FlushtoLog();
 }; //ConfirmConfigs
 
+inline void pb::RunRender() {
+  auto rendConf = PRIVATEPB::Client_ptr
+    ->GetCurrentConfig()
+    ->GetRender();
+
+  auto g = new PRIVATEPB::GFX(rendConf);
+  delete g;
+}; //RunRender
