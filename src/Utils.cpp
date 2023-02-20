@@ -538,7 +538,7 @@ void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string micro) no
   rtrnStr.pop_back();
   rtrnStr += " | ";
 
-  auto rtrnStr = std::move(macro);
+  rtrnStr = std::move(macro);
   rtrnStr += " | ";
   rtrnStr += std::move(micro);
 
@@ -583,7 +583,7 @@ void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string meso, std
   rtrnStr.pop_back();
   rtrnStr += " | ";
 
-  auto rtrnStr = std::move(macro);
+  rtrnStr += std::move(macro);
   rtrnStr += " | ";
   rtrnStr += std::move(meso);
   rtrnStr += " | ";
@@ -863,7 +863,7 @@ void pb::Utils::Output::ThrowTimedError(std::string macro, std::string micro) no
   rtrnStr.pop_back();
   rtrnStr += " | ";
 
-  auto rtrnStr = std::move(macro);
+  rtrnStr += std::move(macro);
   rtrnStr += " | ";
   rtrnStr += std::move(micro);
 
@@ -904,7 +904,7 @@ void pb::Utils::Output::ThrowTimedError(std::string macro, std::string meso, std
   rtrnStr.pop_back();
   rtrnStr += " | ";
 
-  auto rtrnStr = std::move(macro);
+  rtrnStr += std::move(macro);
   rtrnStr += " | ";
   rtrnStr += std::move(meso);
   rtrnStr += " | ";
@@ -934,7 +934,7 @@ pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filenam
   if (!dib)
     InternalReport(buffer, "Checking Filetype Support", "No Filetype Support Found");
 
-  FreeImage_ConvertTo32Bits(dib);
+  //FreeImage_ConvertTo32Bits(dib);
 
   t->bits = FreeImage_GetBits(dib);
   t->width = FreeImage_GetWidth(dib);
@@ -942,7 +942,7 @@ pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filenam
   if ((t->bits == 0) || (t->width == 0) || (t->height == 0))
     InternalReport(buffer, "Checking Upload", "Upload Failed");
 
-  FreeImage_Unload(dib);
+  //FreeImage_Unload(dib);
 
   return t;
 }; //TextureFromFile

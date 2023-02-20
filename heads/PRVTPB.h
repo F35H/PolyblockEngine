@@ -1,16 +1,15 @@
 #pragma once
 #include <PBLCPB.h>
 
-void InternalLog(const char* macro, const char* meso, const char* micro);
-void InternalReport(const char* macro, const char* meso, const char* micro);
+void InternalLog(const char* macro, const char* meso, const char* micro) noexcept;
+void InternalReport(const char* macro, const char* meso, const char* micro) noexcept;
 
 class PRIVATEPB {
   struct Config;
   struct Utils;
   struct Client;
   struct ClientVector;
-  
-  struct GLFW; //Defined in Vulkan/OpenGL
+
   struct GFX { GFX(pb::Config::Render* R); ~GFX(); };
   struct Vulkan { Vulkan(pb::Config::Render* R); ~Vulkan(); };
   struct DirectX { DirectX(pb::Config::Render* R); ~DirectX(); };
@@ -44,7 +43,7 @@ class PRIVATEPB {
   friend void pb::RunRender();
 
   //PRVTPB
-  friend void InternalLog(const char* A, const char* B, const char* C);
-  friend void InternalReport(const char* A, const char* B, const char* C);
+  friend void InternalLog(const char* A, const char* B, const char* C) noexcept;
+  friend void InternalReport(const char* A, const char* B, const char* C) noexcept;
 
 }; //PRIVATEPB

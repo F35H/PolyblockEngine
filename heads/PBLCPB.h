@@ -109,8 +109,8 @@ namespace pb {
 
     struct Input {
       struct Texture {
-        UINT height = 0;
-        UINT width = 0;
+        INT64 height = 0;
+        INT64 width = 0;
         BYTE* bits = 0;
       };
 

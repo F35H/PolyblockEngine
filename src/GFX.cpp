@@ -1,18 +1,16 @@
 #include <PRVTPB.h>
 
-struct PRIVATEPB::GFX {
-  union API {
-    Vulkan* V;
-    DirectX* D;
-    OpenGL* O;
+  PRIVATEPB::GFX::GFX(pb::Config::Render* rendConf) {
+    union API {
+      PRIVATEPB::Vulkan* V;
+      PRIVATEPB::DirectX* D;
+      PRIVATEPB::OpenGL* O;
 
-    ~API(){};
-  }; //Union
+      ~API() {};
+    }; //Unions
 
-  API* rendClass = new API();
+    API* rendClass = new API();
 
-  GFX(pb::Config::Render* rendConf) {
-    
     UINT rend = rendConf->GetRenderEngine();
     bool init = 0;
 
@@ -22,6 +20,7 @@ struct PRIVATEPB::GFX {
     switch (rend) {
     case VULKAN13:
       rendClass->V = new Vulkan(rendConf);
+      delete rendClass->V;
 
       //If Render Fails
       //RendConf->SetRenderEngine(DirectX);
@@ -29,15 +28,13 @@ struct PRIVATEPB::GFX {
     default:
       InternalLog("Initializing Render Engine ", " Selecting Engine ", " All Possible Renders Failed!");
       pb::Utils::Output::FlushtoLog();
-      terminate();
-
     } //Switch
+
+    delete rendClass;
   }; //GFX Constrct
 
-  ~GFX() {
-    delete rendClass;
+  PRIVATEPB::GFX::~GFX() {
   }; //GFX
-}; //GFX
 
 
 void pb::Config::Render::SetRenderEngine(UINT renderEngine) { RenderEngine = renderEngine; };

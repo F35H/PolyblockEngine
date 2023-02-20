@@ -229,7 +229,6 @@ private:
 PRIVATEPB::ClientVector* PRIVATEPB::Client_ptr = new ClientVector();
 
 
-
 //PUBLIC IMPLEMENTATION 
 void pb::Config::AddConfig(pb::Config::Utils* U) {
   if (!PRIVATEPB::Client_ptr->GetLatestConfig()->GetWrotetoUtil()) {
@@ -274,7 +273,6 @@ void pb::Config::AddConfig(pb::Config::Render* R) {
 }; //Add Config
 
 
-
 void pb::Config::ConfirmConfigs() {
   PRIVATEPB::Client_ptr->GetLatestConfig()
     ->SetConfirmed(true);
@@ -307,6 +305,7 @@ void pb::Client::ConfirmClients() {
 
   pb::Utils::Output::FlushtoLog();
 }; //ConfirmConfigs
+
 
 inline void pb::RunRender() {
   auto rendConf = PRIVATEPB::Client_ptr

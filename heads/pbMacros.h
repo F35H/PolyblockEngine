@@ -86,6 +86,7 @@
 #define SINT32 int32_t
 #define SINT64 int64_t
 
+
 //|>>====><====<<|
 
 // Render Cases
@@ -147,19 +148,17 @@
 // Utils
 // -> Add Delimiter Option
 // -> Fix changing clients the logfile is replaced
+// -> Fix Const Char strings not updating length to 64
 // Vulkan Renderer
 // -> Update Logs to use new Segmented Log
 // Finish GLFW rendering system
 // Return pointer in all pointer functions
-// -> Pointers in Vulkan Init
-// -> Pointers in Vulkan Pipe
-// -> Pointers in Vulkan Cmnd
+// -> Pointers in Vulkan Init 
+// -> Pointers in Vulkan Pipe 
+// -> Pointers in Vulkan Cmnd 
+// -> Add Distance Option for Camera
 // Pack your structs
-// Architecutre
-// -> REWORK THE ENTIRE PIMPLE SYSTEM
-// 
-// PRVTPB
-// -> Remove Comments on disguised functions;
+// Change Namespaces to Classes in Vulkan.cpp
 // 
 // Give Option for Window/Game Name - rename log file, update WIndow Names, etc.
 // 
