@@ -158,6 +158,9 @@
 // -> Pointers in Vulkan Cmnd 
 // -> Add Distance Option for Camera
 // Pack your structs
+// Add setting for detecting capslock
+// Add setting for detecting shift
+// Add setting for setting the lerp time
 // Change Namespaces to Classes in Vulkan.cpp
 // 
 // Give Option for Window/Game Name - rename log file, update WIndow Names, etc.

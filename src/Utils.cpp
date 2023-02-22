@@ -411,11 +411,11 @@ void pb::Utils::Output::WritetoLog(const std::string str) noexcept {
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
 
-  cout->write(str.c_str(), str.length());
-  logfile->write(str.c_str(), str.length());
+  *cout << (str.c_str());
+  *logfile << (str.c_str());
 
-  cout->write("\n", 2);
-  logfile->write("\n", 2);
+  *cout << "\n";
+  *logfile << "\n";
 }; //WritetoLog
 
 void pb::Utils::Output::WritetoLog(std::string macro, std::string micro) noexcept {

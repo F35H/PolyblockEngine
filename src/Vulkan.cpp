@@ -17,6 +17,8 @@ struct GLFW {
   INT monWidth;
   INT monHeight;
 
+
+
   GLFW() {
     InternalLog("Creating Window", "Initializing GLFW", "Initializing");
 
@@ -75,117 +77,422 @@ struct GLFW {
 
 }; //GLFW
 
+struct Input {
+  int backtick : 1;
+  int one : 1;
+  int two : 1;
+  int three : 1;
+  int four : 1;
+  int five : 1;
+  int six : 1;
+  int seven : 1;
+  int eight : 1;
+  int nine : 1;
+  int zero : 1;
+  int minus : 1;
+  int plus : 1;
+  int tab : 1;
+  int q : 1;
+  int w : 1;
+  int e : 1;
+  int r : 1;
+  int t : 1;
+  int y : 1;
+  int i : 1;
+  int o : 1;
+  int p : 1;
+  int a : 1;
+  int s : 1;
+  int d : 1;
+  int f : 1;
+  int g : 1;
+  int h : 1;
+  int j : 1;
+  int k : 1;
+  int l : 1;
+  int u : 1;
+  int colon : 1;
+  int apostophe : 1;
+  int shift : 1;
+  int z : 1;
+  int x : 1;
+  int c : 1;
+  int v : 1;
+  int b : 1;
+  int n : 1;
+  int m : 1;
+  int comma : 1;
+  int period : 1;
+  int slash : 1;
+  int alt : 1;
+  int backslash : 1;
+  int bracketLeft : 1;
+  int bracketRight : 1;
+  int cntrl : 1;
+  int space : 1;
+};
+
+Input* input;
 GLFW* glfw;
+
+struct WorldSpace {
+  std::chrono::steady_clock::time_point delta;
+  //std::vector<Camera*>* camVec;
+
+  WorldSpace() {};
+
+  void TriggerDelta() {
+    delta = std::chrono::high_resolution_clock::now();
+  };
+
+  float GetDelta() {
+    auto cT = std::chrono::high_resolution_clock::now();
+
+    auto d = std::chrono::duration<float,
+      std::chrono::seconds::period>(cT -
+        delta).count();
+
+    std::cout << d << "\n";
+
+    return d;
+
+  };
+
+};
+
+WorldSpace* world;
+
+struct Vertex {
+  glm::vec3 pos;
+  glm::vec3 color;
+  glm::vec2 texCoord;
+
+  static VkVertexInputBindingDescription getBindingDescription() {
+    VkVertexInputBindingDescription bindingDescription{};
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(Vertex);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    return bindingDescription;
+  }
+
+  static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+    attributeDescriptions[2].binding = 0;
+    attributeDescriptions[2].location = 2;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+    return attributeDescriptions;
+  }
+};
+
+
+struct Block {
+  Block() {};
+
+  glm::mat4 DeltaUpWorldPos(float x, float y, float z) {
+    auto d = world->GetDelta();
+
+    worldPos[3][0] += -x * d;
+    worldPos[3][1] += -y * d;
+    worldPos[3][2] += -z * d;
+    return worldPos;
+  };
+
+  int blockCount = 300;
+
+  glm::mat4 worldPos;
+
+  const std::vector<Vertex> vertices = {
+
+    //Bottom
+    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+    //Back Plane
+    {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+    //Front Plane
+    {{0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+    //Right Plane
+    {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+    //Left Plane
+    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+    //Top
+    {{0.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+  };
+
+  const std::vector<UINT16> indices = {
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4,
+    8, 9, 10, 10, 11, 8,
+    12, 13, 14, 14, 15, 12,
+    16, 17, 18, 18, 19, 16,
+    20, 21, 22, 22, 23, 20
+  };
+
+
+};
 
 struct Camera {
   Camera(glm::vec3 initPos) {
-    worldPos = initPos;
-    //eyePos = calcEyePos();
+    worldPos = glm::mat4(1.0f);
+
+    worldPos[3][0] = initPos[0];
+    worldPos[3][1] = initPos[1];
+    worldPos[3][2] = initPos[2];
 
     nearDis = 5.0f;
     farDis = 15.0f;
-    fovHorizontal = glm::radians(45.0f);
-    fovVertical = glm::radians(45.0f);
-    frustum = farDis - nearDis; //Near - Far
-
-    //SetPerspectiveProj();
   };
 
-  glm::mat4 SetPerspectiveProj() {
-    auto perVarOne = 1 / (nearDis * glm::tan(fovHorizontal / 2));
-    auto perVarTwo = 1 / (nearDis * glm::tan(fovVertical / 2));
-    auto perVarThree = 1 / nearDis;
-
-    auto ppVarOne = nearDis / (nearDis - farDis);
-    auto ppVarTwo = farDis / (nearDis - farDis);
-
-    if (std::isinf(ppVarOne)) {
-      ppVarOne = nearDis;
-    };
-
-    if (std::isinf(ppVarTwo)) {
-      ppVarTwo = farDis;
-    };
-
-    auto Mper = glm::mat4(0.0f);
-    Mper[0][0] = perVarOne;
-    Mper[1][1] = perVarTwo;
-    Mper[2][2] = perVarThree;
-    Mper[3][3] = 1;
-
-    auto Mpp = glm::mat4(0.0f);
-    Mpp[0][0] = 1;
-    Mpp[1][1] = 1;
-    Mpp[2][2] = ppVarOne;
-    Mpp[3][2] = ppVarTwo;
-    Mpp[2][3] = -1;
-
-    //projMat *= eyePos;
-    //projMat *= worldPos;
-    projMat = Mper * Mpp;
-
-    //pb::Utils::Output::WritetoLog(glm::to_string(Mpp));
-    //pb::Utils::Output::WritetoLog(glm::to_string(Mper));
-
+  glm::mat4 SetPerspectiveProj(float width, float height) {
+    projMat = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 10.0f);
+    projMat[1][1] *= -1;
     return projMat;
   };
 
-private:
-  glm::vec3 calcEyePos(glm::vec3 worldCoords) {
-    //auto eyeRange = glm::mat4(0.0f);
-    //auto negWorldPos = glm::mat4(0.0f);
-    //auto posWorldPos = glm::vec4(worldPos, 0.0f);
-
-    //eyeRange[0][0] = glm::normalize(worldPos.y);
-    //eyeRange[0][0] = 
-    //eyeRange[0][0] = 
-    //
-    //  eyeRange[0][0] = 
-    //eyeRange[0][0] = 
-    //eyeRange[0][0] = 
-
-    //eyeRange[0][0] = 
-    //eyeRange[0][0] = 
-    //eyeRange[0][0] = 
-
-    //return posWorldPos * eyeRange * negWorldPos;
+  glm::mat4 SetViewMatrix(float x, float y, float z) {
+    viewMat = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    viewMat *= worldPos;
+    return viewMat;
   };
 
+  glm::mat4 SetWorldPos(float x, float y, float z) {
+    worldPos[3][0] = x;
+    worldPos[3][1] = -y;
+    worldPos[3][2] = z;
+    return worldPos;
+  };
+
+  glm::mat4 UpWorldPos(float x, float y, float z) {
+    worldPos[3][0] += x;
+    worldPos[3][1] += -y;
+    worldPos[3][2] += -z;
+    return worldPos;
+  };
+
+  glm::mat4 DeltaSetWorldPos(float x, float y, float z) {
+    auto d = world->GetDelta();
+
+    worldPos[3][0] = x * d;
+    worldPos[3][1] = -y * d;
+    worldPos[3][2] = z * d;
+    return worldPos;
+  };
+
+  glm::mat4 DeltaUpWorldPos(float x, float y, float z) {
+    auto d = world->GetDelta();
+
+    worldPos[3][0] += -x * d;
+    worldPos[3][1] += -y * d;
+    worldPos[3][2] += -z * d;
+    return worldPos;
+  };
+
+  glm::mat4 GetPerspectiveProj() {
+    return projMat;
+  };
+
+  glm::mat4 GetViewMatrix() {
+    return viewMat;
+  };
+
+  glm::mat4 GetWorldPos() {
+    return worldPos;
+  };
+
+private:
   float farDis;
   float nearDis;
-  float frustum;
 
-  float fovHorizontal;
-  float fovVertical;
-
-  glm::vec3 worldPos;
+  glm::mat4 worldPos;
+  glm::mat4 viewMat;
   glm::vec3 eyePos;
 
   glm::mat4 projMat;
-
 };
 
-struct WorldSpace {
-
-  std::vector<Camera*>* camVec;
-
-  WorldSpace();
-
-};
-
-//WorldSpace* world;
 Camera* cam;
+Block* block;
+
 
 namespace Vulkan13 {
+  VkDevice device;
+  VkCommandPool commandPool;
+  VkPhysicalDevice physicalDevice;
+  VkQueue graphicsQueue;
+
+  uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+      if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+        return i;
+      }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+  } //FindMemoryType
+
+  struct CmndBuffer {
+    VkBuffer stageBuff;
+    VkBuffer destBuff;
+    VkDeviceSize buffSize;
+    VkDeviceMemory stageData;
+    VkDeviceMemory destData;
+
+
+    CmndBuffer(VkDeviceSize bufferSize) {
+        buffSize = bufferSize;
+    }; //Buffer
+
+    void InitStageBuff(VkBufferUsageFlags use, VkMemoryPropertyFlags memProp) {
+      VkBufferCreateInfo buffInfo{};
+      buffInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+      buffInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      buffInfo.size = buffSize;
+      buffInfo.usage = use;
+
+      if (vkCreateBuffer(device, &buffInfo, nullptr, &stageBuff) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create buffer!");
+      }
+
+      VkMemoryRequirements memReq; //Memory Requirements
+      vkGetBufferMemoryRequirements(device, stageBuff, &memReq);
+
+      VkMemoryAllocateInfo allocInfo{};
+      allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+      allocInfo.allocationSize = memReq.size;
+      allocInfo.memoryTypeIndex = findMemoryType(memReq.memoryTypeBits, memProp);
+
+      if (vkAllocateMemory(device, &allocInfo, nullptr, &stageData) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate buffer memory!");
+      }
+
+      vkBindBufferMemory(device, stageBuff, stageData, 0);
+    }
+
+    void InitDestBuff(VkBufferUsageFlags use, VkMemoryPropertyFlags memProp) {
+      VkBufferCreateInfo buffInfo{};
+      buffInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+      buffInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      buffInfo.size = buffSize;
+      buffInfo.usage = use;
+
+      if (vkCreateBuffer(device, &buffInfo, nullptr, &destBuff) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create buffer!");
+      }
+
+      VkMemoryRequirements memReq; //Memory Requirements
+      vkGetBufferMemoryRequirements(device, destBuff, &memReq);
+
+      VkMemoryAllocateInfo allocInfo{};
+      allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+      allocInfo.allocationSize = memReq.size;
+      allocInfo.memoryTypeIndex = findMemoryType(memReq.memoryTypeBits, memProp);
+
+      if (vkAllocateMemory(device, &allocInfo, nullptr, &destData) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate buffer memory!");
+      }
+
+      vkBindBufferMemory(device, destBuff, destData, 0);
+    }
+
+    //Templates are for losers
+    void InjectData(const void* input) {
+      void* data;
+      vkMapMemory(device, stageData, 0, buffSize, 0, &data);
+      memcpy(data, input, (size_t)buffSize);
+      vkUnmapMemory(device, stageData);
+    }; //InjectData
+
+
+    void SendCmndBuffer() {
+      //Build Buffer
+      VkCommandBuffer cmndBuff;
+
+      VkCommandBufferAllocateInfo allocInfo{};
+      allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+      allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+      allocInfo.commandPool = commandPool;
+      allocInfo.commandBufferCount = 1;
+
+      vkAllocateCommandBuffers(device, &allocInfo, &cmndBuff);
+
+      VkCommandBufferBeginInfo beginInfo{};
+      beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+      beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+      
+      //Record
+      vkBeginCommandBuffer(cmndBuff, &beginInfo);
+
+      VkBufferCopy copyRegion{};
+      copyRegion.size = buffSize;
+      vkCmdCopyBuffer(cmndBuff, stageBuff, destBuff, 1, &copyRegion);
+
+      
+      //Recorded
+      vkEndCommandBuffer(cmndBuff);
+
+      VkSubmitInfo submitInfo{};
+      submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+      submitInfo.commandBufferCount = 1;
+      submitInfo.pCommandBuffers = &cmndBuff;
+
+      vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+      vkQueueWaitIdle(graphicsQueue);
+
+      vkFreeCommandBuffers(device, commandPool, 1, &cmndBuff);
+    }; //CopyBuffers
+
+
+    ~CmndBuffer() {
+      vkDestroyBuffer(device, stageBuff, nullptr);
+      vkFreeMemory(device, stageData, nullptr);
+    }; //Destructor
+  };
+
 
   //Sec. Init
   VkDebugUtilsMessengerEXT debugMessenger;
-  VkPhysicalDevice physicalDevice;
-  VkDevice device;
   VkInstance instance;
   VkSurfaceKHR surface;
   VkQueue presentQueue;
-  VkQueue graphicsQueue;
 
 
   //Sec. Pipe
@@ -206,11 +513,6 @@ namespace Vulkan13 {
 
 
   //Sec. Cmnd
-  VkCommandPool commandPool;
-  VkBuffer vertexBuffer;
-  VkDeviceMemory vertexBufferMemory;
-  VkBuffer indexBuffer;
-  VkDeviceMemory indexBufferMemory;
   std::vector<VkDescriptorSet> descriptorSets;
   std::vector<VkCommandBuffer> commandBuffers;
   std::vector<VkBuffer> uniformBuffers;
@@ -399,56 +701,7 @@ namespace Vulkan13 {
     return buffer;
   }
 
-  struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
-
-    static VkVertexInputBindingDescription getBindingDescription() {
-      VkVertexInputBindingDescription bindingDescription{};
-      bindingDescription.binding = 0;
-      bindingDescription.stride = sizeof(Vertex);
-      bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-      return bindingDescription;
-    }
-
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-      std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
-
-      attributeDescriptions[0].binding = 0;
-      attributeDescriptions[0].location = 0;
-      attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-      attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-      attributeDescriptions[1].binding = 0;
-      attributeDescriptions[1].location = 1;
-      attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-      attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-      attributeDescriptions[2].binding = 0;
-      attributeDescriptions[2].location = 2;
-      attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-      attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-      return attributeDescriptions;
-    }
-  };
-
-
   //Sec. Cmnd
-  uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-      if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-        return i;
-      }
-    }
-
-    throw std::runtime_error("failed to find suitable memory type!");
-  } //FindMemoryType
 
   void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
     VkBufferCreateInfo bufferInfo{};
@@ -526,6 +779,7 @@ namespace Vulkan13 {
   }//endSingleTimeCommands
 
   VkCommandBuffer beginSingleTimeCommands() {
+    //Copy COmmand Buffer Info
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -634,84 +888,18 @@ namespace Vulkan13 {
   } //CopyBufferToImage
 
   void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+    
+    
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
+    //Generic Copy
     VkBufferCopy copyRegion{};
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
+    //Flush Equivalent
     endSingleTimeCommands(commandBuffer);
   } //CopyBuffer
-
-  const std::vector<Vertex> vertices = {
-    
-    //Bottom
-    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-    //Back Plane
-    {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-    //Front Plane
-    {{0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-    //Right Plane
-    {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-    //Left Plane
-    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-    //Top
-    {{0.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-
-
-    ////Tetrahedron
-    ////Bottom Plane
-    //{{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    //{{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    //{{1.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
-
-    //////Back Plane
-    ////{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    ////{{1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    ////{{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-
-    //////Front Plane
-    ////{{0.0f, 0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    ////{{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    ////{{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-
-    //////Right Plane
-    ////{{1.0f, 0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    ////{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    ////{{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}
-  };
-
-  const std::vector<UINT16> indices = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4,
-    8, 9, 10, 10, 11, 8,
-    12, 13, 14, 14, 15, 12,
-    16, 17, 18, 18, 19, 16,
-    20, 21, 22, 22, 23, 20
-  };
 
   struct UniformBufferObject {
     alignas(16) glm::mat4 model;
@@ -1427,43 +1615,35 @@ namespace Vulkan13 {
   } //CreateTextureSampler
 
   inline void CreateVertexBuffer() {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    VkDeviceSize bufferSize = 
+      sizeof(block->vertices[0]) 
+      * block->vertices.size();
+    
+    auto vertBuff = new CmndBuffer(bufferSize);
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    vertBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vertBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t)bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
+    vertBuff->InjectData(block->vertices.data());
+    vertBuff->SendCmndBuffer();
 
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
-    CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
+    //instanceBuffer.descriptor.range = instanceBuffer.size;
+    //instanceBuffer.descriptor.buffer = instanceBuffer.buffer;
+    //instanceBuffer.descriptor.offset = 0;
   }; //CreateVertexBuffer
 
   inline void CreateIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    VkDeviceSize bufferSize =
+      sizeof(block->indices[0])
+      * block->indices.size();
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    auto indiceBuff = new CmndBuffer(bufferSize);
 
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t)bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
+    indiceBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    indiceBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
-    CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
+    indiceBuff->InjectData(block->indices.data());
+    indiceBuff->SendCmndBuffer();
   }; //CreateIndexBuffer
 
   inline void CreateUniformBuffers() {
@@ -1631,7 +1811,7 @@ namespace Vulkan13 {
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(block->indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -1641,33 +1821,15 @@ namespace Vulkan13 {
   }
 
   void UpdateUniformBuffer(uint32_t currentImage) {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
-      glm::vec3(0.0f, 0.5f, 0.0f));
-    //ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 
-    auto g = glm::mat4(1.0f);
-    g[3][0] = 0;
-    g[3][1] = 0;
-    g[3][2] = 0;
-
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    ubo.view *= g;
-
-    //pb::Utils::Output::WritetoLog(glm::to_string(ubo.view));
-
-    ubo.proj = cam->SetPerspectiveProj();
-
-    pb::Utils::Output::WritetoLog(glm::to_string(ubo.proj));
-
-    ubo.proj[1][1] *= -1;
+    auto d = world->GetDelta();
+    ubo.model = glm::rotate(glm::mat4(1.0f),  d * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
+    ubo.view = cam->SetViewMatrix(0, 0, 0);
 
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+    world->TriggerDelta();
   }
 
   void CleanupSwapChain() {
@@ -1773,9 +1935,71 @@ namespace Vulkan13 {
   }; //Render Frame
 
 
+  void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
+    switch (key) {
+    case GLFW_KEY_W:
+      if (action == GLFW_PRESS) {
+        input->w = 1;
+      }
+      else if (action == GLFW_RELEASE) {
+        input->w = 0;
+      }
+      return;
+
+    case GLFW_KEY_A:
+      if (action == GLFW_PRESS) {
+        input->a = 1;
+      }
+      else if (action == GLFW_RELEASE) {
+        input->a = 0;
+      }
+      return;
+
+    case GLFW_KEY_S:
+      if (action == GLFW_PRESS) {
+        input->s = 1;
+      }
+      else if (action == GLFW_RELEASE) {
+        input->s = 0;
+      }
+      return;
+
+    case GLFW_KEY_D:
+      if (action == GLFW_PRESS) {
+        input->d = 1;
+      }
+      else if (action == GLFW_RELEASE) {
+        input->d = 0;
+      }
+      return;
+
+    case GLFW_KEY_SPACE:
+      if (action == GLFW_PRESS) {
+        input->space = 1;
+      }
+      else if (action == GLFW_RELEASE) {
+        input->space = 0;
+      }
+      return;
+    }
+  }
+
+
+  void ActuateEvents() {
+    if (input->w) { cam->DeltaUpWorldPos(0, 1, 0); };
+    if (input->a) { cam->DeltaUpWorldPos(1, 0, 0); };
+    if (input->d) { cam->DeltaUpWorldPos(-1, 0, 0); };
+    if (input->s) { cam->DeltaUpWorldPos(0, -1, 0); };
+  }; //ActuateEvents
+
   void Loop() {
+    glfwSetKeyCallback(glfw->win, keyCallback);
+
+    cam->SetWorldPos(0,1,0);
+
     while (!glfwWindowShouldClose(glfw->win)) {
       glfwPollEvents();
+      ActuateEvents();
       RenderFrame();
     }
 
@@ -1874,6 +2098,9 @@ namespace Vulkan13 {
   PRIVATEPB::Vulkan::Vulkan(pb::Config::Render* R) {
     glfw = new GLFW();
     cam = new Camera(glm::vec4(1.0, 1.0, 1.0, 1.0));
+    world = new WorldSpace();
+    input = new Input();
+    block = new Block();
     rendConf = R;
 
     InternalLog(
