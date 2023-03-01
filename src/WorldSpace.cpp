@@ -65,6 +65,15 @@ struct SwapChainSupportDetails {
   std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct QueueFamilyIndices {
+  std::optional<uint32_t> graphicsFamily;
+  std::optional<uint32_t> presentFamily;
+
+  bool isComplete() {
+    return graphicsFamily.has_value() && presentFamily.has_value();
+  }
+};
+
 struct Vertex {
   glm::vec3 pos;
   glm::vec3 color;
@@ -610,8 +619,8 @@ private:
   }
 
   void createGraphicsPipeline() {
-    auto vertShaderCode = readFile("shaders/shadBin/vert.spv");
-    auto fragShaderCode = readFile("shaders/shadBin/frag.spv");
+    auto vertShaderCode = readFile("shaders/shadBin/dumb.vert");
+    auto fragShaderCode = readFile("shaders/shadBin/dumb.frag");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1570,6 +1579,7 @@ private:
 };
 
 int main() {
+  auto app = HelloTriangleApplication();
 
   try {
     app.run();

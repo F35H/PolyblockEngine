@@ -274,6 +274,8 @@ struct Camera {
     worldPos[3][1] = initPos[1];
     worldPos[3][2] = initPos[2];
 
+
+
     nearDis = 5.0f;
     farDis = 15.0f;
   };
@@ -285,20 +287,27 @@ struct Camera {
   };
 
   glm::mat4 SetViewMatrix(float x, float y, float z) {
-    viewMat = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    viewMat = glm::lookAt(
+      glm::vec3(2.0f, 2.0f, 2.0f), //Eye
+      glm::vec3(
+        -x + worldPos[3][0], //Look At X
+        -y + worldPos[3][1], //Look At Y
+        -z + worldPos[3][2]), //Look At Z
+      glm::vec3(0.0f, 1.0f, 0.0f)); //Height
+
     viewMat *= worldPos;
     return viewMat;
   };
 
   glm::mat4 SetWorldPos(float x, float y, float z) {
-    worldPos[3][0] = x;
+    worldPos[3][0] = -x;
     worldPos[3][1] = -y;
-    worldPos[3][2] = z;
+    worldPos[3][2] = -z;
     return worldPos;
   };
 
   glm::mat4 UpWorldPos(float x, float y, float z) {
-    worldPos[3][0] += x;
+    worldPos[3][0] += -x;
     worldPos[3][1] += -y;
     worldPos[3][2] += -z;
     return worldPos;
@@ -307,9 +316,9 @@ struct Camera {
   glm::mat4 DeltaSetWorldPos(float x, float y, float z) {
     auto d = world->GetDelta();
 
-    worldPos[3][0] = x * d;
+    worldPos[3][0] = -x * d;
     worldPos[3][1] = -y * d;
-    worldPos[3][2] = z * d;
+    worldPos[3][2] = -z * d;
     return worldPos;
   };
 
@@ -327,7 +336,7 @@ struct Camera {
   };
 
   glm::mat4 GetViewMatrix() {
-    return viewMat;
+    return viewMat *= worldPos;
   };
 
   glm::mat4 GetWorldPos() {
@@ -347,6 +356,36 @@ private:
 
 Camera* cam;
 Block* block;
+
+struct VulkanInterface {
+  struct SoftInterface {
+    VkDevice device;
+  };
+
+  struct HardInterface {
+    VkPhysicalDevice device;
+    VkPhysicalDeviceProperties deviceProperties;
+  
+    HardInterface() {
+      vkGetPhysicalDeviceProperties(device, &deviceProperties);
+    };
+  };
+
+  SoftInterface* softInterface;
+  HardInterface* hardInterface;
+
+  VulkanInterface() = delete;
+  VulkanInterface() :
+    softInterface(new SoftInterface()),
+    hardInterface(new HardInterface()) 
+  {};
+
+  ~VulkanInterface() {
+    delete softInterface;
+    delete hardInterface;
+  };
+
+};
 
 
 namespace Vulkan13 {
@@ -1348,8 +1387,8 @@ namespace Vulkan13 {
   inline void CreateGraphicsPipeline() {
     InternalLog("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Reading SPIR-V");
 
-    auto vertShaderCode = readFile("shaders/vert.spv");
-    auto fragShaderCode = readFile("shaders/frag.spv");
+    auto vertShaderCode = readFile("shaders/shadBin/vert.spv");
+    auto fragShaderCode = readFile("shaders/shadBin/frag.spv");
 
     InternalLog("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Creating Shaders Interface");
 
@@ -1630,6 +1669,8 @@ namespace Vulkan13 {
     //instanceBuffer.descriptor.range = instanceBuffer.size;
     //instanceBuffer.descriptor.buffer = instanceBuffer.buffer;
     //instanceBuffer.descriptor.offset = 0;
+
+    delete vertBuff;
   }; //CreateVertexBuffer
 
   inline void CreateIndexBuffer() {
@@ -1644,6 +1685,8 @@ namespace Vulkan13 {
 
     indiceBuff->InjectData(block->indices.data());
     indiceBuff->SendCmndBuffer();
+
+    delete indiceBuff;
   }; //CreateIndexBuffer
 
   inline void CreateUniformBuffers() {
@@ -1764,6 +1807,39 @@ namespace Vulkan13 {
 
   //Sec. Loop
   void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+    //Record Vertice Buffer
+    VkDeviceSize bufferSize =
+      sizeof(block->vertices[0])
+      * block->vertices.size();
+
+    auto vertBuff = new CmndBuffer(bufferSize);
+
+    vertBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vertBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    vertBuff->InjectData(block->vertices.data());
+    vertBuff->SendCmndBuffer();
+
+
+    //delete vertBuff;
+    
+
+    //Record Indiec Buffer
+    bufferSize =
+      sizeof(block->indices[0])
+      * block->indices.size();
+
+    auto indiceBuff = new CmndBuffer(bufferSize);
+
+    indiceBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    indiceBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    indiceBuff->InjectData(block->indices.data());
+    indiceBuff->SendCmndBuffer();
+
+    //delete indiceBuff;
+
+
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -1803,11 +1879,11 @@ namespace Vulkan13 {
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkBuffer vertexBuffers[] = { vertexBuffer };
+    VkBuffer vertexBuffers[] = { vertBuff->destBuff };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer(commandBuffer, indiceBuff->destBuff, 0, VK_INDEX_TYPE_UINT16);
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
@@ -1823,10 +1899,15 @@ namespace Vulkan13 {
   void UpdateUniformBuffer(uint32_t currentImage) {
     UniformBufferObject ubo{};
 
-    auto d = world->GetDelta();
-    ubo.model = glm::rotate(glm::mat4(1.0f),  d * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    size_t minUboAlignment = VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment;
+    dynamicAlignment = sizeof(glm::mat4);
+    if (minUboAlignment > 0) {
+      dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+
+    ubo.model = glm::mat4(1.0f);
     ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
-    ubo.view = cam->SetViewMatrix(0, 0, 0);
+    ubo.view = cam->GetViewMatrix();
 
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     world->TriggerDelta();
@@ -1981,23 +2062,45 @@ namespace Vulkan13 {
         input->space = 0;
       }
       return;
+
+    case GLFW_KEY_E:
+      if (action == GLFW_PRESS) {
+        input->e = 1;
+      }
+      else if (action == GLFW_RELEASE) {
+        input->e = 0;
+      }
+      return;
+
+    case GLFW_KEY_Q:
+      if (action == GLFW_PRESS) {
+        input->q = 1;
+      }
+      else if (action == GLFW_RELEASE) {
+        input->q = 0;
+      }
+      return;
     }
   }
 
 
   void ActuateEvents() {
     if (input->w) { cam->DeltaUpWorldPos(0, 1, 0); };
-    if (input->a) { cam->DeltaUpWorldPos(1, 0, 0); };
-    if (input->d) { cam->DeltaUpWorldPos(-1, 0, 0); };
+    if (input->a) { cam->DeltaUpWorldPos(-1, 0, 0); };
+    if (input->d) { cam->DeltaUpWorldPos(1, 0, 0); };
     if (input->s) { cam->DeltaUpWorldPos(0, -1, 0); };
+    if (input->e) { cam->DeltaUpWorldPos(0, 0, 1); };
+    if (input->q) { cam->DeltaUpWorldPos(0, 0, -1); };
   }; //ActuateEvents
 
   void Loop() {
     glfwSetKeyCallback(glfw->win, keyCallback);
 
-    cam->SetWorldPos(0,1,0);
+    cam->SetWorldPos(0,0,0);
 
     while (!glfwWindowShouldClose(glfw->win)) {
+      cam->SetViewMatrix(0, 0, 0);
+
       glfwPollEvents();
       ActuateEvents();
       RenderFrame();
@@ -2012,9 +2115,9 @@ namespace Vulkan13 {
     CheckDebug();
     CreateInstance();
     SetupDebugMessenger();
-    CreateSurface();
-    PickPhysicalDevice();
-    CreateLogicalDevice();
+    CreateSurface(); //Move to GLFW
+    PickPhysicalDevice(); //Move to Class
+    CreateLogicalDevice(); //Move to Class
 
     //Sec. Pipe
     CreateSwapChain();
@@ -2030,8 +2133,8 @@ namespace Vulkan13 {
     CreateTextureImage();
     CreateTextureImageView();
     CreateTextureSampler();
-    CreateVertexBuffer();
-    CreateIndexBuffer();
+    //CreateVertexBuffer(); //Fix this to allow multiple classes
+    //CreateIndexBuffer(); //Fix this to allow multiple classes
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
@@ -2065,11 +2168,11 @@ namespace Vulkan13 {
 
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-    vkDestroyBuffer(device, indexBuffer, nullptr);
-    vkFreeMemory(device, indexBufferMemory, nullptr);
+    //vkDestroyBuffer(device, indexBuffer, nullptr);
+    //vkFreeMemory(device, indexBufferMemory, nullptr);
 
-    vkDestroyBuffer(device, vertexBuffer, nullptr);
-    vkFreeMemory(device, vertexBufferMemory, nullptr);
+    //vkDestroyBuffer(device, vertexBuffer, nullptr);
+    //vkFreeMemory(device, vertexBufferMemory, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
       vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -2097,7 +2200,7 @@ namespace Vulkan13 {
 
   PRIVATEPB::Vulkan::Vulkan(pb::Config::Render* R) {
     glfw = new GLFW();
-    cam = new Camera(glm::vec4(1.0, 1.0, 1.0, 1.0));
+    cam = new Camera(glm::vec3(1.0, 1.0, 1.0));
     world = new WorldSpace();
     input = new Input();
     block = new Block();
