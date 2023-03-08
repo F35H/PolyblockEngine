@@ -1,5 +1,14 @@
 #include <PRVTPB.h>
 
+#define STAGE_BUFF_BITS                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+#define VERTEX_BUFF_BITS                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+#define INDEX_BUFF_BITS                   VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+#define UNIFORM_BUFF_BITS             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+
+constexpr INT8 VERTEX_BUFF = 0;
+constexpr INT8 INDICE_BUFF = 1;
+constexpr INT8 UNIFORM_BUFF = 2;
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -276,7 +285,7 @@ WorldSpace* world;
 
 struct Vertex {
   glm::vec3 pos;
-  glm::vec3 color;
+  glm::vec4 color;
   glm::vec2 texCoord;
 
   static VkVertexInputBindingDescription getBindingDescription() {
@@ -298,7 +307,7 @@ struct Vertex {
 
     attributeDescriptions[1].binding = 0;
     attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
     attributeDescriptions[1].offset = offsetof(Vertex, color);
 
     attributeDescriptions[2].binding = 0;
@@ -330,40 +339,40 @@ struct Block {
   const std::vector<Vertex> vertices = {
 
     //Bottom
-    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
+    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
+    {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
+    {{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
 
     //Back Plane
-    {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+    {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
+    {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
+    {{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
 
     //Front Plane
-    {{0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+    {{0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
+    {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
+    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
+    {{0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
 
     //Right Plane
-    {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+    {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
+    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
+    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
+    {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
 
     //Left Plane
-    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
+    {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
+    {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
+    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
 
     //Top
-    {{0.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+    {{0.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
+    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
+    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
+    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}}
   };
 
   const std::vector<UINT16> indices = {
@@ -406,8 +415,6 @@ struct Camera {
         -y + worldPos[3][1], //Look At Y
         -z + worldPos[3][2]), //Look At Z
       glm::vec3(0.0f, 1.0f, 0.0f)); //Height
-
-    viewMat *= worldPos;
     return viewMat;
   };
 
@@ -806,17 +813,68 @@ namespace Vulkan13 {
     throw std::runtime_error("failed to find suitable memory type!");
   } //FindMemoryType
 
-  struct CmndBuffer {
+  struct BufferInput {
+    BufferInput(VkDeviceSize bufferSize, INT8 bufferType, const void* dataInput) {
+        buffSize = bufferSize;
+        buffType = bufferType;
+
+        switch (buffType) {
+          case VERTEX_BUFF:
+            InitStageBuff(STAGE_BUFF_BITS);
+            InitDestBuff(VERTEX_BUFF_BITS);
+
+            InjectData(dataInput);
+            SendCmndBuffer();
+            break;
+
+          case INDICE_BUFF:
+            InitStageBuff(STAGE_BUFF_BITS);
+            InitDestBuff(INDEX_BUFF_BITS);
+
+            InjectData(dataInput);
+            SendCmndBuffer();
+            break;
+
+          case UNIFORM_BUFF:
+            InitStageBuff(STAGE_BUFF_BITS);
+            InitDestBuff(UNIFORM_BUFF_BITS);
+            SendUniformBuffer();
+            UpdateBuffer(dataInput);
+            break;
+        };
+
+        DeallocStageBuffer();
+    }; //Buffer
+
+    VkBuffer GetBuffer() { return destBuff; };
+    
+    void UpdateBuffer(const void* dataInput) {
+      switch (buffType) {
+      case VERTEX_BUFF:
+        break;
+
+      case INDICE_BUFF:
+        break;
+
+      case UNIFORM_BUFF:
+        memcpy(uniPntr, dataInput, buffSize);
+        break;
+      };
+    };
+
+    ~BufferInput() {
+      vkDestroyBuffer(vkInterface->GetGPUSoftInterface(), destBuff, nullptr);
+      vkFreeMemory(vkInterface->GetGPUSoftInterface(), destData, nullptr);
+    };
+
+  private:
+    void* uniPntr;
     VkBuffer stageBuff;
     VkBuffer destBuff;
     VkDeviceSize buffSize;
     VkDeviceMemory stageData;
     VkDeviceMemory destData;
-
-
-    CmndBuffer(VkDeviceSize bufferSize) {
-        buffSize = bufferSize;
-    }; //Buffer
+    INT8 buffType;
 
     void InitStageBuff(VkBufferUsageFlags use, VkMemoryPropertyFlags memProp) {
       VkBufferCreateInfo buffInfo{};
@@ -919,10 +977,16 @@ namespace Vulkan13 {
     }; //CopyBuffers
 
 
-    ~CmndBuffer() {
+    void SendUniformBuffer() {
+      vkMapMemory(vkInterface->GetGPUSoftInterface(), destData, 0, buffSize, 0, &uniPntr);
+
+
+    }; //SendUniformBuffer
+
+    void DeallocStageBuffer() {
       vkDestroyBuffer(vkInterface->GetGPUSoftInterface(), stageBuff, nullptr);
       vkFreeMemory(vkInterface->GetGPUSoftInterface(), stageData, nullptr);
-    }; //Destructor
+    }; //DeallocStage
   };
 
 
@@ -948,11 +1012,11 @@ namespace Vulkan13 {
 
 
   //Sec. Cmnd
+  BufferInput* vertBuff;
+  BufferInput* indiceBuff;
   std::vector<VkDescriptorSet> descriptorSets;
   std::vector<VkCommandBuffer> commandBuffers;
-  std::vector<VkBuffer> uniformBuffers;
-  std::vector<VkDeviceMemory> uniformBuffersMemory;
-  std::vector<void*> uniformBuffersMapped;
+  std::vector<BufferInput*> uniformBuffers;
   VkDescriptorPool descriptorPool;
   UINT32 currentFrame = 0;
   const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -1242,11 +1306,15 @@ namespace Vulkan13 {
     endSingleTimeCommands(commandBuffer);
   } //CopyBuffer
 
+  struct pushConst {
+    alignas(16) glm::vec3 model;
+  }; //UniformBufferObjec
+
   struct UniformBufferObject {
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
-  }; //UniformBufferObjects
+  }; //pushConst
 
   //Sec. Loop
   void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
@@ -1539,6 +1607,11 @@ namespace Vulkan13 {
 
     InternalLog("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Setting Shader Uses");
 
+    VkPushConstantRange pushConstRange{};
+    pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstRange.offset = 0;
+    pushConstRange.size = sizeof(pushConst);
+
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -1629,6 +1702,8 @@ namespace Vulkan13 {
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
     pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstRange;
 
     InternalLog("Creating Vulkan Pipeline ", " Creating Graphics Pipeline ", " Confirming Interfaces");
 
@@ -1802,23 +1877,12 @@ namespace Vulkan13 {
   } //CreateTextureSampler
 
   inline void CreateVertexBuffer() {
-    VkDeviceSize bufferSize = 
-      sizeof(block->vertices[0]) 
+    //Record Vertice Buffer
+    VkDeviceSize bufferSize =
+      sizeof(block->vertices[0])
       * block->vertices.size();
-    
-    auto vertBuff = new CmndBuffer(bufferSize);
 
-    vertBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vertBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    vertBuff->InjectData(block->vertices.data());
-    vertBuff->SendCmndBuffer();
-
-    //instanceBuffer.descriptor.range = instanceBuffer.size;
-    //instanceBuffer.descriptor.buffer = instanceBuffer.buffer;
-    //instanceBuffer.descriptor.offset = 0;
-
-    delete vertBuff;
+    vertBuff = new BufferInput(bufferSize, VERTEX_BUFF, block->vertices.data());
   }; //CreateVertexBuffer
 
   inline void CreateIndexBuffer() {
@@ -1826,28 +1890,22 @@ namespace Vulkan13 {
       sizeof(block->indices[0])
       * block->indices.size();
 
-    auto indiceBuff = new CmndBuffer(bufferSize);
-
-    indiceBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    indiceBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    indiceBuff->InjectData(block->indices.data());
-    indiceBuff->SendCmndBuffer();
-
-    delete indiceBuff;
+    indiceBuff = new BufferInput(bufferSize, INDICE_BUFF, block->indices.data());
   }; //CreateIndexBuffer
 
   inline void CreateUniformBuffers() {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
+    UniformBufferObject ubo{};
+
+    ubo.model = cam->GetWorldPos();
+    ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
+    ubo.view = cam->GetViewMatrix();
+
     uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-      createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-
-      vkMapMemory(vkInterface->GetGPUSoftInterface(), uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+      uniformBuffers[i] = new BufferInput(bufferSize, UNIFORM_BUFF, &ubo);
     }
   }; //CreateUniformBuffer
 
@@ -1885,7 +1943,7 @@ namespace Vulkan13 {
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
       VkDescriptorBufferInfo bufferInfo{};
-      bufferInfo.buffer = uniformBuffers[i];
+      bufferInfo.buffer = uniformBuffers[i]->GetBuffer();
       bufferInfo.offset = 0;
       bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -1955,39 +2013,6 @@ namespace Vulkan13 {
 
   //Sec. Loop
   void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
-    //Record Vertice Buffer
-    VkDeviceSize bufferSize =
-      sizeof(block->vertices[0])
-      * block->vertices.size();
-
-    auto vertBuff = new CmndBuffer(bufferSize);
-
-    vertBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vertBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    vertBuff->InjectData(block->vertices.data());
-    vertBuff->SendCmndBuffer();
-
-
-    //delete vertBuff;
-    
-
-    //Record Indiec Buffer
-    bufferSize =
-      sizeof(block->indices[0])
-      * block->indices.size();
-
-    auto indiceBuff = new CmndBuffer(bufferSize);
-
-    indiceBuff->InitStageBuff(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    indiceBuff->InitDestBuff(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    indiceBuff->InjectData(block->indices.data());
-    indiceBuff->SendCmndBuffer();
-
-    //delete indiceBuff;
-
-
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -2027,13 +2052,25 @@ namespace Vulkan13 {
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkBuffer vertexBuffers[] = { vertBuff->destBuff };
+    VkBuffer vertexBuffers[] = { vertBuff->GetBuffer() };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdBindIndexBuffer(commandBuffer, indiceBuff->destBuff, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer(commandBuffer, indiceBuff->GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+
+
+    pushConst pC{};
+    //pC.model = glm::vec3({ 1.0f, 0.0f, 1.0f });
+
+    //vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(pushConst), &pC);
+
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(block->indices.size()), 1, 0, 0, 0);
+
+    pC.model = glm::vec3({ 0.0f, 0.0f, 0.0f });
+
+    vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(pushConst), &pC);
 
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(block->indices.size()), 1, 0, 0, 0);
 
@@ -2047,17 +2084,11 @@ namespace Vulkan13 {
   void UpdateUniformBuffer(uint32_t currentImage) {
     UniformBufferObject ubo{};
 
-    //size_t minUboAlignment = VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment;
-    //dynamicAlignment = sizeof(glm::mat4);
-    //if (minUboAlignment > 0) {
-    //  dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
-    //}
-
-    ubo.model = glm::mat4(1.0f);
+    ubo.model = cam->GetWorldPos();
     ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
     ubo.view = cam->GetViewMatrix();
 
-    memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+    uniformBuffers[currentImage]->UpdateBuffer(&ubo);
     world->TriggerDelta();
   }
 
@@ -2189,7 +2220,11 @@ namespace Vulkan13 {
   } //Loop
 
   inline void VulkanInit() {
-    
+    cam = new Camera(glm::vec3(1.0, 1.0, 1.0));
+    world = new WorldSpace();
+    input = new Input();
+    block = new Block();
+
     //Sec. Init
     CheckDebug();
     SetupDebugMessenger();
@@ -2202,14 +2237,14 @@ namespace Vulkan13 {
     CreateGraphicsPipeline();
 
     //Sec. Cmnd
-    CreateCommandPool(); //
+    CreateCommandPool(); 
     CreateDepthResources();
     CreateFramebuffers();
     CreateTextureImage();
     CreateTextureImageView();
     CreateTextureSampler();
-    //CreateVertexBuffer(); //Fix this to allow multiple classes
-    //CreateIndexBuffer(); //Fix this to allow multiple classes
+    CreateVertexBuffer(); 
+    CreateIndexBuffer(); 
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
@@ -2229,8 +2264,7 @@ namespace Vulkan13 {
     vkDestroyRenderPass(vkInterface->GetGPUSoftInterface(), renderPass, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-      vkDestroyBuffer(vkInterface->GetGPUSoftInterface(), uniformBuffers[i], nullptr);
-      vkFreeMemory(vkInterface->GetGPUSoftInterface(), uniformBuffersMemory[i], nullptr);
+      delete uniformBuffers[i];
     }
 
     vkDestroyDescriptorPool(vkInterface->GetGPUSoftInterface(), descriptorPool, nullptr);
@@ -2274,10 +2308,6 @@ namespace Vulkan13 {
 
 
   PRIVATEPB::Vulkan::Vulkan(pb::Config::Render* R) {
-    cam = new Camera(glm::vec3(1.0, 1.0, 1.0));
-    world = new WorldSpace();
-    input = new Input();
-    block = new Block();
     rendConf = R;
     vkInterface = new VkInterface();
 

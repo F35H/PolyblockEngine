@@ -1,6 +1,10 @@
 #pragma once
 #include <PBLCPB.h>
 
+void getBlock();
+void getChunk();
+void getBlock();
+
 void InternalLog(const char* macro, const char* meso, const char* micro) noexcept;
 void InternalReport(const char* macro, const char* meso, const char* micro) noexcept;
 
