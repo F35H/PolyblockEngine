@@ -319,9 +319,29 @@ struct Vertex {
   }
 };
 
+struct Object { 
+  glm::mat4 SetWorldPos(float x, float y, float z) {
+    worldPos[3][0] = -x;
+    worldPos[3][1] = -y;
+    worldPos[3][2] = -z;
+    return worldPos;
+  };
 
-struct Block {
-  Block() {};
+  glm::mat4 UpWorldPos(float x, float y, float z) {
+    worldPos[3][0] += -x;
+    worldPos[3][1] += -y;
+    worldPos[3][2] += -z;
+    return worldPos;
+  };
+
+  glm::mat4 DeltaSetWorldPos(float x, float y, float z) {
+    auto d = world->GetDelta();
+
+    worldPos[3][0] = -x * d;
+    worldPos[3][1] = -y * d;
+    worldPos[3][2] = -z * d;
+    return worldPos;
+  };
 
   glm::mat4 DeltaUpWorldPos(float x, float y, float z) {
     auto d = world->GetDelta();
@@ -332,9 +352,59 @@ struct Block {
     return worldPos;
   };
 
-  int blockCount = 300;
+  glm::mat4 GetWorldPos() {
+    return worldPos;
+  };
 
-  glm::mat4 worldPos;
+  glm::mat4x4 worldPos;
+}; //Object
+
+struct Camera :
+  Object {
+  Camera(glm::vec3 initPos) {
+    worldPos = glm::mat4(1.0f);
+
+    worldPos[3][0] = initPos[0];
+    worldPos[3][1] = initPos[1];
+    worldPos[3][2] = initPos[2];
+  }; //Camera
+
+  glm::mat4 SetPerspectiveProj(float width, float height) {
+    projMat = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 10.0f);
+    projMat[1][1] *= -1;
+    return projMat;
+  };
+
+  glm::mat4 SetViewMatrix(float x, float y, float z) {
+    viewMat = glm::lookAt(
+      glm::vec3(2.0f, 2.0f, 2.0f), //Eye
+      glm::vec3(
+        -x + worldPos[3][0], //Look At X
+        -y + worldPos[3][1], //Look At Y
+        -z + worldPos[3][2]), //Look At Z
+      glm::vec3(0.0f, 1.0f, 0.0f)); //Height
+    return viewMat;
+  };
+
+
+
+  glm::mat4 GetPerspectiveProj() {
+    return projMat;
+  };
+
+  glm::mat4 GetViewMatrix() {
+    return viewMat;
+  };
+
+private:
+  glm::mat4 viewMat;
+  glm::mat4 projMat;
+};
+
+struct Block :
+  Object {
+
+  Block() {};
 
   const std::vector<Vertex> vertices = {
 
@@ -387,91 +457,6 @@ struct Block {
 
 };
 
-struct Camera {
-  Camera(glm::vec3 initPos) {
-    worldPos = glm::mat4(1.0f);
-
-    worldPos[3][0] = initPos[0];
-    worldPos[3][1] = initPos[1];
-    worldPos[3][2] = initPos[2];
-
-
-
-    nearDis = 5.0f;
-    farDis = 15.0f;
-  };
-
-  glm::mat4 SetPerspectiveProj(float width, float height) {
-    projMat = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 10.0f);
-    projMat[1][1] *= -1;
-    return projMat;
-  };
-
-  glm::mat4 SetViewMatrix(float x, float y, float z) {
-    viewMat = glm::lookAt(
-      glm::vec3(2.0f, 2.0f, 2.0f), //Eye
-      glm::vec3(
-        -x + worldPos[3][0], //Look At X
-        -y + worldPos[3][1], //Look At Y
-        -z + worldPos[3][2]), //Look At Z
-      glm::vec3(0.0f, 1.0f, 0.0f)); //Height
-    return viewMat;
-  };
-
-  glm::mat4 SetWorldPos(float x, float y, float z) {
-    worldPos[3][0] = -x;
-    worldPos[3][1] = -y;
-    worldPos[3][2] = -z;
-    return worldPos;
-  };
-
-  glm::mat4 UpWorldPos(float x, float y, float z) {
-    worldPos[3][0] += -x;
-    worldPos[3][1] += -y;
-    worldPos[3][2] += -z;
-    return worldPos;
-  };
-
-  glm::mat4 DeltaSetWorldPos(float x, float y, float z) {
-    auto d = world->GetDelta();
-
-    worldPos[3][0] = -x * d;
-    worldPos[3][1] = -y * d;
-    worldPos[3][2] = -z * d;
-    return worldPos;
-  };
-
-  glm::mat4 DeltaUpWorldPos(float x, float y, float z) {
-    auto d = world->GetDelta();
-
-    worldPos[3][0] += -x * d;
-    worldPos[3][1] += -y * d;
-    worldPos[3][2] += -z * d;
-    return worldPos;
-  };
-
-  glm::mat4 GetPerspectiveProj() {
-    return projMat;
-  };
-
-  glm::mat4 GetViewMatrix() {
-    return viewMat *= worldPos;
-  };
-
-  glm::mat4 GetWorldPos() {
-    return worldPos;
-  };
-
-private:
-  float farDis;
-  float nearDis;
-
-  glm::mat4 worldPos;
-  glm::mat4 viewMat;
-  glm::vec3 eyePos;
-
-  glm::mat4 projMat;
-};
 
 Camera* cam;
 Block* block;
@@ -797,7 +782,6 @@ struct VkInterface {
 
 VkInterface* vkInterface;
 
-namespace Vulkan13 {
   VkCommandPool commandPool;
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -2219,7 +2203,11 @@ namespace Vulkan13 {
     vkDeviceWaitIdle(vkInterface->GetGPUSoftInterface());
   } //Loop
 
-  inline void VulkanInit() {
+
+  PRIVATEPB::Vulkan13::Vulkan13(pb::Config::Render* R) {
+    rendConf = R;
+    vkInterface = new VkInterface();
+
     cam = new Camera(glm::vec3(1.0, 1.0, 1.0));
     world = new WorldSpace();
     input = new Input();
@@ -2237,14 +2225,14 @@ namespace Vulkan13 {
     CreateGraphicsPipeline();
 
     //Sec. Cmnd
-    CreateCommandPool(); 
+    CreateCommandPool();
     CreateDepthResources();
     CreateFramebuffers();
     CreateTextureImage();
     CreateTextureImageView();
     CreateTextureSampler();
-    CreateVertexBuffer(); 
-    CreateIndexBuffer(); 
+    CreateVertexBuffer();
+    CreateIndexBuffer();
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
@@ -2253,10 +2241,10 @@ namespace Vulkan13 {
 
     //Sec. Loop
     Loop();
-  }; //VulkanInit
 
+  }; //Vulkan
 
-  inline void VulkanDelete() {
+  PRIVATEPB::Vulkan13::~Vulkan13() {
     CleanupSwapChain();
 
     vkDestroyPipeline(vkInterface->GetGPUSoftInterface(), graphicsPipeline, nullptr);
@@ -2303,81 +2291,4 @@ namespace Vulkan13 {
     glfwDestroyWindow(vkInterface->glfw->win);
 
     glfwTerminate();
-  }; //VulkanDelete
-}; //Vulkan13
-
-
-  PRIVATEPB::Vulkan::Vulkan(pb::Config::Render* R) {
-    rendConf = R;
-    vkInterface = new VkInterface();
-
-    // Select Vulkan Version
-    try {
-      while (1) {
-        switch (rendConf->GetRenderEngine()) {
-        case VULKAN13:
-          Vulkan13::VulkanInit();
-          break;
-
-        default:
-          return;
-        }; //Switch
-      }; //While
-    } //Try
-
-    catch (const std::exception& exc) {
-      auto rend = rendConf->GetRenderEngine();
-
-      std::string mesoSphere = "Selecting Engine: ";
-      mesoSphere += rend;
-      InternalLog("Initializing Vulkan ", mesoSphere.c_str(), exc.what());
-
-      rend -= 1;
-
-      rendConf
-        ->SetRenderEngine(rend);
-    } //Catch exc
-
-    catch (...) {
-      auto rend = rendConf->GetRenderEngine();
-
-      std::string mesoSphere = "Selecting Engine: ";
-      mesoSphere += rend;
-      InternalLog("Initializing Vulkan ", mesoSphere.c_str(), "Unknown Exception Occuered");
-
-      rend -= 1;
-
-      rendConf
-        ->SetRenderEngine(rend);
-    }; //Catch exc
-  }; //Vulkan
-
-  PRIVATEPB::Vulkan::~Vulkan() {
-    // Select Vulkan Version
-    try {
-      while (1) {
-        switch (rendConf->GetRenderEngine()) {
-        case VULKAN13:
-          Vulkan13::VulkanDelete();
-          break;
-        }; //Switch
-      }; //While
-    } //Try
-
-    catch (const std::exception& exc) {
-      auto rend = rendConf->GetRenderEngine();
-      std::string mesoSphere = "Deleting Engine: ";
-      mesoSphere += rend;
-      InternalLog("Deleting Vulkan ", mesoSphere.c_str(), exc.what());
-    } //Catch exc
-
-    catch (...) {
-      auto rend = rendConf->GetRenderEngine();
-      std::string mesoSphere = "Deleting Engine: ";
-      mesoSphere += rend;
-      InternalLog("Deleting Vulkan ", mesoSphere.c_str(), "Unknown Exception");
-    }; //Catch exc
-
-    delete vkInterface;
-    delete cam;
   }; //~Vulkan

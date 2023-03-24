@@ -53,6 +53,24 @@
   #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
 #endif
 
+#ifndef _WIN64
+#define WIN64 0
+#else
+#define WIN64 1
+#endif
+
+#ifndef __APPLE__ || __MACH__
+#define OSX 0
+#else
+#define OSX 1
+#endif
+
+#ifndef  __linux__
+#define LINUX 0
+#else
+#define LINUX 1
+#endif
+
 
 //Fast Width Ints
 #define FINT8 int_fast8_t
@@ -90,7 +108,11 @@
 //|>>====><====<<|
 
 // Render Cases
+#define DIRECTX12 0x0C
+#define DIRECTX11 0x0B
+
 #define VULKAN13 0x0A
+
 #define OPENGL46 0x09
 #define OPENGL45 0x08
 #define OPENGL44 0x07

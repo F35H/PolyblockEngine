@@ -39,6 +39,8 @@ namespace pb {
         void SetWindowName(const char* windowName);
         void SetAppVersion(const char* version);
         void SetFullscreenBool(bool fScreen);
+        void SetDirectXInstanceID(HINSTANCE hInstance);
+        void SetDirectXCmdShow(INT nCmdShow);
 
 
         UINT GetRenderEngine();
@@ -47,7 +49,8 @@ namespace pb {
         bool GetFullscreenBool();
         const char* GetWindowName();
         const char* GetAppVersion();
-
+        HINSTANCE GetDirectXInstanceID();
+        INT GetDirectXCmdShow();
 
       private:
         UINT WindowHeight = NULL; 
@@ -56,6 +59,8 @@ namespace pb {
         bool FullScreen = false;
         const char* AppVersion = "0.0.1.0";
         const char* WindowName = "Polyblock Engine";
+        HINSTANCE HInstance = NULL;
+        INT NCmdShow = NULL;
 
       }; //RENDER
 

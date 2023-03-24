@@ -1,9 +1,7 @@
 #pragma once
 #include <PBLCPB.h>
 
-void getBlock();
-void getChunk();
-void getBlock();
+glm::mat4x4 getBlock(unsigned int type);
 
 void InternalLog(const char* macro, const char* meso, const char* micro) noexcept;
 void InternalReport(const char* macro, const char* meso, const char* micro) noexcept;
@@ -15,8 +13,11 @@ class PRIVATEPB {
   struct ClientVector;
 
   struct GFX { GFX(pb::Config::Render* R); ~GFX(); };
-  struct Vulkan { Vulkan(pb::Config::Render* R); ~Vulkan(); };
-  struct DirectX { DirectX(pb::Config::Render* R); ~DirectX(); };
+
+  struct Vulkan13 { Vulkan13(pb::Config::Render* R); ~Vulkan13(); };
+
+  struct DirectX12 { DirectX12(pb::Config::Render* R); ~DirectX12(); };
+
   struct OpenGL { OpenGL(pb::Config::Render* R); ~OpenGL(); };
 
   static ClientVector* Client_ptr;
