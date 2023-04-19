@@ -72,6 +72,106 @@ namespace pb {
 
   }; //CONFIG
 
+  namespace Feature {
+    struct Feature {
+      void SetName() noexcept;
+      
+      const char* GetName() noexcept;
+
+    protected:
+      const char* Name;
+    }; //Feature
+    
+    struct Block {
+      //Texture
+      //Color
+      //Polyhedra
+      //Destruction
+      //Ability
+      //Size
+    }; //Block
+
+    struct Camera :
+      Feature {
+      void SetWorldPos(const float x, const float y, const float z) noexcept;
+      void SetViewDirection(const float x, const float y, const float z) noexcept;
+      void SetNearClip(const float nearClip) noexcept;
+      void SetFarClip(const float farClip) noexcept;
+      void SetFOVUnit(const UINT unit) noexcept;
+      void SetFOV(const float fovDeg) noexcept;
+
+      std::array<float, 3> GetWorldPos() noexcept;
+      std::array<float, 3> GetViewDirection() noexcept;
+      float GetNearClip() noexcept;
+      float GetFarClip() noexcept;
+      UINT GetFOVUnit() noexcept;
+      float GetFOV() noexcept;
+
+    private:
+      std::array<float, 3> WorldPos = {0, 0, 0};
+      std::array<float, 3> ViewDirection = {0, 0, 0};
+      UINT FOVUnit = 0x00;
+      float FOV = 45.0f;
+      float FarClip = 1000.0f;
+      float NearClip = 1.0f;
+    }; //Camera
+
+    void AddFeature(Camera* Cam);
+
+    void ConfirmFeatures();
+  }; //FEATURES
+
+  namespace Control {
+    struct Trigger {
+      void SetInput(const UINT inputType) noexcept;
+      void SetInputControl(const char* internal) noexcept;
+
+      void SetOutput(const UINT outputType) noexcept;
+      void SetOutputControl(const char* internal) noexcept;
+
+      UINT GetInput() noexcept;
+      const char* GetInputControl() noexcept;
+
+      UINT GetOutput() noexcept;
+      const char* GetOnputControl() noexcept;
+    
+    private:
+      UINT Input = 0x00;
+      UINT Output = 0x00;
+
+      const char* OutputControl;
+      const char* InputControl;
+    }; //Trigger
+
+    struct Motion :
+      Trigger {
+      //Inputs
+      void SetInputLocation(const float x, const float y, const float z) noexcept;
+      void SetInputVolume(const float x, const float y, const float z) noexcept;
+      void SetInputFeature(const float x, const float y, const float z) noexcept; 
+      void SetInputVerticleAngle(const float angle) noexcept;
+      void SetInputHorizontalAngle(const float angle) noexcept;
+      
+      void SetOutputFeature(const float x, const float y, const float z) noexcept;
+      void SetOutputLocation(const float x, const float y, const float z) noexcept;
+      void SetOutputVelocity(const float x) noexcept;
+
+      std::array<float, 3> GetInputLocation() noexcept;
+      
+      std::array<float, 3> GetOutputLocation() noexcept;
+      float GetOutputVelocity() noexcept;
+
+    private:
+      std::array<float, 3> OutputLocation;
+      std::array<float, 3> InputLocation;
+      float Velocity = 1.0f;
+    }; //Motion
+
+    void AddMotion(pb::Control::Motion* M);
+    void AddTrigger(pb::Control::Trigger* T);
+
+    void ConfirmControls();
+  }; //Control
 
   //UTILS
   namespace Utils {

@@ -6,7 +6,7 @@ struct PRIVATEPB::Config {
     Confirmed = 0x00; 
     WrotetoUtil = 0x00; 
     WrotetoRender = 0x00; 
-    errBuffer = new std::vector < const char*>();
+    errBuffer = std::vector <const char*>();
   }; //Config
 
   //Getters
@@ -15,7 +15,7 @@ struct PRIVATEPB::Config {
   bool GetConfirmed() { return Confirmed; };
   bool GetWrotetoUtil() { return WrotetoUtil; };
   bool GetWrotetoRender() { return WrotetoRender; };
-  std::vector<const char*> GetErrBuff() { return *errBuffer; };
+  std::vector<const char*> GetErrBuff() { return errBuffer; };
 
 
   //Setters
@@ -26,22 +26,17 @@ struct PRIVATEPB::Config {
   void SetWrotetoRender(bool b) { WrotetoRender = b; };
 
   void ExtndErrBuff(const char* str) {
-    errBuffer->emplace_back(str);
+    errBuffer.emplace_back(str);
   }; //ExtndErrBuffer
 
   ~Config() {
     delete U;
     delete R;
     
-    for (auto err : *errBuffer) {
-      delete err;
-    }; //For
-
-    delete errBuffer;
   }; //Config
 
 private:
-  std::vector<const char*>* errBuffer;
+  std::vector<const char*> errBuffer;
   pb::Config::Utils* U; //Utils
   pb::Config::Render* R; //Render
 
@@ -101,6 +96,30 @@ struct PRIVATEPB::Utils {
 
 }; //Utils
 
+//FEATURES
+struct PRIVATEPB::Features {
+  Features() :
+    CameraHash({})
+  {};
+
+  //Getters
+  std::unordered_map
+    <const char*, pb::Feature::Camera> 
+    GetCameraHash() 
+  { return CameraHash; };
+  
+  bool GetConfirmed() { return Confirmed; };
+
+  //Setters
+  void SetConfirmed(bool b) { Confirmed = b; };
+
+private:
+  std::unordered_map<const char*, pb::Feature::Camera> CameraHash;
+
+  bool Confirmed;
+}; //FEATURES
+
+
 //CLIENT
 struct PRIVATEPB::Client {
   PRIVATEPB::Utils* Utils;
@@ -108,10 +127,14 @@ struct PRIVATEPB::Client {
   PRIVATEPB::Config* Conf =
     new PRIVATEPB::Config();
 
+  PRIVATEPB::Features* Features =
+    new PRIVATEPB::Features();
+
   void SetConfirmed(bool b) { Confirmed = b; };
   bool GetConfirmed(bool b) { return Confirmed; };
 
   ~Client() {
+    delete Features;
     delete Utils;
     delete Conf;
   }; //Client
@@ -123,7 +146,7 @@ private:
 
 struct PRIVATEPB::ClientVector {
   ClientVector() {
-    vector = new std::vector<PRIVATEPB::Client*>();
+    vector = std::vector<PRIVATEPB::Client*>();
 
     innerIndice -= 1;
     outerIndice -= 1;
@@ -137,13 +160,13 @@ struct PRIVATEPB::ClientVector {
     innerIndice += 1;
     outerIndice += 1;
 
-    vector->emplace_back(
+    vector.emplace_back(
       new PRIVATEPB::Client());
   }; //AddClient
 
 
   PRIVATEPB::Utils* NewUtils() {
-    return vector->operator[](innerIndice)->Utils =
+    return vector[innerIndice]->Utils =
       new PRIVATEPB::Utils(
         GetLatestConfig()
         ->GetUtils());
@@ -151,7 +174,7 @@ struct PRIVATEPB::ClientVector {
 
 
   PRIVATEPB::Config* NewConfig() {
-    return vector->operator[](innerIndice)->Conf =
+    return vector[innerIndice]->Conf =
       new PRIVATEPB::Config();
   }; //NewConfig
 
@@ -159,37 +182,44 @@ struct PRIVATEPB::ClientVector {
 
   //Get Items
   PRIVATEPB::Client* GetClient(UINT indice) {
-    return vector->operator[](indice);
+    return vector[indice];
   }; //GetClient
 
 
   PRIVATEPB::Client* GetLatestClient() {
-    return vector->operator[](innerIndice);
+    return vector[innerIndice];
   }; //GetClient
 
 
   PRIVATEPB::Client* GetCurrentClient() {
-    return vector->operator[](currentIndice);
+    return vector[currentIndice];
   }; //GetClient
 
 
   PRIVATEPB::Config* GetCurrentConfig() {
-    return vector->operator[](currentIndice)->Conf;
+    return vector[currentIndice]->Conf;
   }; //GetClient
 
   PRIVATEPB::Config* GetLatestConfig() {
-    return vector->operator[](innerIndice)->Conf;
+    return vector[innerIndice]->Conf;
   }; //GetClient
 
+
+  PRIVATEPB::Features* GetCurrentFeatures() {
+    return vector[currentIndice]->Features;
+  }; //GetCurrentFeatures
+
+  PRIVATEPB::Features* GetLatestFeatures() {
+    return vector[innerIndice]->Features;
+  }; //GetLatestFeatures
 
   PRIVATEPB::Utils* GetLatestUtils() {
-    return vector->operator[](innerIndice)->Utils;
+    return vector[innerIndice]->Utils;
   }; //GetClient
 
 
-  std::vector
-    <PRIVATEPB::Client*> GetClientVector() {
-    return *vector;
+  std::vector <PRIVATEPB::Client*> GetClientVector() {
+    return vector;
   }; //GetClient
 
 
@@ -197,23 +227,24 @@ struct PRIVATEPB::ClientVector {
   PRIVATEPB::Utils* SetLatestUtils(
     PRIVATEPB::Utils* U) {
 
-    return vector->operator[](innerIndice)->Utils = U;
+    return vector[innerIndice]->Utils = U;
   }; //GetClient
 
 
   PRIVATEPB::Config* SetLatestConfig(
     PRIVATEPB::Config* C) {
 
-    return vector->operator[](innerIndice)->Conf = C;
+    return vector[innerIndice]->Conf = C;
   }; //GetClient
 
 
-  ~ClientVector() {
-    for (auto c : *vector) {
-      delete c;
-    };
+  PRIVATEPB::Features* SetLatestFeatures(
+    PRIVATEPB::Features* F) {
 
-    delete vector;
+    return vector[innerIndice]->Features = F;
+  }; //GetFeatures
+
+  ~ClientVector() {
   }; //ClientVector
 
 
@@ -222,7 +253,7 @@ private:
   UINT innerIndice = 0;
   UINT outerIndice = 1;
 
-  std::vector<PRIVATEPB::Client*>* vector;
+  std::vector<PRIVATEPB::Client*> vector;
 
 }; //ClientVector
 
@@ -273,6 +304,46 @@ void pb::Config::AddConfig(pb::Config::Render* R) {
 }; //Add Config
 
 
+void pb::Feature::AddFeature(pb::Feature::Camera* Cam) {
+  auto Configs = PRIVATEPB::Client_ptr
+    ->GetLatestConfig();
+
+  auto Features = PRIVATEPB::Client_ptr
+    ->GetLatestFeatures();
+  
+  std::string micro = Cam->GetName();
+
+  if (!Features
+    ->GetConfirmed()
+    & Configs
+    ->GetConfirmed()
+    ) {
+
+    Features
+      ->GetCameraHash()
+      .try_emplace(Cam->GetName(), Cam);
+  } //if Confirmed
+  else {
+    micro += " : Failure, Confirmation Order";
+    
+    InternalReport(
+      "Writing Features",
+      "Adding Camera",
+      micro.c_str()
+    ); //InternalReport
+  }; //Else
+
+  std::string micro = Cam->GetName();
+  micro += " : Success";
+
+  InternalLog(
+    "Writing Features",
+    "Adding Camera",
+    micro.c_str()
+  ); //InternalReport
+}; //AddFeature
+
+
 void pb::Config::ConfirmConfigs() {
   PRIVATEPB::Client_ptr->GetLatestConfig()
     ->SetConfirmed(true);
@@ -291,6 +362,35 @@ void pb::Config::ConfirmConfigs() {
   pb::Utils::Output::FlushtoLog();
 }; //ConfirmConfigs
 
+
+void pb::Feature::ConfirmFeatures() {
+  auto Configs = PRIVATEPB::Client_ptr
+    ->GetLatestConfig();
+
+  auto Features = PRIVATEPB::Client_ptr
+    ->GetLatestFeatures();
+
+  if (!Features
+    ->GetConfirmed()
+    & Configs
+    ->GetConfirmed()
+    ) {
+
+    PRIVATEPB::Client_ptr->GetLatestFeatures()
+      ->SetConfirmed(true);
+
+    InternalLog("Writing Features", "Assigning Features to Client", "Confirming");
+
+    pb::Utils::Output::FlushtoLog();
+  } //IfConfirmed
+  else {
+    InternalReport(
+      "Writing Features", 
+      "Assigning Features to Client", 
+      "Failure: Confirmation Order Incorrect"
+    ); //InternalReport
+  }; //If Confirmed
+}; //AddFeature
 
 void pb::Client::ConfirmClients() {
   InternalLog("Attempting Client Vector Confirmation", "Enabeling Client Lock", "Attempting Once");

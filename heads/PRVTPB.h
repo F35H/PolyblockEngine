@@ -1,7 +1,10 @@
 #pragma once
 #include <PBLCPB.h>
 
-glm::mat4x4 getBlock(unsigned int type);
+std::vector<float> getBlockVertices(unsigned int type);
+std::vector<float> getBlockTextures(unsigned int type);
+std::vector<float> getBlockColors(unsigned int type);
+std::vector<UINT16> getBlockIndices(unsigned int type);
 
 void InternalLog(const char* macro, const char* meso, const char* micro) noexcept;
 void InternalReport(const char* macro, const char* meso, const char* micro) noexcept;
@@ -9,16 +12,18 @@ void InternalReport(const char* macro, const char* meso, const char* micro) noex
 class PRIVATEPB {
   struct Config;
   struct Utils;
+  struct Features;
+  struct Control;
   struct Client;
   struct ClientVector;
 
-  struct GFX { GFX(pb::Config::Render* R); ~GFX(); };
+  struct GFX { GFX(pb::Config::Render* R, Features* F, Control* C); ~GFX(); };
 
-  struct Vulkan13 { Vulkan13(pb::Config::Render* R); ~Vulkan13(); };
+  struct Vulkan13 { Vulkan13(pb::Config::Render* R, Features* F, Control* C); ~Vulkan13(); };
 
-  struct DirectX12 { DirectX12(pb::Config::Render* R); ~DirectX12(); };
+  struct DirectX12 { DirectX12(pb::Config::Render* R, Features* F, Control* C); ~DirectX12(); };
 
-  struct OpenGL { OpenGL(pb::Config::Render* R); ~OpenGL(); };
+  struct OpenGL { OpenGL(pb::Config::Render* R, Features F, Control C); ~OpenGL(); };
 
   static ClientVector* Client_ptr;
 
@@ -29,6 +34,8 @@ class PRIVATEPB {
 
   //InClass
   friend struct Config;
+  friend struct Features;
+  friend struct Control;
   friend struct Client;
   friend struct Utils;
   friend struct GFX;
@@ -43,6 +50,10 @@ class PRIVATEPB {
   friend void pb::Config::AddConfig(pb::Config::Utils* U);
 
   friend void pb::Config::ConfirmConfigs();
+
+  friend void pb::Feature::AddFeature(pb::Feature::Camera* C);
+  
+  friend void pb::Feature::ConfirmFeatures();
 
   friend void pb::Client::ConfirmClients();
   friend void pb::RunRender();

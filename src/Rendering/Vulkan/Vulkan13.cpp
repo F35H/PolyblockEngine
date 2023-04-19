@@ -154,7 +154,7 @@ struct GLFWInterface {
   UINT32 extensionCount;
   const char** extensions;
 
-  inline GLFWInterface() {
+  GLFWInterface() {
     InternalLog("Creating Window", "Initializing GLFW", "Initializing");
 
     if (!glfwInit()) {
@@ -284,8 +284,8 @@ struct WorldSpace {
 WorldSpace* world;
 
 struct Vertex {
-  glm::vec3 pos;
   glm::vec4 color;
+  glm::vec3 pos;
   glm::vec2 texCoord;
 
   static VkVertexInputBindingDescription getBindingDescription() {
@@ -320,6 +320,9 @@ struct Vertex {
 };
 
 struct Object { 
+  Object() : worldPos(glm::mat4(1.0f)) {
+  }; //Object
+
   glm::mat4 SetWorldPos(float x, float y, float z) {
     worldPos[3][0] = -x;
     worldPos[3][1] = -y;
@@ -352,9 +355,17 @@ struct Object {
     return worldPos;
   };
 
-  glm::mat4 GetWorldPos() {
+  glm::mat4 GetWorldPosMat() {
     return worldPos;
-  };
+  }; //GetWorldPos
+
+  glm::vec3 GetWorldPosVec() {
+    return { 
+      worldPos[3][0], 
+      worldPos[3][1], 
+      worldPos[3][2] 
+    }; //return
+  }; //GetWorldPos
 
   glm::mat4x4 worldPos;
 }; //Object
@@ -362,15 +373,13 @@ struct Object {
 struct Camera :
   Object {
   Camera(glm::vec3 initPos) {
-    worldPos = glm::mat4(1.0f);
-
     worldPos[3][0] = initPos[0];
     worldPos[3][1] = initPos[1];
     worldPos[3][2] = initPos[2];
   }; //Camera
 
   glm::mat4 SetPerspectiveProj(float width, float height) {
-    projMat = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 10.0f);
+    projMat = glm::perspective(glm::radians(fovDeg), width / height, nearClip, farClip); 
     projMat[1][1] *= -1;
     return projMat;
   };
@@ -399,63 +408,112 @@ struct Camera :
 private:
   glm::mat4 viewMat;
   glm::mat4 projMat;
+
+  float fovDeg;
+  float nearClip; 
+  float farClip; 
 };
 
 struct Block :
-  Object {
+  public Object {
 
-  Block() {};
+  std::vector<Vertex> vertices;
+  std::vector<UINT16> indices;
+  glm::vec3 blockColor;
+  UINT polyhedra;
 
-  const std::vector<Vertex> vertices = {
+  Block(unsigned int type) {
+    polyhedra = type;
+  }; //Block
 
-    //Bottom
-    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
-    {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
-    {{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
+  void SetBlockColor(glm::vec3 color) {
+    blockColor = color;
+  }; //SetBlockColor
 
-    //Back Plane
-    {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
-    {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
-    {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
-    {{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
+  void SetBlockRed(float red) {
+    if (red > 1.0f) { InternalReport("Assigning Blocks", "Setting Red Color", "Assigned Float too High"); };
 
-    //Front Plane
-    {{0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
+    blockColor[0] = red;
+  }; //SetBlockRed
 
-    //Right Plane
-    {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
-    {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
-    {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
+  void SetBlockGreen(float green) {
+    if (green > 1.0f) { InternalReport("Assigning Blocks", "Setting Green Color", "Assigned Float too High"); };
 
-    //Left Plane
-    {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
-    {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
-    {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}},
+    blockColor[1] = green;
+  }; //SetBlockGreen 
 
-    //Top
-    {{0.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 0.5f}, {1.0f, 0.0f}},
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 0.5f}, {0.0f, 0.0f}},
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.5f}, {0.0f, 1.0f}},
-    {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.5f}, {1.0f, 1.0f}}
-  };
+  void SetBlockBlue(float blue) {
+    if (blue > 1.0f) { InternalReport("Assigning Blocks", "Setting Blue Color", "Assigned Float too High"); };
 
-  const std::vector<UINT16> indices = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4,
-    8, 9, 10, 10, 11, 8,
-    12, 13, 14, 14, 15, 12,
-    16, 17, 18, 18, 19, 16,
-    20, 21, 22, 22, 23, 20
-  };
+    blockColor[2] = blue;
+  }; //SetBlockRed
 
+  void SetBlockAlpha(float alpha) {
+    if (alpha > 1.0f) { InternalReport("Assigning Blocks", "Setting Red Color", "Assigned Float too High"); };
 
-};
+    blockColor[3] = alpha;
+  }; //SetBlockRed
+
+  void Activate() {
+    auto texVec = getBlockTextures(polyhedra);
+    auto vertVec = getBlockVertices(polyhedra);
+    auto colorVec = getBlockColors(polyhedra);
+    indices = getBlockIndices(polyhedra);
+
+    if ((colorVec.size() % 4) != 0) {
+      InternalReport(
+        "Loading Blocks",
+        "Loading Vertices",
+        "Vertex Data Failed: Colors");
+    }; //If ColorVec
+
+    if ((vertVec.size() % 3) != 0) {
+      InternalReport(
+        "Loading Blocks",
+        "Loading Vertices",
+        "Vertex Data Failed: Position");
+    }; //If vertVec
+
+    if ((indices.size() % 3) != 0) {
+      InternalReport(
+        "Loading Blocks",
+        "Loading Vertices",
+        "Vertex Data Failed: Indices");
+    }; //vertex
+
+    if ((texVec.size() % 2) != 0) {
+      InternalReport(
+        "Loading Blocks",
+        "Loading Vertices",
+        "Vertex Data Failed: Textures");
+    }; //texVec
+
+    vertices = {};
+
+    size_t i = 0;
+    for (; i < colorVec.size() / 4; ++i) {
+      Vertex v = {
+        { 
+          colorVec[4 * i], 
+          colorVec[4 * i + 1], 
+          colorVec[4 * i + 2], 
+          colorVec[4 * i + 3] 
+        },
+        { 
+          vertVec[3 * i], 
+          vertVec[3 * i + 1], 
+          vertVec[3 * i + 2] 
+        },
+        { 
+          texVec[2 * i], 
+          texVec[2 * i + 1] 
+        }
+      }; //vertices
+
+      vertices.emplace_back(v);
+    }; //for
+  }; //Activate
+}; //Block
 
 
 Camera* cam;
@@ -1882,7 +1940,7 @@ VkInterface* vkInterface;
 
     UniformBufferObject ubo{};
 
-    ubo.model = cam->GetWorldPos();
+    ubo.model = cam->GetWorldPosMat();
     ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
     ubo.view = cam->GetViewMatrix();
 
@@ -2052,7 +2110,7 @@ VkInterface* vkInterface;
 
     //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(block->indices.size()), 1, 0, 0, 0);
 
-    pC.model = glm::vec3({ 0.0f, 0.0f, 0.0f });
+    pC.model = glm::vec3(block->GetWorldPosVec());
 
     vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(pushConst), &pC);
 
@@ -2068,7 +2126,7 @@ VkInterface* vkInterface;
   void UpdateUniformBuffer(uint32_t currentImage) {
     UniformBufferObject ubo{};
 
-    ubo.model = cam->GetWorldPos();
+    ubo.model = cam->GetWorldPosMat();
     ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
     ubo.view = cam->GetViewMatrix();
 
@@ -2180,18 +2238,15 @@ VkInterface* vkInterface;
 
 
   void ActuateEvents() {
-    if (input->w) { cam->DeltaUpWorldPos(0, 1, 0); };
-    if (input->a) { cam->DeltaUpWorldPos(-1, 0, 0); };
-    if (input->d) { cam->DeltaUpWorldPos(1, 0, 0); };
-    if (input->s) { cam->DeltaUpWorldPos(0, -1, 0); };
-    if (input->e) { cam->DeltaUpWorldPos(0, 0, 1); };
-    if (input->q) { cam->DeltaUpWorldPos(0, 0, -1); };
+    if (input->w) { cam->DeltaUpWorldPos(0, 3, 0); };
+    if (input->a) { cam->DeltaUpWorldPos(-3, 0, 0); };
+    if (input->d) { cam->DeltaUpWorldPos(3, 0, 0); };
+    if (input->s) { cam->DeltaUpWorldPos(0, -3, 0); };
+    if (input->e) { cam->DeltaUpWorldPos(0, 0, 3); };
+    if (input->q) { cam->DeltaUpWorldPos(0, 0, -3); };
   }; //ActuateEvents
 
   void Loop() {
-
-    cam->SetWorldPos(0,0,0);
-
     while (!glfwWindowShouldClose(vkInterface->glfw->win)) {
       cam->SetViewMatrix(0, 0, 0);
 
@@ -2204,6 +2259,7 @@ VkInterface* vkInterface;
   } //Loop
 
 
+
   PRIVATEPB::Vulkan13::Vulkan13(pb::Config::Render* R) {
     rendConf = R;
     vkInterface = new VkInterface();
@@ -2211,7 +2267,7 @@ VkInterface* vkInterface;
     cam = new Camera(glm::vec3(1.0, 1.0, 1.0));
     world = new WorldSpace();
     input = new Input();
-    block = new Block();
+    block = new Block(CUBE);
 
     //Sec. Init
     CheckDebug();
@@ -2231,18 +2287,26 @@ VkInterface* vkInterface;
     CreateTextureImage();
     CreateTextureImageView();
     CreateTextureSampler();
-    CreateVertexBuffer();
-    CreateIndexBuffer();
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
     CreateCommandBuffers();
     CreateSyncObjects();
 
+    //Eventually Move these here 
+    cam->SetWorldPos(0,0,0);
+    block->SetWorldPos(0, 0, 0);
+    block->SetBlockColor({ 0.0f,0.0f,0.0f });
+    block->Activate();
+
+    CreateVertexBuffer();
+    CreateIndexBuffer();
     //Sec. Loop
     Loop();
 
   }; //Vulkan
+
+
 
   PRIVATEPB::Vulkan13::~Vulkan13() {
     CleanupSwapChain();
