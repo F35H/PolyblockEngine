@@ -74,12 +74,12 @@ namespace pb {
 
   namespace Feature {
     struct Feature {
-      void SetName() noexcept;
-      
-      const char* GetName() noexcept;
+      void SetName(const char* name) noexcept;
 
+      const char* GetName() noexcept;
+      
     protected:
-      const char* Name;
+      const char* Name = "AnonScene";
     }; //Feature
     
     struct Block {
@@ -93,6 +93,10 @@ namespace pb {
 
     struct Camera :
       Feature {
+      Camera(const char* filename, INT indice) noexcept;
+      Camera(const char* name) noexcept;
+      Camera() noexcept;
+
       void SetWorldPos(const float x, const float y, const float z) noexcept;
       void SetViewDirection(const float x, const float y, const float z) noexcept;
       void SetNearClip(const float nearClip) noexcept;
@@ -107,6 +111,9 @@ namespace pb {
       UINT GetFOVUnit() noexcept;
       float GetFOV() noexcept;
 
+      void CopyFromExtern(pb::Feature::Camera* camera);
+      void CopyFromIntern(pb::Feature::Camera* camera);
+
     private:
       std::array<float, 3> WorldPos = {0, 0, 0};
       std::array<float, 3> ViewDirection = {0, 0, 0};
@@ -116,7 +123,27 @@ namespace pb {
       float NearClip = 1.0f;
     }; //Camera
 
+    struct Scene : 
+      Feature {
+      Scene(std::vector<const char*> filenames);
+      Scene(const Scene&);
+      Scene(const char*);
+      Scene();
+
+      void AddToCamVec(Camera* Camera);
+      void CopyFromExtern(pb::Feature::Scene* scene);
+      void CopyFromIntern(pb::Feature::Scene* scene);
+
+      void SetCamVec(std::vector<pb::Feature::Camera*> camVec);
+
+      std::vector<Camera*> GetCamVec();
+
+    private:
+      std::vector<Camera*> CamVec;
+    }; //Scene
+
     void AddFeature(Camera* Cam);
+    void AddFeature(Scene* Scene);
 
     void ConfirmFeatures();
   }; //FEATURES
@@ -217,9 +244,11 @@ namespace pb {
         INT64 height = 0;
         INT64 width = 0;
         BYTE* bits = 0;
-      };
+      }; //Texture
 
       static Texture* TextureFromFile(const char* filename);
+      static pb::Feature::Scene* SceneFromFiles(std::vector<const char*> filenames);
+      static pb::Feature::Camera* CamFromFile(const char* filename, INT i);
     }; //Input
 
   }; //UTILS
@@ -232,144 +261,6 @@ namespace pb {
   extern void RunRender();
 
 }; //POLYBLOCK
-
-
-
-
-
-  namespace GFX {
-
-    class DirectX {
-
-    };
-    
-    class GLFW {
-      struct WorkArea {
-        int xpos, ypos;
-        int width, height;
-
-        WorkArea(GLFWmonitor* monitor);
-      }; //workArea
-
-
-      struct Monitor {
-        const WorkArea* workArea;
-        const GLFWvidmode* vidMode;
-        GLFWmonitor* mon;
-
-        Monitor(GLFWmonitor* monitor);
-      }; //Monitor
-
-
-      struct Window {
-        GLFW::Monitor* mon;
-        GLFWwindow* win;
-        std::string winName;
-        int winHeight;
-        int winWidth;
-        INT8 indice = 1;
-
-        Window(GLFW::Monitor* monitor, const char* winname, int winwidth, int winheight);
-        Window(GLFW::Monitor* monitor, std::string winname, int winwidth, int winheight);
-        Window(GLFW::Monitor* monitor, const char* winname);
-        Window(GLFW::Monitor* monitor, std::string winname);
-      }; //window
-
-
-    protected:
-      Monitor* primMon;
-      Window* primWin;
-
-      GLFW() = default;
-      void createWindow(int winwidth, int winheight, std::string winname);
-      void createWindow(int winwidth, int winheight, const char* winname);
-      void createWindow(std::string winname);
-      void createWindow(const char* winname);
-
-    }; //GLFW
-
-    class OpenGL :
-      GLFW {
-
-    };
-
-    class Vulkan :
-      GLFW {
-
-      struct pbInit {
-        const std::vector<const char*> deviceExtensions = {
-          VK_KHR_SWAPCHAIN_EXTENSION_NAME
-        }; //device Enxtensions
-
-        VkSurfaceKHR surface;
-
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-
-        struct QFamIndices {
-          std::optional<uint32_t> gfxFam;
-          std::optional<uint32_t> presFam;
-
-          bool isComplete();
-
-          QFamIndices() = default;
-        }; //QFamIndices
-
-        const std::vector<const char*> validLayers = {
-        "VK_LAYER_KHRONOS_validation" };
-
-        struct SwapChainSupportDetails {
-          VkSurfaceCapabilitiesKHR capabilities;
-          std::vector<VkSurfaceFormatKHR> formats;
-          std::vector<VkPresentModeKHR> presentModes;
-        }; //SwapChainSupportDetails
-
-        pbInit(GLFWwindow* primWin);
-
-        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice d);
-        void populateDebugMessenger(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-        QFamIndices findQFams(VkPhysicalDevice d);
-
-        VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-          const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-          VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-          void* pUserData);
-
-      }; //pbInit
-
-
-      struct pbPipeline {
-
-        pbPipeline();
-
-      }; //pbPipeLine
-
-
-      struct pbControl {
-
-      }; //pbControl
-
-
-      struct pbMain {
-
-      }; //pbMain
-
-      Vulkan();
-
-    }; //Vulkan
-    
-    class Render {
-      union API {
-        Vulkan* Vulkan;
-        OpenGL* OpenGL;
-        DirectX* DirectX;
-      }; //API
-
-      void RunRender();
-    }; //Render
-  } //GFX
-
 
   struct Client {
     static void AddClient();

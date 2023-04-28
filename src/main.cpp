@@ -5,7 +5,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
   auto Utils = new pb::Config::Utils();
   auto Render = new pb::Config::Render();
 
-  //auto Camera = new pb::Features::Camera();
+  auto Camera = new pb::Feature::Camera();
 
   Render->SetRenderEngine(VULKAN13);
   Render->SetDirectXInstanceID(hInstance);
@@ -17,12 +17,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
   pb::Config::AddConfig(Render);
   pb::Config::ConfirmConfigs();
 
-  //Camera->SetWorldPos();
-  //Camera->SetViewDirection();
-  //Camera->SetViewFarCut();
-  //Camera->SetViewNearCut();
+  Camera->SetWorldPos(0, 0, 0);
+  Camera->SetViewDirection(0, 0, 0);
+  Camera->SetFarClip(1000);
+  Camera->SetNearClip(10);
+  Camera->SetName("Test");
 
-  //pb::Features::AddFeature(Camera);
+  pb::Feature::AddFeature(Camera);
 
   pb::Client::ConfirmClients();
   pb::RunRender();

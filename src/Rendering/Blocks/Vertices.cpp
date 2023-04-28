@@ -45,5 +45,8 @@ std::vector<float> getBlockVertices(unsigned int type) {
     //Platonic Solids
   case CUBE:
     return getCubeVertices();
+
+  default:
+    return {};
   }; //switch
 }; //getBlockVertices

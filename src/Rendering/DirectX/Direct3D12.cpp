@@ -467,7 +467,7 @@ private:
   HWND winInstance;
 }; //Window
 
-PRIVATEPB::DirectX12::DirectX12(pb::Config::Render* R) {
+PRIVATEPB::DirectX12::DirectX12(pb::Config::Render* R, Features* F, Control* C) {
   auto DX = new DXInterface();
   auto dxDevice = DX->GetDxDevice();
   auto cmdQueue = DX->GetCmdQueue();

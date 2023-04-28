@@ -1,22 +1,255 @@
 #include <PRVTPB.h>
 
+/* MACROS */
 #define STAGE_BUFF_BITS                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 #define VERTEX_BUFF_BITS                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 #define INDEX_BUFF_BITS                   VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 #define UNIFORM_BUFF_BITS             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 
-constexpr INT8 VERTEX_BUFF = 0;
-constexpr INT8 INDICE_BUFF = 1;
-constexpr INT8 UNIFORM_BUFF = 2;
-
 #define STB_IMAGE_IMPLEMENTATION
+
+inline constexpr INT8 VERTEX_BUFF = 0;
+inline constexpr INT8 INDICE_BUFF = 1;
+inline constexpr INT8 UNIFORM_BUFF = 2;
+
+/* INCLUDES */
 #include <stb_image.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-pb::Config::Render* rendConf;
+/* Scene Objects */
+struct Object {
+  Object() : worldPos(glm::mat4(1.0f)) {
+  }; //Object
 
+  const char* SetName(const char* str) {
+    Name = str;
+
+    return Name;
+  }; //SetObjectName
+
+  glm::mat4 SetWorldPos(float x, float y, float z) {
+    worldPos[3][0] = -x;
+    worldPos[3][1] = -y;
+    worldPos[3][2] = -z;
+    return worldPos;
+  }; //SetWorldPOs
+
+  glm::mat4 UpWorldPos(float x, float y, float z) {
+    worldPos[3][0] += -x;
+    worldPos[3][1] += -y;
+    worldPos[3][2] += -z;
+    return worldPos;
+  }; //UpWorldPos
+
+  glm::mat4 DeltaSetWorldPos(float x, float y, float z, float delta) {
+    worldPos[3][0] = -x * delta;
+    worldPos[3][1] = -y * delta;
+    worldPos[3][2] = -z * delta;
+    return worldPos;
+  }; //DeltaSetWorldPos
+
+  glm::mat4 DeltaUpWorldPos(float x, float y, float z, float delta) {
+    worldPos[3][0] += -x * delta;
+    worldPos[3][1] += -y * delta;
+    worldPos[3][2] += -z * delta;
+    return worldPos;
+  }; //DeltaUpWorldPos
+
+  glm::mat4 GetWorldPosMat() {
+    return worldPos;
+  }; //GetWorldPos
+
+  glm::vec3 GetWorldPosVec() {
+    return {
+      worldPos[3][0],
+      worldPos[3][1],
+      worldPos[3][2]
+    }; //return
+  }; //GetWorldPos
+
+  const char* GetName() {
+    return Name;
+  }; //Get Name
+protected:
+  glm::mat4x4 worldPos;
+  const char* Name;
+}; //Object
+
+struct Camera :
+  Object {
+  Camera(pb::Feature::Camera* cam, float width, float height) {
+    auto wp = cam->GetWorldPos(); //WorldPos
+    auto vm = cam->GetViewDirection(); //ViewMat
+    FOV = cam->GetFOV();
+    NearClip = cam->GetNearClip();
+    FarClip = cam->GetFarClip();
+    FOVUnit = cam->GetFOVUnit();
+    Name = cam->GetName();
+
+    SetWorldPos(wp[0], wp[1], wp[2]);
+    SetViewMatrix(vm[0], vm[1], vm[2]);
+    SetPerspectiveProj(width, height);
+  }; //Camera
+
+  glm::mat4 SetPerspectiveProj(float width, float height) {
+    if (FOVUnit == RADIAN) {
+      ProjMat = glm::perspective(FOV, width / height, NearClip, FarClip);
+    } //If Radian
+    else if (FOVUnit == DEGREE) {
+      ProjMat = glm::perspective(glm::radians(FOV), width / height, NearClip, FarClip);
+    } // else if degree
+    else {
+      InternalReport("Writing Perspective Projection", "Selecting Between Units", "Improper Unit Selected");
+    }; //Throw Error 
+    ProjMat[1][1] *= -1;
+    return ProjMat;
+  }; //SetPerspectiveProj
+
+  glm::mat4 SetViewMatrix(float x, float y, float z) {
+    ViewMat = glm::lookAt(
+      glm::vec3(2.0f, 2.0f, 2.0f), //Eye
+      glm::vec3(
+        -x + worldPos[3][0], //Look At X
+        -y + worldPos[3][1], //Look At Y
+        -z + worldPos[3][2]), //Look At Z
+      glm::vec3(0.0f, 1.0f, 0.0f)); //Height
+    return ViewMat;
+  }; //SetViewMatrix
+
+  glm::mat4 GetPerspectiveProj() {
+    return ProjMat;
+  }; //GetPerspectiveProj
+
+  glm::mat4 GetViewMatrix() {
+    return ViewMat;
+  }; //GetViewMatrix
+
+private:
+  glm::mat4 ViewMat;
+  glm::mat4 ProjMat;
+
+  float FOV;
+  float NearClip;
+  float FarClip;
+  UINT FOVUnit;
+}; //Camera
+
+/* EXTERNAL CLASSES*/
+struct PRIVATEPB::Features {
+  Features() :
+    CameraVector({})
+  {};
+
+  //Getters
+  std::vector
+    <pb::Feature::Camera*>
+    GetCameraVector()
+  {
+    return CameraVector;
+  };
+
+  bool GetConfirmed() { return Confirmed; };
+
+  //Setters
+  void SetConfirmed(bool b) { Confirmed = b; };
+
+private:
+  std::vector<pb::Feature::Camera*> CameraVector;
+
+  bool Confirmed;
+}; //FEATURES
+
+/*INTERNAL OBJECTS*/
+struct Scene {
+  std::chrono::steady_clock::time_point delta;
+  std::unordered_map<const char*, Camera*> CameraHash;
+
+  Scene() {};
+
+  void TriggerDelta() {
+    delta = std::chrono::high_resolution_clock::now();
+  }; //TriggerDelta
+
+  float GetDelta() {
+    auto cT = std::chrono::high_resolution_clock::now();
+
+    auto d = std::chrono::duration<float,
+      std::chrono::seconds::period>(cT -
+        delta).count();
+
+    return d;
+  }; //GetDelta
+
+  void ChangeCamera() {
+
+  }; //Change Camera
+
+  void UpdateCamera(UINT MotionType, float x, float y, float z) {
+
+  }; //UpdateCamera
+}; //WorldSpace
+
+struct ControlSet {
+
+}; //ControlSet
+
+struct FeatureSet {
+  std::unordered_map
+    <const char*, Camera*>
+    BuildCameraHash(
+      std::vector
+      <pb::Feature::Camera*>
+      cameraVec,
+      pb::Config::Render* rendConf
+    ) { //BuildCameraHash
+    RendConf = rendConf;
+    CameraHash = {};
+
+    for (auto& vecCam : cameraVec) {
+      auto hashCam = new Camera(
+        vecCam,
+        rendConf->GetWindowWidth(),
+        rendConf->GetWindowHeight()
+      ); //New Camera
+
+      CameraHash.try_emplace(hashCam->GetName(), hashCam);
+    }; //for camHash
+
+    return CameraHash;
+  }; //GetCameraHash
+
+  std::unordered_map
+    <const char*, Camera*>
+    CameraHash;
+
+  pb::Config::Render* RendConf;
+}; //FeatureSet
+
+struct PbInterface {
+  PbInterface(pb::Config::Render* R, FeatureSet* F, ControlSet* C) :
+    Controls(C),
+    Features(F),
+    RenderConf(R)
+  {}; //PbInterface
+
+  ControlSet* GetControls() { return Controls; };
+  FeatureSet* GetFeatures() { return Features; };
+  pb::Config::Render* GetRenderConf() { return RenderConf; };
+
+  Camera* GetCamera(const char* name) {
+    return Features->CameraHash.at(name);
+  }; //GetCamera
+
+private:
+  ControlSet* Controls;
+  FeatureSet* Features;
+  pb::Config::Render* RenderConf;
+}; //PbInterface
+
+
+//Integrate into Control
 struct Input {
   int backtick : 1;
   int one : 1;
@@ -70,11 +303,12 @@ struct Input {
   int bracketRight : 1;
   int cntrl : 1;
   int space : 1;
-};
+}; //Input
 
 Input* input;
 
-void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
+/* CALLBACKS */
+void KeyboardCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
   switch (key) {
   case GLFW_KEY_W:
     if (action == GLFW_PRESS) {
@@ -139,9 +373,16 @@ void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
     }
     return;
   }
-}
+} //KeyboardCallback
+
+inline static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+  InternalLog("Internal Debugger", "Validation Layer:", pCallbackData->pMessage);
+
+  return VK_FALSE;
+} //CallBack
 
 struct GLFWInterface {
+  pb::Config::Render* RendConf;
   GLFWmonitor* mon;
   GLFWwindow* win;
   const GLFWvidmode* vidMode;
@@ -154,12 +395,14 @@ struct GLFWInterface {
   UINT32 extensionCount;
   const char** extensions;
 
-  GLFWInterface() {
+  GLFWInterface(pb::Config::Render* rendConf) {
     InternalLog("Creating Window", "Initializing GLFW", "Initializing");
+
+    RendConf = rendConf;
 
     if (!glfwInit()) {
       InternalReport("Creating Window", "Initializing GLFW", "Initialization Failed");
-    }
+    } //If Init
 
     InternalLog("Creating Window", "Creating Monitor", "Collecting Stats");
 
@@ -191,7 +434,7 @@ struct GLFWInterface {
 
     extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
     glfwGetFramebufferSize(win, &fbWidth, &fbHeight);
-    glfwSetKeyCallback(win, keyCallback);
+    glfwSetKeyCallback(win, KeyboardCallback);
   }; //GLFW
 
   inline void CreateWin(FINT16 winWidth, FINT16 winHeight, const char* winName) {
@@ -199,7 +442,7 @@ struct GLFWInterface {
 
     InternalLog("Creating Window", "Creating Window", "Creating Window");
 
-    if (rendConf->GetFullscreenBool()) {
+    if (RendConf->GetFullscreenBool()) {
       win = glfwCreateWindow(winWidth, winHeight, winName, mon, nullptr);
     }
     else {
@@ -216,7 +459,7 @@ struct GLFWInterface {
 
     InternalLog("Creating Window ", " Creating Window ", " Creating Window");
 
-    if (rendConf->GetFullscreenBool()) {
+    if (RendConf->GetFullscreenBool()) {
       win = glfwCreateWindow(monWidth, monHeight, winName, mon, nullptr);
     }
     else {
@@ -227,8 +470,8 @@ struct GLFWInterface {
       InternalReport("Creating Window ", " Creating Window ", " Window Creation Failed");
     }
 
-    rendConf->SetWindowHeight(monHeight);
-    rendConf->SetWindowWidth(monWidth);
+    RendConf->SetWindowHeight(monHeight);
+    RendConf->SetWindowWidth(monWidth);
   }; //createWindow
 
   inline void CreateInterface(VkInstance vkInterface, VkSurfaceKHR* vkSurface) {
@@ -257,31 +500,6 @@ struct GLFWInterface {
   ~GLFWInterface() {};
 
 }; //GLFW
-
-struct WorldSpace {
-  std::chrono::steady_clock::time_point delta;
-  //std::vector<Camera*>* camVec;
-
-  WorldSpace() {};
-
-  void TriggerDelta() {
-    delta = std::chrono::high_resolution_clock::now();
-  };
-
-  float GetDelta() {
-    auto cT = std::chrono::high_resolution_clock::now();
-
-    auto d = std::chrono::duration<float,
-      std::chrono::seconds::period>(cT -
-        delta).count();
-
-    return d;
-
-  };
-
-};
-
-WorldSpace* world;
 
 struct Vertex {
   glm::vec4 color;
@@ -319,100 +537,7 @@ struct Vertex {
   }
 };
 
-struct Object { 
-  Object() : worldPos(glm::mat4(1.0f)) {
-  }; //Object
-
-  glm::mat4 SetWorldPos(float x, float y, float z) {
-    worldPos[3][0] = -x;
-    worldPos[3][1] = -y;
-    worldPos[3][2] = -z;
-    return worldPos;
-  };
-
-  glm::mat4 UpWorldPos(float x, float y, float z) {
-    worldPos[3][0] += -x;
-    worldPos[3][1] += -y;
-    worldPos[3][2] += -z;
-    return worldPos;
-  };
-
-  glm::mat4 DeltaSetWorldPos(float x, float y, float z) {
-    auto d = world->GetDelta();
-
-    worldPos[3][0] = -x * d;
-    worldPos[3][1] = -y * d;
-    worldPos[3][2] = -z * d;
-    return worldPos;
-  };
-
-  glm::mat4 DeltaUpWorldPos(float x, float y, float z) {
-    auto d = world->GetDelta();
-
-    worldPos[3][0] += -x * d;
-    worldPos[3][1] += -y * d;
-    worldPos[3][2] += -z * d;
-    return worldPos;
-  };
-
-  glm::mat4 GetWorldPosMat() {
-    return worldPos;
-  }; //GetWorldPos
-
-  glm::vec3 GetWorldPosVec() {
-    return { 
-      worldPos[3][0], 
-      worldPos[3][1], 
-      worldPos[3][2] 
-    }; //return
-  }; //GetWorldPos
-
-  glm::mat4x4 worldPos;
-}; //Object
-
-struct Camera :
-  Object {
-  Camera(glm::vec3 initPos) {
-    worldPos[3][0] = initPos[0];
-    worldPos[3][1] = initPos[1];
-    worldPos[3][2] = initPos[2];
-  }; //Camera
-
-  glm::mat4 SetPerspectiveProj(float width, float height) {
-    projMat = glm::perspective(glm::radians(fovDeg), width / height, nearClip, farClip); 
-    projMat[1][1] *= -1;
-    return projMat;
-  };
-
-  glm::mat4 SetViewMatrix(float x, float y, float z) {
-    viewMat = glm::lookAt(
-      glm::vec3(2.0f, 2.0f, 2.0f), //Eye
-      glm::vec3(
-        -x + worldPos[3][0], //Look At X
-        -y + worldPos[3][1], //Look At Y
-        -z + worldPos[3][2]), //Look At Z
-      glm::vec3(0.0f, 1.0f, 0.0f)); //Height
-    return viewMat;
-  };
-
-
-
-  glm::mat4 GetPerspectiveProj() {
-    return projMat;
-  };
-
-  glm::mat4 GetViewMatrix() {
-    return viewMat;
-  };
-
-private:
-  glm::mat4 viewMat;
-  glm::mat4 projMat;
-
-  float fovDeg;
-  float nearClip; 
-  float farClip; 
-};
+Camera* cam;
 
 struct Block :
   public Object {
@@ -515,8 +640,6 @@ struct Block :
   }; //Activate
 }; //Block
 
-
-Camera* cam;
 Block* block;
 
 struct SwapChainSupportDetails {
@@ -548,20 +671,6 @@ inline SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, Vk
 
   return details;
 } //SwapChainSupportDetails
-
-inline static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-  std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-
-  return VK_FALSE;
-} //CallBack
-
-inline void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
-  createInfo = {};
-  createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-  createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-  createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-  createInfo.pfnUserCallback = debugCallback;
-} //DebugMessenger
 
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
@@ -744,24 +853,36 @@ struct GPUInterface {
   ~GPUInterface() {
     delete hardInterface;
     delete softInterface;
-  };
+  }; //GPUInterface
 
-};
+}; //GpuInterface
+
+struct DebugInterface {
+
+
+  DebugInterface() {
+    
+  }; //DebugInterface
+}; //DebugInterface
 
 struct VkInterface {
   VkInstance vulkan;
   GPUInterface* gpu;
   GLFWInterface* glfw;
+  DebugInterface* debug;
   VkSurfaceKHR windowSurface;
+  VkDebugUtilsMessengerEXT debugMessenger; //Move to DebugInterface
 
-  VkInterface() {
-    glfw = new GLFWInterface();
-    VulkanInterface();
+  VkInterface(pb::Config::Render* rendConf) {
+    glfw = new GLFWInterface(rendConf);
+    VulkanInterface(rendConf);
     glfw->CreateInterface(vulkan, &windowSurface);
     gpu = new GPUInterface(vulkan, &windowSurface);
+    debug = new DebugInterface();
+    if (DEBUG) { ActivateDebug(); }; //Move to DebugInterface
   }; //VkInterface
 
-  void VulkanInterface() {
+  void VulkanInterface(pb::Config::Render* rendConf) {
     InternalLog("Initializing Vulkan ", " Creating Program Instance ", " Writing Struct");
 
     VkApplicationInfo appInfo{};
@@ -786,7 +907,7 @@ struct VkInterface {
 
     if (DEBUG) {
       extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
+    } //If DEBUG
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
@@ -794,49 +915,122 @@ struct VkInterface {
 
     InternalLog("Initializing Vulkan ", " Creating Program Instance ", " Collecting Vulkan Debug Data");
 
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
     if (DEBUG) {
       createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
       createInfo.ppEnabledLayerNames = validationLayers.data();
 
-      populateDebugMessengerCreateInfo(debugCreateInfo);
-      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+      VkDebugUtilsMessengerCreateInfoEXT debugInfo = {};
+      debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+      debugInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+      debugInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+      debugInfo.pfnUserCallback = DebugCallback;
+
+      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugInfo;
     }
     else {
       createInfo.enabledLayerCount = 0;
 
       createInfo.pNext = nullptr;
-    }
+    } //ElseIf
 
 
     InternalLog("Creating Program Instance ", " Creating Virtual Instance ", " Appoving Instance");
 
     if (vkCreateInstance(&createInfo, nullptr, &vulkan) != VK_SUCCESS) {
       InternalReport("Creating Program Instance ", " Creating Virtual Instance ", " Instance Creation Failed");
-    }
-  };
+    } //If CreateInstance
+  }; //VulkanInterface
+
+  void ActivateDebug() {
+    InternalLog(
+      "Initializing Vulkan", 
+      "Confirming Validation Layers", 
+      "Enumerating and Confirming Layers"
+    ); //InternalLog
+
+    UINT32 layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const char* layerName : validationLayers) {
+      bool layerFound = false;
+
+      for (const auto& layerProperties : availableLayers) {
+        if (strcmp(layerName, layerProperties.layerName) == 0) {
+          layerFound = true;
+          break;
+        } // If LayerName Matches
+      } //For LayerProperties
+
+      if (!layerFound) {
+        InternalReport("Initializing Vulkan ", " Confirming Validation Layers ", " Failure");
+      } //If LayerFound
+    } // For LayerNames
+
+    VkDebugUtilsMessengerCreateInfoEXT debugInfo = {};
+    debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    debugInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    debugInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    debugInfo.pfnUserCallback = DebugCallback;
+
+    InternalLog(
+      "Initializing Vulkan ", 
+      " Creating Debug Messenger ", 
+      " Creating Debugger"
+    ); //InternalLog
+
+    auto b = VK_ERROR_EXTENSION_NOT_PRESENT;
+
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vulkan, "vkCreateDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+      b = func(vulkan, &debugInfo, nullptr, &debugMessenger);
+    } //If Nullptr
+
+    InternalLog(
+      "Initializing Vulkan ", 
+      " Confirming Debugger ", 
+      " Confirming Debugger"
+    ); //InternalLog
+
+    if (b != VK_SUCCESS) {
+      InternalReport(
+        "Initializing Vulkan ", 
+        " Confirming Debugger ", 
+        " Confirmation Failed"
+      ); //InternalReport
+    } // If CeateMessenger
+  }; //ActivateDebug
 
   VkPhysicalDevice GetGPUHardInterface() {
     return gpu->hardInterface->hardInterface;
-  };
+  }; //GetGPUHardInterface
 
   VkDevice GetGPUSoftInterface() {
     return gpu->softInterface->softInterface;
-  };
+  }; //GetGPUSoftInterface
 
   VkQueue GetCmndQueue() {
     return gpu->softInterface->cmndQueue;
-  };
+  }; //GetCmdQueue
 
   VkQueue GetImageQueue() {
     return gpu->softInterface->imageQueue;
-  };
+  }; //GetImageQueue
 
   ~VkInterface() {
     delete gpu;
     delete glfw;
-  };
-};
+  }; //~VkInterface
+}; //VkInterface
+
+struct GFXPipeline {
+  PbInterface* pbInterface;
+  VkInterface* vkInterface;
+
+
+}; //GFXPipeline
 
 VkInterface* vkInterface;
 
@@ -866,7 +1060,7 @@ VkInterface* vkInterface;
             InitDestBuff(VERTEX_BUFF_BITS);
 
             InjectData(dataInput);
-            SendCmndBuffer();
+            SendCmdBuffer();
             break;
 
           case INDICE_BUFF:
@@ -874,7 +1068,7 @@ VkInterface* vkInterface;
             InitDestBuff(INDEX_BUFF_BITS);
 
             InjectData(dataInput);
-            SendCmndBuffer();
+            SendCmdBuffer();
             break;
 
           case UNIFORM_BUFF:
@@ -979,7 +1173,7 @@ VkInterface* vkInterface;
     }; //InjectData
 
 
-    void SendCmndBuffer() {
+    void SendCmdBuffer() {
       //Build Buffer
       VkCommandBuffer cmndBuff;
 
@@ -1029,11 +1223,9 @@ VkInterface* vkInterface;
       vkDestroyBuffer(vkInterface->GetGPUSoftInterface(), stageBuff, nullptr);
       vkFreeMemory(vkInterface->GetGPUSoftInterface(), stageData, nullptr);
     }; //DeallocStage
-  };
-
+  }; //BufferInput
 
   //Sec. Init
-  VkDebugUtilsMessengerEXT debugMessenger;
 
 
   //Sec. Pipe
@@ -1366,69 +1558,6 @@ VkInterface* vkInterface;
     }
   } // DestroDebugMessengerEXT
 
-  //Sec. Init
-  inline void CheckDebug() {
-    if (DEBUG) {
-      InternalLog("Initializing Vulkan", "Confirming Validation Layers", "Enumerating and Confirming Layers");
-
-      UINT32 layerCount;
-      vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-      std::vector<VkLayerProperties> availableLayers(layerCount);
-      vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-      for (const char* layerName : validationLayers) {
-        bool layerFound = false;
-
-        for (const auto& layerProperties : availableLayers) {
-          if (strcmp(layerName, layerProperties.layerName) == 0) {
-            layerFound = true;
-            break;
-          }
-        }
-
-        if (!layerFound) {
-          InternalReport("Initializing Vulkan ", " Confirming Validation Layers ", " Failure");
-        }
-      }
-    }; // if (DEBUG)
-  }; //checkDebug
-
-  inline void CreateInstance() {
-
-  }; //createInstance
-
-  inline void SetupDebugMessenger() {
-    if (DEBUG) {
-      VkDebugUtilsMessengerCreateInfoEXT createInfo;
-      populateDebugMessengerCreateInfo(createInfo);
-
-      InternalLog("Initializing Vulkan ", " Creating Debug Messenger ", " Creating Debugger");
-
-      auto b = VK_ERROR_EXTENSION_NOT_PRESENT;
-
-      auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vkInterface->vulkan, "vkCreateDebugUtilsMessengerEXT");
-      if (func != nullptr) {
-        b = func(vkInterface->vulkan, &createInfo, nullptr, &debugMessenger);
-      }
-
-      InternalLog("Initializing Vulkan ", " Confirming Debugger ", " Confirming Debugger");
-
-      if (b != VK_SUCCESS) {
-        InternalReport("Initializing Vulkan ", " Confirming Debugger ", " Confirmation Failed");
-
-      } // If CeateMessenger
-    }; //If Debug
-  }; //setupDebugMessenger
-
-  inline void CreateSurface() {
-  }; //Create Surface
-
-  inline void CreateLogicalDevice() {
-
-  }; //createLogicalDevice
-
-
   //Sec. Pipe
   VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
     for (VkFormat format : candidates) {
@@ -1475,12 +1604,20 @@ VkInterface* vkInterface;
   } //CreateImageView
 
   inline void CreateSwapChain() {
-    InternalLog("Creating Vulkan Pipeline ", " Creating Image Chain ", " Checking for GPU Support");
+    InternalLog(
+      "Creating Vulkan Pipeline ", 
+      " Creating Image Chain ", 
+      " Checking for GPU Support"
+    ); //InternalLog
 
     SwapChainSupportDetails swapChainSupport =
       querySwapChainSupport(vkInterface->GetGPUHardInterface(), vkInterface->windowSurface);
 
-    InternalLog("Creating Vulkan Pipeline ", " Creating Image Chain ", " Setting GPU Options");
+    InternalLog(
+      "Creating Vulkan Pipeline ", 
+      " Creating Image Chain ", 
+      " Setting GPU Options"
+    ); //InternalLog
 
     VkSurfaceFormatKHR surfaceFormat =
       chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -1489,14 +1626,22 @@ VkInterface* vkInterface;
     VkExtent2D extent =
       chooseSwapExtent(swapChainSupport.capabilities);
 
-    InternalLog("Creating Vulkan Pipeline ", " Creating Image Chain ", " Setting Chain Length");
+    InternalLog(
+      "Creating Vulkan Pipeline", 
+      "Creating Image Chain", 
+      " Setting Chain Length"
+    ); //InternalLog
 
     UINT32 imageCount = swapChainSupport.capabilities.minImageCount + 1;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
       imageCount = swapChainSupport.capabilities.maxImageCount;
-    }
+    } //imageCount > swapChain
 
-    InternalLog("Creating Vulkan Pipeline ", " Creating Image Chain ", " Informing Chain");
+    InternalLog(
+      "Creating Vulkan Pipeline", 
+      "Creating Image Chain", 
+      "Informing Chain"
+    ); //InternalLog
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -1528,9 +1673,13 @@ VkInterface* vkInterface;
 
     if (vkCreateSwapchainKHR(vkInterface->GetGPUSoftInterface(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
       InternalReport("Creating Vulkan Pipeline ", " Creating Image Chain ", " Chain Creation Failed");
-    }
+    } //if vkCreateSwapChain
 
-    InternalLog("Creating Vulkan Pipeline ", " Creating Image Chain ", " Preparing Final Chain");
+    InternalLog(
+      "Creating Vulkan Pipeline ", 
+      "Creating Image Chain ", 
+      "Preparing Final Chain"
+    ); //InternalLog
 
     vkGetSwapchainImagesKHR(vkInterface->GetGPUSoftInterface(), swapChain, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
@@ -1810,7 +1959,7 @@ VkInterface* vkInterface;
       }
     }
   } //CreateFrameBuffers
-
+    
   //Sec. Cmnd
   inline void CreateCommandPool() {
     memset(mesoLog, 0, sizeof(mesoLog));
@@ -1828,8 +1977,8 @@ VkInterface* vkInterface;
     InternalLog(macroLog, mesoLog, " Checking Theadpool");
 
     if (vkCreateCommandPool(vkInterface->GetGPUSoftInterface(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-      InternalReport(macroLog, mesoLog, " Threapool Creation Failed");
-    }
+      InternalReport(macroLog, mesoLog, "Threapool Creation Failed");
+    } //If VkCommandPool = VK_SUCCESS
   }; //CreateCommandPool
 
   void CreateDepthResources() {
@@ -1941,7 +2090,7 @@ VkInterface* vkInterface;
     UniformBufferObject ubo{};
 
     ubo.model = cam->GetWorldPosMat();
-    ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
+    ubo.proj = cam->GetPerspectiveProj();
     ubo.view = cam->GetViewMatrix();
 
     uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1966,7 +2115,7 @@ VkInterface* vkInterface;
 
     if (vkCreateDescriptorPool(vkInterface->GetGPUSoftInterface(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
       throw std::runtime_error("failed to create descriptor pool!");
-    }
+    } //ICreateDescriptorPool = VK_SUCCESS
   } //CreateDescriptorPool
 
 
@@ -2017,7 +2166,7 @@ VkInterface* vkInterface;
   } //CreateDescriptorSets
 
   void CreateCommandBuffers() {
-    commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    commandBuffers.resize(MAX_FRAMES_IN_FLIGHT); //Ignore
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -2027,7 +2176,7 @@ VkInterface* vkInterface;
 
     if (vkAllocateCommandBuffers(vkInterface->GetGPUSoftInterface(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
       throw std::runtime_error("failed to allocate command buffers!");
-    }
+    } //If CommandBufferAllocate
   } //Create Command Buffers
 
 
@@ -2194,6 +2343,7 @@ VkInterface* vkInterface;
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
+    //Note for future, this is clearly a semaphore used as a mutex.
     VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
@@ -2209,7 +2359,7 @@ VkInterface* vkInterface;
 
     if (vkQueueSubmit(vkInterface->GetCmndQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
       throw std::runtime_error("failed to submit draw command buffer!");
-    }
+    } //vkQueueSubmit
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -2248,11 +2398,9 @@ VkInterface* vkInterface;
 
   void Loop() {
     while (!glfwWindowShouldClose(vkInterface->glfw->win)) {
-      cam->SetViewMatrix(0, 0, 0);
-
       glfwPollEvents();
-      ActuateEvents();
-      RenderFrame();
+      ActuateEvents(); //Move to ControlSet
+      RenderFrame(); //Move into Main Function?
     }
 
     vkDeviceWaitIdle(vkInterface->GetGPUSoftInterface());
@@ -2260,41 +2408,53 @@ VkInterface* vkInterface;
 
 
 
-  PRIVATEPB::Vulkan13::Vulkan13(pb::Config::Render* R) {
-    rendConf = R;
-    vkInterface = new VkInterface();
+  PRIVATEPB::Vulkan13::Vulkan13(
+    pb::Config::Render* rendConf,
+    PRIVATEPB::Features* F,
+    PRIVATEPB::Control* C
+  ) { //Vulkan13
+    //These need to be separate due to the limits of the Pimpl Idiom
+    auto featureSet = new FeatureSet();
+    auto controlSet = new ControlSet();
 
-    cam = new Camera(glm::vec3(1.0, 1.0, 1.0));
+    auto hash = F->GetCameraVector();
+    featureSet->BuildCameraHash(hash, rendConf);
+    delete F;
+    
+    //Ditch PbInterface, Replace with WorldSpace
+    //pbInterface -> vkInterface -> GFXPipeline? -> Loop
+    auto pbInterface = new PbInterface(rendConf, featureSet, controlSet);
+    vkInterface = new VkInterface(rendConf);
+
+    cam = pbInterface->GetCamera("Test");
     world = new WorldSpace();
     input = new Input();
     block = new Block(CUBE);
 
-    //Sec. Init
-    CheckDebug();
-    SetupDebugMessenger();
+    //Debug Was Moved to the Wrong Spot, Move to New Class
+    //Not necessary now, but add a scene system in the feature object using file loading
 
     //Sec. Pipe
-    CreateSwapChain();
-    CreateImageViews();
-    CreateRenderPass();
-    CreateDescriptorSetLayout();
-    CreateGraphicsPipeline();
+    CreateSwapChain(); //SwapChain
+    CreateImageViews(); //SwapChain
+    CreateRenderPass(); //Send to RenderPass
+    CreateDescriptorSetLayout(); //Send to DescriptorSet
+    CreateGraphicsPipeline(); //Send to Pipeline and Shader
 
     //Sec. Cmnd
-    CreateCommandPool();
-    CreateDepthResources();
-    CreateFramebuffers();
-    CreateTextureImage();
-    CreateTextureImageView();
-    CreateTextureSampler();
-    CreateUniformBuffers();
-    CreateDescriptorPool();
-    CreateDescriptorSets();
-    CreateCommandBuffers();
-    CreateSyncObjects();
+    CreateCommandPool(); //Relegate to PipeLine
+    CreateDepthResources(); //SwapChain
+    CreateFramebuffers(); //SwapChain
+    CreateTextureImage(); //Move to Texture - split to BufferInput as appropriate
+    CreateTextureImageView(); //Move to Texture
+    CreateTextureSampler(); //Move to Texture
+    CreateUniformBuffers(); //Send to Buffers
+    CreateDescriptorPool(); //Move to DescriptorSets
+    CreateDescriptorSets(); //Move to DescriptorSets
+    CreateCommandBuffers(); //Relegate to BufferOutput
+    CreateSyncObjects(); //Pipeline
 
     //Eventually Move these here 
-    cam->SetWorldPos(0,0,0);
     block->SetWorldPos(0, 0, 0);
     block->SetBlockColor({ 0.0f,0.0f,0.0f });
     block->Activate();
@@ -2317,7 +2477,7 @@ VkInterface* vkInterface;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
       delete uniformBuffers[i];
-    }
+    } //For MAX_FRAMES
 
     vkDestroyDescriptorPool(vkInterface->GetGPUSoftInterface(), descriptorPool, nullptr);
 
@@ -2346,7 +2506,7 @@ VkInterface* vkInterface;
     vkDestroyDevice(vkInterface->GetGPUSoftInterface(), nullptr);
 
     if (DEBUG) {
-      DestroyDebugUtilsMessengerEXT(vkInterface->vulkan, debugMessenger, nullptr);
+      DestroyDebugUtilsMessengerEXT(vkInterface->vulkan, vkInterface->debugMessenger, nullptr);
     }
 
     vkDestroySurfaceKHR(vkInterface->vulkan, vkInterface->windowSurface, nullptr);

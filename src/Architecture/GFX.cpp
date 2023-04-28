@@ -1,10 +1,37 @@
 #include <PRVTPB.h>
 
-  PRIVATEPB::GFX::GFX(pb::Config::Render* rendConf) {
+struct PRIVATEPB::Features {
+  Features() :
+    CameraHash({})
+  {};
+
+  //Getters
+  std::unordered_map
+    <const char*, pb::Feature::Camera>
+    GetCameraHash()
+  {
+    return CameraHash;
+  };
+
+  bool GetConfirmed() { return Confirmed; };
+
+  //Setters
+  void SetConfirmed(bool b) { Confirmed = b; };
+
+private:
+  std::unordered_map<const char*, pb::Feature::Camera> CameraHash;
+
+  bool Confirmed;
+}; //FEATURES
+
+  PRIVATEPB::GFX::GFX(pb::Config::Render* rendConf, PRIVATEPB::Features* features, PRIVATEPB::Control* control) {
     UINT rend = rendConf->GetRenderEngine();
     bool init = 0;
 
-    InternalLog("Initializing Render Engine " , " Selecting Engine " , " Beginning Render Segments");
+    InternalLog("Initializing Render Engine " , 
+      " Selecting Engine " , 
+      " Beginning Render Segments"
+    ); //InternalLog
 
     void* render = NULL;
 
@@ -28,7 +55,7 @@
               "ImproperOS: OSX");
           } //InternalReport - OSX
 
-          render = new DirectX12(rendConf);
+          render = new DirectX12(rendConf, features, control);
           delete render;
           return;
 
@@ -40,7 +67,7 @@
               "ImproperOS: OSX"); 
           } //InternalReport - OSX
 
-          render = new Vulkan13(rendConf);
+          render = new Vulkan13(rendConf, features, control);
           delete render;
           return;
 

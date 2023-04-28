@@ -1,5 +1,7 @@
 #include <PRVTPB.h>
 
+#include <csv.hpp>
+
 #define PRVTPB //PIMPLE
 
 //CONFIG
@@ -248,7 +250,6 @@ void pb::Utils::Output::WritetoLog(const char* str) noexcept {
   cout->write("\n", 2);
   logfile->write("\n", 2);
 }; //WritetoLog
-
 void pb::Utils::Output::WritetoLog(const char* macro, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -275,7 +276,6 @@ void pb::Utils::Output::WritetoLog(const char* macro, const char* micro) noexcep
   cout->write("\n", 2);
   logfile->write("\n", 2);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::WritetoLog(const char* macro, const char* meso, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -332,7 +332,6 @@ void pb::Utils::Output::WritetoTimedLog(const char* str) noexcept {
   cout->write("\n", 2);
   logfile->write("\n", 2);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::WritetoTimedLog(const char* macro, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -366,7 +365,6 @@ void pb::Utils::Output::WritetoTimedLog(const char* macro, const char* micro) no
   cout->write("\n", 2);
   logfile->write("\n", 2);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::WritetoTimedLog(const char* macro, const char* meso, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -417,7 +415,6 @@ void pb::Utils::Output::WritetoLog(const std::string str) noexcept {
   *cout << "\n";
   *logfile << "\n";
 }; //WritetoLog
-
 void pb::Utils::Output::WritetoLog(std::string macro, std::string micro) noexcept {
   using namespace std::chrono;
 
@@ -449,7 +446,6 @@ void pb::Utils::Output::WritetoLog(std::string macro, std::string micro) noexcep
   cout->write("\n", 1);
   logfile->write("\n", 1);
 }; //WriteToLog
-
 void pb::Utils::Output::WritetoLog(std::string macro, std::string meso, std::string micro) noexcept {
   using namespace std::chrono;
   
@@ -510,7 +506,6 @@ void pb::Utils::Output::WritetoTimedLog(std::string str) noexcept {
   cout->write("\n", 2);
   logfile->write("\n", 2);
 }; //WriteToTimedLog
-
 void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string micro) noexcept {
   using namespace std::chrono;
 
@@ -548,7 +543,6 @@ void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string micro) no
   cout->write("\n", 1);
   logfile->write("\n", 1);
 }; //WriteToLog
-
 void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string meso, std::string micro) noexcept {
   using namespace std::chrono;
 
@@ -596,7 +590,6 @@ void pb::Utils::Output::WritetoTimedLog(std::string macro, std::string meso, std
   logfile->write("\n", 1);
 }; //WriteToLog
 
-
 void pb::Utils::Output::ThrowError(const char* str) noexcept {
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
@@ -606,7 +599,6 @@ void pb::Utils::Output::ThrowError(const char* str) noexcept {
 
   throw std::runtime_error(str);
 }; //WritetoLog
-
 void pb::Utils::Output::ThrowError(const char* macro, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -629,7 +621,6 @@ void pb::Utils::Output::ThrowError(const char* macro, const char* micro) noexcep
 
   throw std::runtime_error(rtrnStr);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::ThrowError(const char* macro, const char* meso, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -658,7 +649,6 @@ void pb::Utils::Output::ThrowError(const char* macro, const char* meso, const ch
 
   throw std::runtime_error(rtrnStr);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::ThrowError(const std::string str) noexcept {
   auto cout = PRIVATEPB::Client_ptr->GetCurrentConfig()->GetUtils()->GetLogBuffer();
   auto logfile = PRIVATEPB::Client_ptr->GetCurrentClient()->Utils->logFile;
@@ -668,7 +658,6 @@ void pb::Utils::Output::ThrowError(const std::string str) noexcept {
 
   throw std::runtime_error(str);
 }; //WritetoLog
-
 void pb::Utils::Output::ThrowError(std::string macro, std::string micro) noexcept {
   using namespace std::chrono;
 
@@ -696,7 +685,6 @@ void pb::Utils::Output::ThrowError(std::string macro, std::string micro) noexcep
 
   throw std::runtime_error(rtrnStr);
 }; //WriteToLog
-
 void pb::Utils::Output::ThrowError(std::string macro, std::string meso, std::string micro) noexcept {
   using namespace std::chrono;
 
@@ -753,7 +741,6 @@ void pb::Utils::Output::ThrowTimedError(const char* str) noexcept {
 
   throw std::runtime_error(rtrnStr);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::ThrowTimedError(const char* macro, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -783,7 +770,6 @@ void pb::Utils::Output::ThrowTimedError(const char* macro, const char* micro) no
 
   throw std::runtime_error(rtrnStr);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::ThrowTimedError(const char* macro, const char* meso, const char* micro) noexcept {
   using namespace std::chrono;
 
@@ -819,7 +805,6 @@ void pb::Utils::Output::ThrowTimedError(const char* macro, const char* meso, con
 
   throw std::runtime_error(rtrnStr);
 }; //WritetoTimedLog
-
 void pb::Utils::Output::ThrowTimedError(std::string str) noexcept {
   using namespace std::chrono;
 
@@ -835,7 +820,6 @@ void pb::Utils::Output::ThrowTimedError(std::string str) noexcept {
 
   throw std::runtime_error(rtrnStr);
 }; //WriteToTimedLog
-
 void pb::Utils::Output::ThrowTimedError(std::string macro, std::string micro) noexcept {
   using namespace std::chrono;
 
@@ -869,7 +853,6 @@ void pb::Utils::Output::ThrowTimedError(std::string macro, std::string micro) no
 
   throw std::runtime_error(rtrnStr);
 }; //ThrowTimedError
-
 void pb::Utils::Output::ThrowTimedError(std::string macro, std::string meso, std::string micro) noexcept {
   using namespace std::chrono;
 
@@ -913,6 +896,84 @@ void pb::Utils::Output::ThrowTimedError(std::string macro, std::string meso, std
   throw std::runtime_error(rtrnStr);
 }; //ThrowTimedError
 
+
+#undef RADIAN 0x00
+#undef DEGREE 0x01
+bool CSVTypeCheck(csv::CSVField csvValue, int i) {
+  inline constexpr int null = 0;
+  inline constexpr int integer = 1;
+  inline constexpr int string = 2;
+  inline constexpr int floating = 3;
+  switch (i) {
+  case null: 
+    if (csvValue.is_null()) {
+      return true;
+    } //CSVValue is Null
+    return false;
+  case integer:
+    if (csvValue.is_int()) {
+      return true;
+    } //CSVValue is int
+    return false;
+  case string:
+    if (csvValue.is_str()) {
+      return true;
+    } //CSVValue is str
+    return false;
+  case floating:
+    if (csvValue.is_float()) {
+      return true;
+    } //CSVValue is float
+    return false;
+  }; //Switch
+}; //CSVTypeCheck
+
+//Finish This
+std::array<float, 3> CSVStringFormat(const char* c, int i) {
+  inline constexpr int WorldPos = 0;
+  inline constexpr int ViewMat = 1;
+  inline constexpr int FOVUnit = 2;
+  inline constexpr int charSizeLimit = 5;
+  std::array<float, 3> rtrnArray;
+  
+  switch (i) {
+  WorldPos:
+  ViewMat: {
+      int j = 2, charIndex = charSizeLimit;
+      for (size_t i = strlen(c); strlen(c) > i; --i, --charIndex) {
+        char charArray[charSizeLimit];
+        
+        float returnD;
+        if (c[i] == ',') { 
+          sscanf(charArray, "%d", &returnD); 
+          rtrnArray[j] = returnD; 
+          --j; charIndex = charSizeLimit;
+          continue; 
+        } //if (c[i] == ',')
+        if (c[i] == ' ') { continue; }
+
+        if (charIndex >= 0) {
+          charArray[charIndex] = c[i];
+        } // if (charSizeLimit < charIndex)
+        else {
+          InternalReport(
+            "Parsing CSV",
+            "Uploading Camera",
+            "Failure: Improper Input for CharSize"
+          ); //InternalReport
+        }; //if charIndex > 0
+      }; //For (size_t i = 0;)
+    }; //Tri-Int Parse
+    return rtrnArray;
+
+  FOVUnit:
+    "DEGREE"
+  }; //Switch
+}; //CSVStirngFormat
+
+#define RADIAN 0x00
+#define DEGREE 0x01
+
 pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filename) {
   auto t = new Texture();
   FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -946,6 +1007,119 @@ pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filenam
 
   return t;
 }; //TextureFromFile
+pb::Feature::Scene* pb::Utils::Input::SceneFromFiles(std::vector<const char*> filenames) {
+
+}; //SceneFromFiles
+pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const char* name) {
+  csv::CSVFormat format;
+  format.trim({ ' ', '\t' });
+  
+  csv::CSVReader csvRows = csv::CSVReader(filename, format);
+  for (auto& rows : csvRows) {
+    if (CSVTypeCheck(rows["Camera"], 0) 
+      && CSVTypeCheck(rows["Camera"], 2));
+
+    if (rows["Camera"] == std::string(name)) {
+      auto newCam = new pb::Feature::Camera();
+      
+      int i = 0;
+      for (auto& fields : rows) {
+        switch (i) {
+        case 0: //name
+          if (!CSVTypeCheck(rows["Camera"], 2)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: Name"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          newCam->SetName(name);
+          break;
+        case 1: //TransitiveLayer
+          if (!CSVTypeCheck(rows["Camera"], 1)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: Transitive Layer"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          //newCam->SetName(name); 
+          break;
+        case 2: //WorldPos
+          if (!CSVTypeCheck(rows["Camera"], 2)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: WoldPos"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          newCam->SetWorldPos();
+          break;
+        case 3: //ViewDir
+          if (!CSVTypeCheck(rows["Camera"], 2)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: ViewDir"
+            ); //InternalReport
+          }; //CSVTypeCheck
+          
+          break;
+        case 4: //FOV
+          if (!CSVTypeCheck(rows["Camera"], 1)
+            && !CSVTypeCheck(rows["Camera"], 3)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: FOV"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          break;
+        case 5: //FOVUnit
+          if (!CSVTypeCheck(rows["Camera"], 2)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: FOVUnit"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          break;
+        case 6: //FarClip
+          if (!CSVTypeCheck(rows["Camera"], 3)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: FarClip"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          break;
+        case 7: //NearClip
+          if (!CSVTypeCheck(rows["Camera"], 1)
+            && !CSVTypeCheck(rows["Camera"], 3)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: NearClip"
+            ); //InternalReport
+          }; //CSVTypeCheck
+          
+          break;
+        }; //Field Switch
+        ++i;
+      }; //for auto& fields 
+      newCam->
+
+      return newCam;
+    }; // Checking Cam Value
+  } //csvRowReader
+  auto csvFields = csvRows[name];
+}; //CamFromFile
 
 
 bool pb::Config::Utils::IsLogTimed() noexcept {

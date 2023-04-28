@@ -345,8 +345,7 @@
 #define KEYBOARD_Z_LOWER                                        0x9A
 
 //Other Inputs
-#define TRIGGER                                                             0x9B
-#define MOTION                                                             0x9C
+#define OUTPUT                                                             0x9B
 
  //| >>= == = > <=== = <<|
 
@@ -372,10 +371,16 @@
 // GetWindowName needs to be fixed for platform and framework use. It doesn't work appropriately here because DirectX expects widestrings
 // Bring DirectX up to speed with Vulkan
 // 
+// Features
+// -> Finish Adding Transitivity Layer to Camera
+// 
 // Utils
+// -> Possible addition of index for "FromFile" functions
+// -> SceneFromFile should limit vector by number of items in scene 
 // -> Add Delimiter Option
 // -> Fix changing clients the logfile is replaced
 // -> Fix Const Char strings not updating length to 64
+// 
 // Vulkan Renderer
 // -> Update Logs to use new Segmented Log
 // Finish GLFW rendering system

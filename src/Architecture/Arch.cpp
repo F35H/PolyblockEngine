@@ -99,22 +99,31 @@ struct PRIVATEPB::Utils {
 //FEATURES
 struct PRIVATEPB::Features {
   Features() :
-    CameraHash({})
+    CameraVector({}),
+    SceneVector({})
   {};
 
   //Getters
-  std::unordered_map
-    <const char*, pb::Feature::Camera> 
-    GetCameraHash() 
-  { return CameraHash; };
-  
+  std::vector
+    <pb::Feature::Camera*>
+    GetCameraVector() {
+    return CameraVector;
+  }; //GetCameraVec
+
+  std::vector
+    <pb::Feature::Scene*>
+    GetSceneVector() {
+    return SceneVector;
+  }; //GetSceneVec
+
   bool GetConfirmed() { return Confirmed; };
 
   //Setters
   void SetConfirmed(bool b) { Confirmed = b; };
 
 private:
-  std::unordered_map<const char*, pb::Feature::Camera> CameraHash;
+  std::vector<pb::Feature::Camera*> CameraVector;
+  std::vector<pb::Feature::Scene*> SceneVector;
 
   bool Confirmed;
 }; //FEATURES
@@ -260,7 +269,7 @@ private:
 PRIVATEPB::ClientVector* PRIVATEPB::Client_ptr = new ClientVector();
 
 
-//PUBLIC IMPLEMENTATION 
+/*Add*/
 void pb::Config::AddConfig(pb::Config::Utils* U) {
   if (!PRIVATEPB::Client_ptr->GetLatestConfig()->GetWrotetoUtil()) {
 
@@ -280,7 +289,6 @@ void pb::Config::AddConfig(pb::Config::Utils* U) {
   }; //ELSE
 
 }; //AddConfig
-
 
 void pb::Config::AddConfig(pb::Config::Render* R) {
   if (!PRIVATEPB::Client_ptr
@@ -320,8 +328,8 @@ void pb::Feature::AddFeature(pb::Feature::Camera* Cam) {
     ) {
 
     Features
-      ->GetCameraHash()
-      .try_emplace(Cam->GetName(), Cam);
+      ->GetCameraVector()
+      .emplace_back(Cam);
   } //if Confirmed
   else {
     micro += " : Failure, Confirmation Order";
@@ -333,7 +341,6 @@ void pb::Feature::AddFeature(pb::Feature::Camera* Cam) {
     ); //InternalReport
   }; //Else
 
-  std::string micro = Cam->GetName();
   micro += " : Success";
 
   InternalLog(
@@ -343,7 +350,53 @@ void pb::Feature::AddFeature(pb::Feature::Camera* Cam) {
   ); //InternalReport
 }; //AddFeature
 
+void pb::Feature::AddFeature(pb::Feature::Scene* Scene) {
+  auto Configs = PRIVATEPB::Client_ptr
+    ->GetLatestConfig();
 
+  auto Features = PRIVATEPB::Client_ptr
+    ->GetLatestFeatures();
+
+  std::string micro = Scene->GetName();
+
+  if (!Features
+    ->GetConfirmed()
+    & Configs
+    ->GetConfirmed()
+    ) {
+
+    auto camVec = Features
+      ->GetCameraVector();
+    for (auto& cam : camVec) {
+      Scene->AddToCamVec(cam);
+    }; //for items in CameraVector
+    camVec.clear();
+      
+    Features
+      ->GetSceneVector()
+      .emplace_back(Scene);
+  } //if Confirmed
+  else {
+    micro += " : Failure, Confirmation Order";
+
+    InternalReport(
+      "Writing Features",
+      "Adding Scene",
+      micro.c_str()
+    ); //InternalReport
+  }; //Else
+
+  micro += " : Success";
+
+  InternalLog(
+    "Writing Features",
+    "Adding Camera",
+    micro.c_str()
+  ); //InternalReport
+}; //AddFeatureScene
+
+
+/*Confirms*/
 void pb::Config::ConfirmConfigs() {
   PRIVATEPB::Client_ptr->GetLatestConfig()
     ->SetConfirmed(true);
@@ -362,7 +415,6 @@ void pb::Config::ConfirmConfigs() {
   pb::Utils::Output::FlushtoLog();
 }; //ConfirmConfigs
 
-
 void pb::Feature::ConfirmFeatures() {
   auto Configs = PRIVATEPB::Client_ptr
     ->GetLatestConfig();
@@ -376,7 +428,11 @@ void pb::Feature::ConfirmFeatures() {
     ->GetConfirmed()
     ) {
 
-    PRIVATEPB::Client_ptr->GetLatestFeatures()
+    if (Features->GetSceneVector().size() == 0) {
+      pb::Feature::AddFeature(new Scene("AnonScene"));
+    }; //If SceneCount == 0
+
+    Features
       ->SetConfirmed(true);
 
     InternalLog("Writing Features", "Assigning Features to Client", "Confirming");
@@ -407,11 +463,15 @@ void pb::Client::ConfirmClients() {
 }; //ConfirmConfigs
 
 
+
 inline void pb::RunRender() {
   auto rendConf = PRIVATEPB::Client_ptr
     ->GetCurrentConfig()
     ->GetRender();
 
-  auto g = new PRIVATEPB::GFX(rendConf);
+  auto features = PRIVATEPB::Client_ptr
+    ->GetCurrentFeatures();
+
+  auto g = new PRIVATEPB::GFX(rendConf, features, nullptr);
   delete g;
 }; //RunRender
