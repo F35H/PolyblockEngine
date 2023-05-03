@@ -967,7 +967,13 @@ std::array<float, 3> CSVStringFormat(const char* c, int i) {
     return rtrnArray;
 
   FOVUnit:
-    "DEGREE"
+    if (c == "RADIAN") {
+      rtrnArray[0] = 0x00;
+    } //if (c == RADIAN)
+    else if (c == "DEGREE") {
+      rtrnArray[0] = 0x01;
+    }; //Else IF DEGREE
+    return rtrnArray;
   }; //Switch
 }; //CSVStirngFormat
 
@@ -1026,7 +1032,7 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
       for (auto& fields : rows) {
         switch (i) {
         case 0: //name
-          if (!CSVTypeCheck(rows["Camera"], 2)) {
+          if (!CSVTypeCheck(fields, 2)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1037,7 +1043,7 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
           newCam->SetName(name);
           break;
         case 1: //TransitiveLayer
-          if (!CSVTypeCheck(rows["Camera"], 1)) {
+          if (!CSVTypeCheck(fields, 1)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1048,15 +1054,17 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
           //newCam->SetName(name); 
           break;
         case 2: //WorldPos
-          if (!CSVTypeCheck(rows["Camera"], 2)) {
+          if (!CSVTypeCheck(fields, 2)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
               "Failure, Incompatible Format: WoldPos"
             ); //InternalReport
           }; //CSVTypeCheck
+          
+          auto array = CSVStringFormat(fields.get().c_str(), 0);
 
-          newCam->SetWorldPos();
+          newCam->SetWorldPos(array);
           break;
         case 3: //ViewDir
           if (!CSVTypeCheck(rows["Camera"], 2)) {
@@ -1066,11 +1074,14 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
               "Failure, Incompatible Format: ViewDir"
             ); //InternalReport
           }; //CSVTypeCheck
-          
+
+          auto array = CSVStringFormat(fields.get().c_str(), 1);
+
+          newCam->SetViewDirection(array);
           break;
         case 4: //FOV
-          if (!CSVTypeCheck(rows["Camera"], 1)
-            && !CSVTypeCheck(rows["Camera"], 3)) {
+          if (!CSVTypeCheck(fields, 1)
+            && !CSVTypeCheck(fields, 3)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1078,9 +1089,10 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
             ); //InternalReport
           }; //CSVTypeCheck
 
+          newCam->SetFOV(std::stod(fields.get()));
           break;
         case 5: //FOVUnit
-          if (!CSVTypeCheck(rows["Camera"], 2)) {
+          if (!CSVTypeCheck(fields, 2)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1088,9 +1100,12 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
             ); //InternalReport
           }; //CSVTypeCheck
 
+          auto array = CSVStringFormat(fields.get().c_str(), 2);
+
+          newCam->SetFOVUnit(array[0]);
           break;
         case 6: //FarClip
-          if (!CSVTypeCheck(rows["Camera"], 3)) {
+          if (!CSVTypeCheck(fields, 3)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1098,10 +1113,11 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
             ); //InternalReport
           }; //CSVTypeCheck
 
+          newCam->SetFarClip(std::stoi(fields.get()));
           break;
         case 7: //NearClip
-          if (!CSVTypeCheck(rows["Camera"], 1)
-            && !CSVTypeCheck(rows["Camera"], 3)) {
+          if (!CSVTypeCheck(fields, 1)
+            && !CSVTypeCheck(fields, 3)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1109,16 +1125,19 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
             ); //InternalReport
           }; //CSVTypeCheck
           
+          newCam->SetNearClip(std::stoi(fields.get()));
           break;
         }; //Field Switch
         ++i;
       }; //for auto& fields 
-      newCam->
-
       return newCam;
     }; // Checking Cam Value
   } //csvRowReader
-  auto csvFields = csvRows[name];
+  InternalReport(
+    "Reading Files",
+    "Uploading Camera",
+    "Failure, Incompatible Format: Camera"
+  ); //InternalReport
 }; //CamFromFile
 
 

@@ -20,7 +20,7 @@ inline constexpr INT8 UNIFORM_BUFF = 2;
 
 /* Scene Objects */
 struct Object {
-  Object() : worldPos(glm::mat4(1.0f)) {
+  Object() : WorldPos(glm::mat4(1.0f)) {
   }; //Object
 
   const char* SetName(const char* str) {
@@ -28,52 +28,45 @@ struct Object {
 
     return Name;
   }; //SetObjectName
-
   glm::mat4 SetWorldPos(float x, float y, float z) {
-    worldPos[3][0] = -x;
-    worldPos[3][1] = -y;
-    worldPos[3][2] = -z;
-    return worldPos;
+    WorldPos[3][0] = -x;
+    WorldPos[3][1] = -y;
+    WorldPos[3][2] = -z;
+    return WorldPos;
   }; //SetWorldPOs
-
   glm::mat4 UpWorldPos(float x, float y, float z) {
-    worldPos[3][0] += -x;
-    worldPos[3][1] += -y;
-    worldPos[3][2] += -z;
-    return worldPos;
+    WorldPos[3][0] += -x;
+    WorldPos[3][1] += -y;
+    WorldPos[3][2] += -z;
+    return WorldPos;
   }; //UpWorldPos
-
   glm::mat4 DeltaSetWorldPos(float x, float y, float z, float delta) {
-    worldPos[3][0] = -x * delta;
-    worldPos[3][1] = -y * delta;
-    worldPos[3][2] = -z * delta;
-    return worldPos;
+    WorldPos[3][0] = -x * delta;
+    WorldPos[3][1] = -y * delta;
+    WorldPos[3][2] = -z * delta;
+    return WorldPos;
   }; //DeltaSetWorldPos
-
   glm::mat4 DeltaUpWorldPos(float x, float y, float z, float delta) {
-    worldPos[3][0] += -x * delta;
-    worldPos[3][1] += -y * delta;
-    worldPos[3][2] += -z * delta;
-    return worldPos;
+    WorldPos[3][0] += -x * delta;
+    WorldPos[3][1] += -y * delta;
+    WorldPos[3][2] += -z * delta;
+    return WorldPos;
   }; //DeltaUpWorldPos
-
   glm::mat4 GetWorldPosMat() {
-    return worldPos;
+    return WorldPos;
   }; //GetWorldPos
-
   glm::vec3 GetWorldPosVec() {
     return {
-      worldPos[3][0],
-      worldPos[3][1],
-      worldPos[3][2]
+      WorldPos[3][0],
+      WorldPos[3][1],
+      WorldPos[3][2]
     }; //return
   }; //GetWorldPos
-
   const char* GetName() {
     return Name;
   }; //Get Name
 protected:
-  glm::mat4x4 worldPos;
+  glm::mat4x4 WorldPos;
   const char* Name;
 }; //Object
 
@@ -111,9 +104,9 @@ struct Camera :
     ViewMat = glm::lookAt(
       glm::vec3(2.0f, 2.0f, 2.0f), //Eye
       glm::vec3(
-        -x + worldPos[3][0], //Look At X
-        -y + worldPos[3][1], //Look At Y
-        -z + worldPos[3][2]), //Look At Z
+        -x + WorldPos[3][0], //Look At X
+        -y + WorldPos[3][1], //Look At Y
+        -z + WorldPos[3][2]), //Look At Z
       glm::vec3(0.0f, 1.0f, 0.0f)); //Height
     return ViewMat;
   }; //SetViewMatrix
@@ -135,6 +128,10 @@ private:
   float FarClip;
   UINT FOVUnit;
 }; //Camera
+
+struct Motion {
+  
+}; //Control
 
 /* EXTERNAL CLASSES*/
 struct PRIVATEPB::Features {
@@ -161,40 +158,27 @@ private:
   bool Confirmed;
 }; //FEATURES
 
-/*INTERNAL OBJECTS*/
-struct Scene {
-  std::chrono::steady_clock::time_point delta;
-  std::unordered_map<const char*, Camera*> CameraHash;
-
-  Scene() {};
-
-  void TriggerDelta() {
-    delta = std::chrono::high_resolution_clock::now();
-  }; //TriggerDelta
-
-  float GetDelta() {
-    auto cT = std::chrono::high_resolution_clock::now();
-
-    auto d = std::chrono::duration<float,
-      std::chrono::seconds::period>(cT -
-        delta).count();
-
-    return d;
-  }; //GetDelta
-
-  void ChangeCamera() {
-
-  }; //Change Camera
-
-  void UpdateCamera(UINT MotionType, float x, float y, float z) {
-
-  }; //UpdateCamera
-}; //WorldSpace
-
 struct ControlSet {
+  ControlSet() {
+    //Build Input Hash Here
+  }; //CtrlSet Ctor
 
+  BuildControlHash() {
+    
+  }; //BuildControlHash
+  LoadControlHash();
+  UnloadControlHash();
+
+  std::unordered_map <
+    //Input and Vector of Pairs
+    INT8, std::unordered_multimap 
+    //Pair of Control Type and Name
+    <INT8, const char*>
+  > InputHash;
+  std::unordered_map <INT8, Motion*> MotionHash;
 }; //ControlSet
 
+/* Interfaces */
 struct FeatureSet {
   std::unordered_map
     <const char*, Camera*>
@@ -238,9 +222,21 @@ struct PbInterface {
   FeatureSet* GetFeatures() { return Features; };
   pb::Config::Render* GetRenderConf() { return RenderConf; };
 
-  Camera* GetCamera(const char* name) {
+  Camera* GetFeature(const char* name) {
     return Features->CameraHash.at(name);
   }; //GetCamera
+
+  void IncreaseInput(int inputType, int controlType, const char* name) {
+    auto InputHash = Controls->InputHash.find(inputType)->second;
+    InputHash.emplace(controlType, name);
+    Controls->InputHash.find(inputType)->second = InputHash;
+  }; //IncreaseInput
+
+  void DecreaseInput(int inputType, int controlType, const char* name) {
+    auto InputHash = Controls->InputHash.find(inputType)->second;
+    InputHash.erase(controlType);
+    Controls->InputHash.find(inputType)->second = InputHash;
+  }; //DecreaseInput
 
 private:
   ControlSet* Controls;
@@ -248,131 +244,110 @@ private:
   pb::Config::Render* RenderConf;
 }; //PbInterface
 
+/*Scene*/
+struct Scene {
+  std::chrono::steady_clock::time_point delta;
+  std::unordered_map<const char*, Camera*> CameraHash;
+  std::unordered_map<const char*, Motion*> MotionHash;
+  std::vector<Motion*> MotionVec;
+  Camera* Camera;
 
-//Integrate into Control
-struct Input {
-  int backtick : 1;
-  int one : 1;
-  int two : 1;
-  int three : 1;
-  int four : 1;
-  int five : 1;
-  int six : 1;
-  int seven : 1;
-  int eight : 1;
-  int nine : 1;
-  int zero : 1;
-  int minus : 1;
-  int plus : 1;
-  int tab : 1;
-  int q : 1;
-  int w : 1;
-  int e : 1;
-  int r : 1;
-  int t : 1;
-  int y : 1;
-  int i : 1;
-  int o : 1;
-  int p : 1;
-  int a : 1;
-  int s : 1;
-  int d : 1;
-  int f : 1;
-  int g : 1;
-  int h : 1;
-  int j : 1;
-  int k : 1;
-  int l : 1;
-  int u : 1;
-  int colon : 1;
-  int apostophe : 1;
-  int shift : 1;
-  int z : 1;
-  int x : 1;
-  int c : 1;
-  int v : 1;
-  int b : 1;
-  int n : 1;
-  int m : 1;
-  int comma : 1;
-  int period : 1;
-  int slash : 1;
-  int alt : 1;
-  int backslash : 1;
-  int bracketLeft : 1;
-  int bracketRight : 1;
-  int cntrl : 1;
-  int space : 1;
-}; //Input
+  Scene() {};
 
-Input* input;
+  void TriggerDelta() {
+    delta = std::chrono::high_resolution_clock::now();
+  }; //TriggerDelta
+  float GetDelta() {
+    auto cT = std::chrono::high_resolution_clock::now();
+
+    auto d = std::chrono::duration<float,
+      std::chrono::seconds::period>(cT -
+        delta).count();
+
+    return d;
+  }; //GetDelta
+  void ChangeCamera(const char* Name) {
+
+  }; //Change Camera
+  void UpdateCameraPos(UINT MotionType, float x, float y, float z) {
+    switch (MotionType) {
+    case ARCHED:
+      break;
+
+    case JAGGED:
+      return;
+
+    case TELEPORT: 
+      Camera->DeltaSetWorldPos(x, y, z, GetDelta());
+      if (Camera->CheckWorldPos(x, y, z)) {
+        Camera->SetWorldPos(x,y,z);
+        Camera->SetMotionFinished(true);
+      }; //If CameraCheckWorldPos
+      return;
+
+    case LINE:
+      Camera->DeltaUpWorldPos(x, y, z, GetDelta());
+      if (Camera->CheckWorldPos(x, y, z)) {
+        Camera->SetWorldPos(x, y, z);
+      }; //If CameraCheckWorldPos
+      break;
+    } //Switch MotionType
+  }; //UpdateCamera
+  void UpdateFrameVariables() {
+    TriggerDelta();
+    
+    for () {
+
+    }; //
+
+  }; //UpdateFrameVariables
+  bool ConfirmMotionReady(Motion* motion) {
+    return true;
+    }; //Output Objects
+  }; //ConfirmMotionReady
+  void ActivateKey(bool trigger, int key, PbInterface* pb) {
+    INT8 i = 0;
+    
+    switch (key) {
+    case GLFW_KEY_SPACE:
+      return;
+    case GLFW_KEY_UNKNOWN:
+      return;
+    }; //Key Switch
+
+    if (trigger) {
+      for (auto motion : MotionHash) {
+        auto motionData = motion.second;
+        if ((motionData->GetInput() == i) 
+          && (!motion->GetDisabled())
+          && ConfirmMotionReady(motionData)) {
+          pb->IncreaseInput(i, MOTION, motion.first);
+        }// if (motionData = GetType)
+      };  //for Motion
+    } //if Pressed
+    else {
+      for (auto motion : MotionHash) {
+        auto motionData = motion.second;
+        if (motionData->GetType() == i) {
+          pb->DecreaseInput(i, MOTION, motion.first);
+        }// if (motionData = GetType)
+      };  //for Motion
+    } //Not Pressed
+  }; //ActivateKey
+}; //Scene
+
+/* Variables for General Logic*/
+PbInterface* pbInterface;
+Scene* currentScene;
 
 /* CALLBACKS */
 void KeyboardCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
-  switch (key) {
-  case GLFW_KEY_W:
-    if (action == GLFW_PRESS) {
-      input->w = 1;
-    }
-    else if (action == GLFW_RELEASE) {
-      input->w = 0;
-    }
-    return;
-
-  case GLFW_KEY_A:
-    if (action == GLFW_PRESS) {
-      input->a = 1;
-    }
-    else if (action == GLFW_RELEASE) {
-      input->a = 0;
-    }
-    return;
-
-  case GLFW_KEY_S:
-    if (action == GLFW_PRESS) {
-      input->s = 1;
-    }
-    else if (action == GLFW_RELEASE) {
-      input->s = 0;
-    }
-    return;
-
-  case GLFW_KEY_D:
-    if (action == GLFW_PRESS) {
-      input->d = 1;
-    }
-    else if (action == GLFW_RELEASE) {
-      input->d = 0;
-    }
-    return;
-
-  case GLFW_KEY_SPACE:
-    if (action == GLFW_PRESS) {
-      input->space = 1;
-    }
-    else if (action == GLFW_RELEASE) {
-      input->space = 0;
-    }
-    return;
-
-  case GLFW_KEY_E:
-    if (action == GLFW_PRESS) {
-      input->e = 1;
-    }
-    else if (action == GLFW_RELEASE) {
-      input->e = 0;
-    }
-    return;
-
-  case GLFW_KEY_Q:
-    if (action == GLFW_PRESS) {
-      input->q = 1;
-    }
-    else if (action == GLFW_RELEASE) {
-      input->q = 0;
-    }
-    return;
-  }
+  if (action == GLFW_PRESS) {
+    return currentScene->ActivateKey(true, key, pbInterface);
+  } //GLFW_PRESS
+  else if (key == GLFW_RELEASE) {
+    return currentScene->ActivateKey(false, key, pbInterface);
+  }; //GLFWRELEASE
 } //KeyboardCallback
 
 inline static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
@@ -2281,7 +2256,7 @@ VkInterface* vkInterface;
 
     uniformBuffers[currentImage]->UpdateBuffer(&ubo);
     world->TriggerDelta();
-  }
+  } //UpdateUniformBuffer
 
   void CleanupSwapChain() {
     vkDestroyImageView(vkInterface->GetGPUSoftInterface(), depthImageView, nullptr);

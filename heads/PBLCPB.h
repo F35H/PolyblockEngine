@@ -93,11 +93,13 @@ namespace pb {
 
     struct Camera :
       Feature {
-      Camera(const char* filename, INT indice) noexcept;
+      Camera(const char* filename, const char* name) noexcept;
       Camera(const char* name) noexcept;
       Camera() noexcept;
 
+      void SetWorldPos(const std::array<float, 3> array) noexcept;
       void SetWorldPos(const float x, const float y, const float z) noexcept;
+      void SetViewDirection(const std::array<float, 3> array) noexcept;
       void SetViewDirection(const float x, const float y, const float z) noexcept;
       void SetNearClip(const float nearClip) noexcept;
       void SetFarClip(const float farClip) noexcept;
@@ -126,7 +128,6 @@ namespace pb {
     struct Scene : 
       Feature {
       Scene(std::vector<const char*> filenames);
-      Scene(const Scene&);
       Scene(const char*);
       Scene();
 
@@ -160,7 +161,7 @@ namespace pb {
       const char* GetInputControl() noexcept;
 
       UINT GetOutput() noexcept;
-      const char* GetOnputControl() noexcept;
+      const char* GetOuputControl() noexcept;
     
     private:
       UINT Input = 0x00;
@@ -173,15 +174,15 @@ namespace pb {
     struct Motion :
       Trigger {
       //Inputs
-      void SetInputLocation(const float x, const float y, const float z) noexcept;
-      void SetInputVolume(const float x, const float y, const float z) noexcept;
+      void SetInputLocation(const float x, const float y, const float z) noexcept; //
+      void SetInputVolume(const float x, const float y, const float z) noexcept; //
       void SetInputFeature(const float x, const float y, const float z) noexcept; 
-      void SetInputVerticleAngle(const float angle) noexcept;
       void SetInputHorizontalAngle(const float angle) noexcept;
-      
+      void SetInputVerticleAngle(const float angle) noexcept;
+
       void SetOutputFeature(const float x, const float y, const float z) noexcept;
       void SetOutputLocation(const float x, const float y, const float z) noexcept;
-      void SetOutputVelocity(const float x) noexcept;
+      void SetOutputSpeed(const float x) noexcept;
 
       std::array<float, 3> GetInputLocation() noexcept;
       
@@ -248,9 +249,8 @@ namespace pb {
 
       static Texture* TextureFromFile(const char* filename);
       static pb::Feature::Scene* SceneFromFiles(std::vector<const char*> filenames);
-      static pb::Feature::Camera* CamFromFile(const char* filename, INT i);
+      static pb::Feature::Camera* CamFromFile(const char* filename, const char* name);
     }; //Input
-
   }; //UTILS
 
 

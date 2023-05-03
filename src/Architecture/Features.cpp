@@ -37,11 +37,13 @@ inline void pb::Feature::Camera::SetWorldPos(const float x, const float y, const
   WorldPos[1] = y;
   WorldPos[2] = z;
 }; //SetWorldPos
+inline void pb::Feature::Camera::SetWorldPos(const std::array<float, 3> array) { WorldPos = array; };
 inline void pb::Feature::Camera::SetViewDirection(const float x, const float y, const float z) noexcept {
   ViewDirection[0] = x;
   ViewDirection[1] = y;
   ViewDirection[2] = z;
 }; //SetViewDirection
+inline void pb::Feature::Camera::SetViewDirection(const std::array<float, 3> array) { ViewDirection = array; };
 inline void pb::Feature::Camera::SetNearClip(const float nearClip) noexcept { NearClip = nearClip; };
 inline void pb::Feature::Camera::SetFarClip(const float farClip) noexcept { FarClip = farClip; };
 inline void pb::Feature::Camera::SetFOVUnit(const UINT unit) noexcept { FOVUnit = unit; };
@@ -84,7 +86,7 @@ inline void pb::Feature::Scene::CopyFromIntern(pb::Feature::Scene* scene) {
   scene->SetName(GetName());
 }; //CopyFromIntern
 
-/*OTHER*/
+/* Scene Vectors */
 inline void pb::Feature::Scene::AddToCamVec(pb::Feature::Camera* Camera) {
   CamVec.emplace_back(Camera);
 }; //AddToCameraVec

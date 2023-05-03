@@ -428,14 +428,24 @@ void pb::Feature::ConfirmFeatures() {
     ->GetConfirmed()
     ) {
 
+
+    if (Features->GetCameraVector().size() != 0) {
+      pb::Feature::AddFeature(new Camera("AnonCamera"));
+    }; //If SceneCount == 0
+
     if (Features->GetSceneVector().size() == 0) {
       pb::Feature::AddFeature(new Scene("AnonScene"));
     }; //If SceneCount == 0
 
+
     Features
       ->SetConfirmed(true);
 
-    InternalLog("Writing Features", "Assigning Features to Client", "Confirming");
+    InternalLog(
+      "Writing Features", 
+      "Assigning Features to Client", 
+      "Confirming"
+    ); //InternalLog
 
     pb::Utils::Output::FlushtoLog();
   } //IfConfirmed

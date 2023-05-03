@@ -353,9 +353,11 @@
 
 #define ARCHED                                                             0x00
 #define JAGGED                                                              0x01
+#define TELEPORT                                                           0x02
+#define LINE                                                                    0x03
 
-#define TRIGGER                                                             0x02
-#define MOTION                                                             0x03
+#define TRIGGER                                                             0x04
+#define MOTION                                                             0x05
 
 //| >>= == = > <=== = <<|
 
@@ -370,6 +372,9 @@
 // DirectX:
 // GetWindowName needs to be fixed for platform and framework use. It doesn't work appropriately here because DirectX expects widestrings
 // Bring DirectX up to speed with Vulkan
+// 
+// Controls
+// Add Ability for Motion to be either Atomic Dominant or Atomic Submissive
 // 
 // Features
 // -> Finish Adding Transitivity Layer to Camera
