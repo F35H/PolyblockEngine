@@ -13,17 +13,17 @@ class PRIVATEPB {
   struct Config;
   struct Utils;
   struct Features;
-  struct Control;
+  struct Controls;
   struct Client;
   struct ClientVector;
 
-  struct GFX { GFX(pb::Config::Render* R, Features* F, Control* C); ~GFX(); };
+  struct GFX { GFX(pb::Config::Render* R, Features* F, Controls* C); ~GFX(); };
 
-  struct Vulkan13 { Vulkan13(pb::Config::Render* R, Features* F, Control* C); ~Vulkan13(); };
+  struct Vulkan13 { Vulkan13(pb::Config::Render* R, Features* F, Controls* C); ~Vulkan13(); };
 
-  struct DirectX12 { DirectX12(pb::Config::Render* R, Features* F, Control* C); ~DirectX12(); };
+  struct DirectX12 { DirectX12(pb::Config::Render* R, Features* F, Controls* C); ~DirectX12(); };
 
-  struct OpenGL { OpenGL(pb::Config::Render* R, Features F, Control C); ~OpenGL(); };
+  struct OpenGL { OpenGL(pb::Config::Render* R, Features F, Controls C); ~OpenGL(); };
 
   static ClientVector* Client_ptr;
 

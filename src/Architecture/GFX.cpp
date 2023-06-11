@@ -35,10 +35,8 @@ private:
 
     void* render = NULL;
 
-    try {
-      //Consistent Loop
-      while (1) {
-        //Select Version Here
+    while (1) {
+      try {
         switch (rend) {
         case DIRECTX12:
           if (LINUX) {
@@ -60,11 +58,11 @@ private:
           return;
 
         case VULKAN13:
-          if (OSX) { 
+          if (OSX) {
             InternalReport(
-              "Initializing Render Engine ", 
-              " Selecting Engine ", 
-              "ImproperOS: OSX"); 
+              "Initializing Render Engine ",
+              " Selecting Engine ",
+              "ImproperOS: OSX");
           } //InternalReport - OSX
 
           render = new Vulkan13(rendConf, features, control);
@@ -77,32 +75,32 @@ private:
           terminate();
 
         } //Switch
-      } //While
-    } //Try
+      } //TryBlock
 
-    //If Error Found
-    catch (const std::exception& exc) {
-      InternalLog("Initializing Render Engine ", " Selecting Engine ", exc.what());
+      //If Error Found
+      catch (const std::exception& exc) {
+        InternalLog("Initializing Render Engine ", " Selecting Engine ", exc.what());
 
-      if (render != NULL) { delete render; };
+        if (render != NULL) { delete render; };
 
-      rend -= 1;
-      
-      rendConf
-      ->SetRenderEngine(rend);
-    } //Catch
+        rend -= 1;
 
-    catch (...) {
-      InternalLog("Initializing Render Engine ", " Selecting Engine ", "Unknown Exception Occured");
+        rendConf
+          ->SetRenderEngine(rend);
+      } //Catch
 
-      delete render;
+      catch (...) {
+        InternalLog("Initializing Render Engine ", " Selecting Engine ", "Unknown Exception Occured");
 
-      rend -= 1;
+        delete render;
 
-      rendConf
-        ->SetRenderEngine(rend);
-    } //Catch
-  }; //GFX Constrct
+        rend -= 1;
+
+        rendConf
+          ->SetRenderEngine(rend);
+      } //Catch
+    }; //While
+  }; //GFX Ctor
 
   PRIVATEPB::GFX::~GFX() {
   }; //GFX

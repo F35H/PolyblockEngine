@@ -12,11 +12,13 @@ inline constexpr INT8 VERTEX_BUFF = 0;
 inline constexpr INT8 INDICE_BUFF = 1;
 inline constexpr INT8 UNIFORM_BUFF = 2;
 
+
 /* INCLUDES */
 #include <stb_image.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+
 
 /* Scene Objects */
 struct Object {
@@ -28,29 +30,30 @@ struct Object {
 
     return Name;
   }; //SetObjectName
-  glm::mat4 SetWorldPos(float x, float y, float z) {
+  void SetWorldPos(glm::vec3* pos) {
+    WorldPos[3][0] = -pos->x;
+    WorldPos[3][1] = -pos->y;
+    WorldPos[3][2] = -pos->z;
+  }; //SetWorldPOs
+  void SetWorldPos(float x, float y, float z) {
     WorldPos[3][0] = -x;
     WorldPos[3][1] = -y;
     WorldPos[3][2] = -z;
-    return WorldPos;
   }; //SetWorldPOs
-  glm::mat4 UpWorldPos(float x, float y, float z) {
-    WorldPos[3][0] += -x;
-    WorldPos[3][1] += -y;
-    WorldPos[3][2] += -z;
-    return WorldPos;
+  void UpWorldPos(glm::vec3* pos) {
+    WorldPos[3][0] += -pos->x;
+    WorldPos[3][1] += -pos->y;
+    WorldPos[3][2] += -pos->z;
   }; //UpWorldPos
-  glm::mat4 DeltaSetWorldPos(float x, float y, float z, float delta) {
-    WorldPos[3][0] = -x * delta;
-    WorldPos[3][1] = -y * delta;
-    WorldPos[3][2] = -z * delta;
-    return WorldPos;
+  void DeltaSetWorldPos(glm::vec3* pos, float delta) {
+    WorldPos[3][0] = -pos->x * delta;
+    WorldPos[3][1] = -pos->y * delta;
+    WorldPos[3][2] = -pos->z * delta;
   }; //DeltaSetWorldPos
-  glm::mat4 DeltaUpWorldPos(float x, float y, float z, float delta) {
-    WorldPos[3][0] += -x * delta;
-    WorldPos[3][1] += -y * delta;
-    WorldPos[3][2] += -z * delta;
-    return WorldPos;
+  void DeltaUpWorldPos(glm::vec3* pos, float delta) {
+    WorldPos[3][0] += -pos->x * delta;
+    WorldPos[3][1] += -pos->y * delta;
+    WorldPos[3][2] += -pos->z * delta;
   }; //DeltaUpWorldPos
   glm::mat4 GetWorldPosMat() {
     return WorldPos;
@@ -130,8 +133,114 @@ private:
 }; //Camera
 
 struct Motion {
-  
-}; //Control
+  INT8 featureType;
+  INT8 input;
+  INT8 output;
+  INT8 angleUnit;
+  bool disabled;
+  float time;
+  float accel;
+  float speed;
+  float gravity;
+  const char* name;
+  const char* featureName;
+
+  glm::vec3 outputLocation;
+  glm::vec3 inputLocation;
+
+  void CalculateArch(glm::vec3* currentPos) {
+    
+    float tSquaredHalf = -(time * time) * 0.5;
+    float xRoot = (-2 / accel * 2);
+    currentPos->x += accel * tSquaredHalf + time * (outputLocation.x / xRoot);
+    currentPos->y += gravity * tSquaredHalf + time * (outputLocation.y / (-2 / gravity * 2));
+    currentPos->z += accel * tSquaredHalf + time * (outputLocation.z / xRoot);
+
+    if (!CheckWorldPos(currentPos)) {
+      *currentPos = outputLocation;
+      SetDisabled(false);
+    }; //CheckWorldPos
+  }; //CalculateArch
+  void CalculateTeleport(glm::vec3* currentPos) {
+    *currentPos = outputLocation;
+    SetDisabled(false);
+  }; //CalculateTeleport
+  void CalculateLine(glm::vec3* currentPos) {
+    if (outputLocation.x < 0) {
+      currentPos->x -= time * (speed + accel);
+    }
+    else {
+      currentPos->x += time * (speed + accel);
+    }; //if outputLocation.x < 0
+    
+    //make this optional
+    float accelGrav = 
+      accel > gravity ? 
+      (accel - gravity) : accel;
+
+    if (outputLocation.y < 0) {
+      currentPos->y -= time * (accelGrav);
+    }
+    else {
+      currentPos->y += time * (accelGrav);
+    }; //else
+
+    if (outputLocation.z < 0) {
+      currentPos->z -= time * (speed + accel);
+    }
+    else {
+      currentPos->z += time * (speed + accel);
+    }; //if outputLocation.y < 0
+  }; //CalculateLine
+  bool CheckWorldPos(glm::vec3* posToCheck) {
+    //Negatives
+    if (outputLocation.x < 0 && posToCheck->x < outputLocation.x) {
+      return false;
+    }; //If X < 0
+    if (outputLocation.y < 0 && posToCheck->y < outputLocation.y) {
+      return false;
+    }; //If Y < 0
+    if (outputLocation.z < 0 && posToCheck->z < outputLocation.z) {
+      return false;
+    }; //If Z < 0
+
+    //Positives
+    if (outputLocation.x > 0 && posToCheck->x > outputLocation.x) {
+      return false;
+    }; //If X > 0
+    if (outputLocation.y > 0 && posToCheck->y > outputLocation.y) {
+      return false;
+    }; //If Y > 0
+    if (outputLocation.z > 0 && posToCheck->z > outputLocation.z) {
+      return false;
+    }; //If Z > 0
+  }; //CheckWorldPos
+  void AddDelta(float timeInput) {
+    time += timeInput;
+  }; //AddDelta
+  void SetDisabled(bool b) {
+    disabled = b;
+  }; //SetDisabled
+  const char* GetName() {
+    return name;
+  }; //GetName
+  INT8 GetOutput() {
+    return output;
+  }; //GetOutput
+  INT8 GetInput() {
+    return input;
+  }; //GetInput
+  INT8 GetFeatureType() {
+    return featureType;
+  }; //GetOutput
+  const char* GetFeatureName() {
+    return featureName;
+  }; //GetInput
+  bool GetDisabled() {
+    return disabled;
+  }; //GetDisabled
+}; //Motion
+
 
 /* EXTERNAL CLASSES*/
 struct PRIVATEPB::Features {
@@ -158,27 +267,21 @@ private:
   bool Confirmed;
 }; //FEATURES
 
+
+/* Interfaces */
 struct ControlSet {
   ControlSet() {
-    //Build Input Hash Here
   }; //CtrlSet Ctor
 
-  BuildControlHash() {
-    
-  }; //BuildControlHash
-  LoadControlHash();
-  UnloadControlHash();
-
   std::unordered_map <
-    //Input and Vector of Pairs
-    INT8, std::unordered_multimap 
-    //Pair of Control Type and Name
+    //ControlType and Pair
+    INT8, std::unordered_multimap
+    //Pair of InputType and Name of Control
     <INT8, const char*>
   > InputHash;
   std::unordered_map <INT8, Motion*> MotionHash;
 }; //ControlSet
 
-/* Interfaces */
 struct FeatureSet {
   std::unordered_map
     <const char*, Camera*>
@@ -222,21 +325,37 @@ struct PbInterface {
   FeatureSet* GetFeatures() { return Features; };
   pb::Config::Render* GetRenderConf() { return RenderConf; };
 
+  std::unordered_map <INT8, std::unordered_multimap<INT8, const char*>>
+    GetInputMap() {
+    return Controls->InputHash;
+  }; //GetInputMap
+
   Camera* GetFeature(const char* name) {
     return Features->CameraHash.at(name);
   }; //GetCamera
 
   void IncreaseInput(int inputType, int controlType, const char* name) {
-    auto InputHash = Controls->InputHash.find(inputType)->second;
-    InputHash.emplace(controlType, name);
-    Controls->InputHash.find(inputType)->second = InputHash;
+    auto multiHash = Controls->InputHash.find(controlType);
+    multiHash->second.emplace(inputType, name);
   }; //IncreaseInput
 
   void DecreaseInput(int inputType, int controlType, const char* name) {
-    auto InputHash = Controls->InputHash.find(inputType)->second;
-    InputHash.erase(controlType);
-    Controls->InputHash.find(inputType)->second = InputHash;
+    auto multiHash = Controls->InputHash.find(controlType)->second;
+    auto inputPair = multiHash.equal_range(inputType);
+    auto& inputItrStart = inputPair.first;
+    auto& inputItrEnd = inputPair.second;
+    for (; inputItrStart != inputItrEnd; ++inputItrStart) {
+      if (inputItrStart->second == name
+        && inputItrStart->first == inputType) {
+        multiHash.erase(inputItrStart);
+        return;
+      }; //if CorrectVar
+    }; //for 
   }; //DecreaseInput
+
+  bool CheckCapitalCondition() {
+    return false;
+  }; //CheckCapitalCondition
 
 private:
   ControlSet* Controls;
@@ -244,19 +363,21 @@ private:
   pb::Config::Render* RenderConf;
 }; //PbInterface
 
+
 /*Scene*/
 struct Scene {
   std::chrono::steady_clock::time_point delta;
   std::unordered_map<const char*, Camera*> CameraHash;
-  std::unordered_map<const char*, Motion*> MotionHash;
-  std::vector<Motion*> MotionVec;
-  Camera* Camera;
+  std::unordered_map<const char*, Motion*> MotionHashByName;
+  std::unordered_multimap<INT8, Motion*> MotionHashByInput;
+  std::vector<Motion*> CurrentMotions;
+  Camera* currentCamera;
+
+  PbInterface* pb;
 
   Scene() {};
 
-  void TriggerDelta() {
-    delta = std::chrono::high_resolution_clock::now();
-  }; //TriggerDelta
+  //Getters
   float GetDelta() {
     auto cT = std::chrono::high_resolution_clock::now();
 
@@ -266,87 +387,570 @@ struct Scene {
 
     return d;
   }; //GetDelta
+  Camera* GetCamera() {
+    return currentCamera;
+  }; //GetCamera
+  
   void ChangeCamera(const char* Name) {
-
+    
   }; //Change Camera
-  void UpdateCameraPos(UINT MotionType, float x, float y, float z) {
-    switch (MotionType) {
-    case ARCHED:
-      break;
 
-    case JAGGED:
+  //Controls Between Frames
+  void UpdateObjectPos(Motion* motion, glm::vec3* currentPos) {
+    switch (motion->GetOutput()) {
+    case ARCHED:
+      motion->CalculateArch(currentPos);
       return;
 
-    case TELEPORT: 
-      Camera->DeltaSetWorldPos(x, y, z, GetDelta());
-      if (Camera->CheckWorldPos(x, y, z)) {
-        Camera->SetWorldPos(x,y,z);
-        Camera->SetMotionFinished(true);
-      }; //If CameraCheckWorldPos
+    //case JAGGED:
+    //  motion->CalculateJag(vecPos);
+    //  return vecPos;
+
+    case TELEPORT:
+      motion->CalculateTeleport(currentPos);
       return;
 
     case LINE:
-      Camera->DeltaUpWorldPos(x, y, z, GetDelta());
-      if (Camera->CheckWorldPos(x, y, z)) {
-        Camera->SetWorldPos(x, y, z);
-      }; //If CameraCheckWorldPos
-      break;
-    } //Switch MotionType
+      motion->CalculateLine(currentPos);
+      return;
+    } //Switch MotionTypes
   }; //UpdateCamera
-  void UpdateFrameVariables() {
-    TriggerDelta();
-    
-    for () {
-
-    }; //
-
-  }; //UpdateFrameVariables
+  
   bool ConfirmMotionReady(Motion* motion) {
     return true;
-    }; //Output Objects
   }; //ConfirmMotionReady
-  void ActivateKey(bool trigger, int key, PbInterface* pb) {
+  void ActivateKey(bool keyPressed, int key) {
     INT8 i = 0;
     
     switch (key) {
-    case GLFW_KEY_SPACE:
-      return;
+    case GLFW_KEY_APOSTROPHE:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_QUOTATION
+        : KEYBOARD_APOSTROPHE;
+      break;    
+    case GLFW_KEY_COMMA:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_LESS_THAN
+        : KEYBOARD_COMMA;
+      break;    
+    case GLFW_KEY_MINUS:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_UNDERSCORE
+        : KEYBOARD_MINUS;
+      break;    
+    case GLFW_KEY_PERIOD:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_GREATER_THAN
+        : KEYBOARD_PERIOD;
+      break;    
+    case GLFW_KEY_SLASH:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_QUESTION
+        : KEYBOARD_SLASH;
+      break;    
+    case GLFW_KEY_0:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_RIGHT_PARENTHESES
+        : KEYBOARD_ZERO;
+      break;    
+    case GLFW_KEY_1:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_EXCLAMATION
+        : KEYBOARD_ONE;
+      break;    
+    case GLFW_KEY_2:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_AT
+        : KEYBOARD_TWO;
+      break;    
+    case GLFW_KEY_3:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_HASHTAG
+        : KEYBOARD_THREE;
+      break;    
+    case GLFW_KEY_4:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_DOLLAR
+        : KEYBOARD_FOUR;
+      break;    
+    case GLFW_KEY_5:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_PERCENT
+        : KEYBOARD_FIVE;
+      break;    
+    case GLFW_KEY_6:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_CARROT
+        : KEYBOARD_SIX;
+      break;    
+    case GLFW_KEY_7:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_AMPERSAND
+        : KEYBOARD_SEVEN;
+      break;    
+    case GLFW_KEY_8:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_STAR
+        : KEYBOARD_EIGHT;
+      break;    
+    case GLFW_KEY_9:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_LEFT_PARENTHESES
+        : KEYBOARD_NINE;
+      break;    
+    case GLFW_KEY_SEMICOLON:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_COLON
+        : KEYBOARD_SEMICOLON;
+      break;    
+    case GLFW_KEY_EQUAL:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_PLUS
+        : KEYBOARD_EQUAL;
+      break;    
+    case GLFW_KEY_A:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_A_UPPER
+        : KEYBOARD_A_LOWER;    
+      break;
+    case GLFW_KEY_B:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_B_UPPER
+        : KEYBOARD_B_LOWER;    
+      break;
+    case GLFW_KEY_C:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_C_UPPER
+        : KEYBOARD_C_LOWER;    
+      break;
+    case GLFW_KEY_D:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_D_UPPER
+        : KEYBOARD_D_LOWER;    
+      break;
+    case GLFW_KEY_E:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_E_UPPER
+        : KEYBOARD_E_LOWER;    
+      break;
+    case GLFW_KEY_F:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_F_UPPER
+        : KEYBOARD_F_LOWER;    
+      break;
+    case GLFW_KEY_G:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_G_UPPER
+        : KEYBOARD_G_LOWER;    
+      break;
+    case GLFW_KEY_H:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_H_UPPER
+        : KEYBOARD_H_LOWER;    
+      break;
+    case GLFW_KEY_I:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_I_UPPER
+        : KEYBOARD_I_LOWER;    
+      break;
+    case GLFW_KEY_J:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_J_UPPER
+        : KEYBOARD_J_LOWER;    
+      break;
+    case GLFW_KEY_K:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_K_UPPER
+        : KEYBOARD_K_LOWER;    
+      break;
+    case GLFW_KEY_L:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_L_UPPER
+        : KEYBOARD_L_LOWER;    
+      break;
+    case GLFW_KEY_M:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_M_UPPER
+        : KEYBOARD_M_LOWER;    
+      break;
+    case GLFW_KEY_N:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_N_UPPER
+        : KEYBOARD_N_LOWER;    
+      break;
+    case GLFW_KEY_O:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_O_UPPER
+        : KEYBOARD_O_LOWER;    
+      break;
+    case GLFW_KEY_P:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_P_UPPER
+        : KEYBOARD_P_LOWER;    
+      break;
+    case GLFW_KEY_Q:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_Q_UPPER
+        : KEYBOARD_Q_LOWER;    
+      break;
+    case GLFW_KEY_R:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_R_UPPER
+        : KEYBOARD_R_LOWER;    
+      break;
+    case GLFW_KEY_S:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_S_UPPER
+        : KEYBOARD_S_LOWER;    
+      break;
+    case GLFW_KEY_T:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_T_UPPER
+        : KEYBOARD_T_LOWER;    
+      break;
+    case GLFW_KEY_U:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_U_UPPER
+        : KEYBOARD_U_LOWER;    
+      break;
+    case GLFW_KEY_V:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_V_UPPER
+        : KEYBOARD_V_LOWER;    
+      break;
+    case GLFW_KEY_W:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_W_UPPER
+        : KEYBOARD_W_LOWER;    
+      break;
+    case GLFW_KEY_X:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_X_UPPER
+        : KEYBOARD_X_LOWER;    
+      break;
+    case GLFW_KEY_Y:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_Y_UPPER
+        : KEYBOARD_Y_LOWER;    
+      break;
+    case GLFW_KEY_Z:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_Z_UPPER
+        : KEYBOARD_Z_LOWER;    
+      break;
+    case GLFW_KEY_LEFT_BRACKET:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_BRACKET_LEFT_CURLED
+        : KEYBOARD_BRACKET_LEFT_SQUARE;    
+      break;
+    case GLFW_KEY_BACKSLASH:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_PIPE
+        : KEYBOARD_BACKSLASH;    
+      break;
+    case GLFW_KEY_RIGHT_BRACKET:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_BRACKET_RIGHT_CURLED
+        : KEYBOARD_BRACKET_RIGHT_SQUARE;    
+      break;
+    case GLFW_KEY_GRAVE_ACCENT:
+      i = (pb->CheckCapitalCondition()) 
+        ? KEYBOARD_TILDE
+        : KEYBOARD_BACKTICK;    
+      break;
+    case GLFW_KEY_ENTER:
+      i = KEYBOARD_ENTER;
+      break;
+    case GLFW_KEY_TAB:
+      i = KEYBOARD_TAB;
+      break;
+    case GLFW_KEY_BACKSPACE:
+      i = KEYBOARD_BACKSPACE;
+      break;
+    case GLFW_KEY_INSERT:
+      i = KEYBOARD_INSERT;
+      break;
+    case GLFW_KEY_DELETE:
+      i = KEYBOARD_DELETE;
+      break;
+    case GLFW_KEY_RIGHT:
+      i = KEYBOARD_RIGHT;
+      break;
+    case GLFW_KEY_LEFT:
+      i = KEYBOARD_LEFT;
+      break;
+    case GLFW_KEY_DOWN:
+      i = KEYBOARD_DOWN;
+      break;
+    case GLFW_KEY_UP:
+      i = KEYBOARD_UP;
+      break;
+    case GLFW_KEY_PAGE_DOWN:
+      i = KEYBOARD_PAGE_DOWN;
+      break;
+    case GLFW_KEY_PAGE_UP:
+      i = KEYBOARD_PAGE_UP;
+      break;
+    case GLFW_KEY_END:
+      i = KEYBOARD_END;
+      break;
+    case GLFW_KEY_CAPS_LOCK:
+      i = KEYBOARD_CAPSLOCK;
+      break;
+    case GLFW_KEY_SCROLL_LOCK:
+      i = KEYBOARD_SCROLL_LOCK;
+      break;
+    case GLFW_KEY_NUM_LOCK:
+      i = KEYBOARD_NUM_LOCK;
+      break;
+    case GLFW_KEY_PRINT_SCREEN:
+      i = KEYBOARD_PRINT_SCREEN;
+      break;
+    case GLFW_KEY_PAUSE:
+      i = KEYBOARD_PAUSE;
+      break;
+    case GLFW_KEY_F1:
+      i = KEYBOARD_FUNCTION_1;
+      break;
+    case GLFW_KEY_F2:
+      i = KEYBOARD_FUNCTION_2;
+      break;
+    case GLFW_KEY_F3:
+      i = KEYBOARD_FUNCTION_3;
+      break;
+    case GLFW_KEY_F4:
+      i = KEYBOARD_FUNCTION_4;
+      break;
+    case GLFW_KEY_F5:
+      i = KEYBOARD_FUNCTION_5;
+      break;
+    case GLFW_KEY_F6:
+      i = KEYBOARD_FUNCTION_6;
+      break;
+    case GLFW_KEY_F7:
+      i = KEYBOARD_FUNCTION_7;
+      break;
+    case GLFW_KEY_F8:
+      i = KEYBOARD_FUNCTION_8;
+      break;
+    case GLFW_KEY_F9:
+      i = KEYBOARD_FUNCTION_9;
+      break;
+    case GLFW_KEY_F10:
+      i = KEYBOARD_FUNCTION_10;
+      break;
+    case GLFW_KEY_F11:
+      i = KEYBOARD_FUNCTION_11;
+      break;
+    case GLFW_KEY_F12:
+      i = KEYBOARD_FUNCTION_12;
+      break;
+    case GLFW_KEY_F13:
+      i = KEYBOARD_FUNCTION_13;
+      break;
+    case GLFW_KEY_F14:
+      i = KEYBOARD_FUNCTION_14;
+      break;
+    case GLFW_KEY_F15:
+      i = KEYBOARD_FUNCTION_15;
+      break;
+    case GLFW_KEY_F16:
+      i = KEYBOARD_FUNCTION_16;
+      break;
+    case GLFW_KEY_F17:
+      i = KEYBOARD_FUNCTION_17;
+      break;
+    case GLFW_KEY_F18:
+      i = KEYBOARD_FUNCTION_18;
+      break;
+    case GLFW_KEY_F19:
+      i = KEYBOARD_FUNCTION_19;
+      break;
+    case GLFW_KEY_F20:
+      i = KEYBOARD_FUNCTION_20;
+      break;
+    case GLFW_KEY_F21:
+      i = KEYBOARD_FUNCTION_21;
+      break;
+    case GLFW_KEY_F22:
+      i = KEYBOARD_FUNCTION_22;
+      break;
+    case GLFW_KEY_F23:
+      i = KEYBOARD_FUNCTION_23;
+      break;
+    case GLFW_KEY_F24:
+      i = KEYBOARD_FUNCTION_24;
+      break;
+    case GLFW_KEY_F25:
+      i = KEYBOARD_FUNCTION_25;
+      break;
+    case GLFW_KEY_KP_0:
+      i = KEYBOARD_NUMPAD_0;
+      break;
+    case GLFW_KEY_KP_1:
+      i = KEYBOARD_NUMPAD_1;
+      break;
+    case GLFW_KEY_KP_2:
+      i = KEYBOARD_NUMPAD_2;
+      break;
+    case GLFW_KEY_KP_3:
+      i = KEYBOARD_NUMPAD_3;
+      break;
+    case GLFW_KEY_KP_4:
+      i = KEYBOARD_NUMPAD_4;
+      break;
+    case GLFW_KEY_KP_5:
+      i = KEYBOARD_NUMPAD_5;
+      break;
+    case GLFW_KEY_KP_6:
+      i = KEYBOARD_NUMPAD_6;
+      break;
+    case GLFW_KEY_KP_7:
+      i = KEYBOARD_NUMPAD_7;
+      break;
+    case GLFW_KEY_KP_8:
+      i = KEYBOARD_NUMPAD_8;
+      break;
+    case GLFW_KEY_KP_9:
+      i = KEYBOARD_NUMPAD_9;
+      break;
+    case GLFW_KEY_KP_DECIMAL:
+      i = KEYBOARD_NUMPAD_DECIMAL;
+      break;
+    case GLFW_KEY_KP_DIVIDE:
+      i = KEYBOARD_NUMPAD_DIVIDE;
+      break;
+    case GLFW_KEY_KP_MULTIPLY:
+      i = KEYBOARD_NUMPAD_MULTIPLY;
+      break;
+    case GLFW_KEY_KP_SUBTRACT:
+      i = KEYBOARD_NUMPAD_SUBTRACT;
+      break;
+    case GLFW_KEY_KP_ADD:
+      i = KEYBOARD_NUMPAD_ADD;
+      break;
+    case GLFW_KEY_KP_ENTER:
+      i = KEYBOARD_NUMPAD_ENTER;
+      break;
+    case GLFW_KEY_KP_EQUAL:
+      i = KEYBOARD_NUMPAD_EQUAL;
+      break;
+    case GLFW_KEY_LEFT_SHIFT:
+      i = KEYBOARD_LEFT_SHIFT;
+      break;
+    case GLFW_KEY_LEFT_CONTROL:
+      i = KEYBOARD_LEFT_ALT;
+      break;
+    case GLFW_KEY_LEFT_ALT:
+      i = KEYBOARD_LEFT_SUPER;
+      break;
+    case GLFW_KEY_LEFT_SUPER:
+      i = KEYBOARD_LEFT_SUPER;
+      break;
+    case GLFW_KEY_RIGHT_SHIFT:
+      i = KEYBOARD_RIGHT_SHIFT;
+      break;
+    case GLFW_KEY_RIGHT_CONTROL:
+      i = KEYBOARD_RIGHT_CONTROL;
+      break;
+    case GLFW_KEY_RIGHT_SUPER:
+      i = KEYBOARD_RIGHT_SUPER;
+      break;
+    case GLFW_KEY_MENU:
+      i = KEYBOARD_MENU;
+      break;
     case GLFW_KEY_UNKNOWN:
+      InternalLog(
+        "Reading keyboard Input",
+        "Returning Key Unknown",
+        "No Action Commited"
+      ); //InternalLog
       return;
     }; //Key Switch
 
-    if (trigger) {
-      for (auto motion : MotionHash) {
-        auto motionData = motion.second;
-        if ((motionData->GetInput() == i) 
-          && (!motion->GetDisabled())
-          && ConfirmMotionReady(motionData)) {
-          pb->IncreaseInput(i, MOTION, motion.first);
-        }// if (motionData = GetType)
-      };  //for Motion
-    } //if Pressed
-    else {
-      for (auto motion : MotionHash) {
-        auto motionData = motion.second;
-        if (motionData->GetType() == i) {
-          pb->DecreaseInput(i, MOTION, motion.first);
-        }// if (motionData = GetType)
-      };  //for Motion
-    } //Not Pressed
+    auto motionPair = MotionHashByInput.equal_range(i);
+    auto& motionItrStart = motionPair.first;
+    auto& motionItrEnd = motionPair.second;
+    for (; motionItrStart != motionItrEnd; ++motionItrStart) {
+      auto motion = motionItrStart->second;
+
+      if ((motion->GetInput() == i)
+        && (!motion->GetDisabled())
+        && ConfirmMotionReady(motion)) {
+        if (keyPressed) {
+          pb->IncreaseInput(i, MOTION, motion->GetName());
+        } //if keyPressed
+        else {
+          pb->DecreaseInput(i, MOTION, motion->GetName());
+        }; //else keyPressed
+      }// if (motionData = GetInput)        
+    }; //For motionItrs
   }; //ActivateKey
+  void ActivateMotion(Motion* motion) {
+    motion->SetDisabled(true);
+    motion->AddDelta(GetDelta());
+
+    switch (motion->GetFeatureType()) {
+    case CAMERA:
+      auto cam = CameraHash.find(motion->GetFeatureName())->second;
+      auto vecPos = &cam->GetWorldPosVec();
+      UpdateObjectPos(motion, vecPos);
+      cam->UpWorldPos(vecPos);
+      return;
+    }; //TYPE SWITCH
+  }; //ActivateMotion
+  
+  void UpdateFrameVariables() {
+    //Trigger Delta
+    delta = std::chrono
+      ::high_resolution_clock::now();
+
+
+    //Activate Controls
+    for (auto& ctrlType : pb->GetInputMap()) {
+      for (auto& motion : ctrlType.second) {
+        CurrentMotions.emplace_back(
+          MotionHashByName.find(motion.second)
+        ); //CurrentMotions.emplace_back
+      }; // for motion in map
+    }; //GetInputMap
+    
+
+    //ActivateMotions
+    int control = MOTION;
+    auto motionItr = CurrentMotions.begin();
+    for (auto i = CurrentMotions.size(); i > 0; --i) {
+      switch (control) {
+      case MOTION: {
+        if (!CurrentMotions[i]->GetDisabled()) {
+          CurrentMotions.erase(motionItr);
+        }; //if Enabled
+        ActivateMotion(CurrentMotions[i]);
+        if (i == 1) {
+          ActivateMotion(CurrentMotions[0]);
+          //i = ControlVector.size();
+        }; // if I == 1
+        ++motionItr;
+      } //case Motion
+      }; //Control
+    }; //for itr.size
+
+
+  }; //UpdateFrameVariables
 }; //Scene
 
-/* Variables for General Logic*/
-PbInterface* pbInterface;
+
+/* Variables for General Logic */
 Scene* currentScene;
+
 
 /* CALLBACKS */
 void KeyboardCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
   if (action == GLFW_PRESS) {
-    return currentScene->ActivateKey(true, key, pbInterface);
+    return currentScene->ActivateKey(true, key);
   } //GLFW_PRESS
   else if (key == GLFW_RELEASE) {
-    return currentScene->ActivateKey(false, key, pbInterface);
+    return currentScene->ActivateKey(false, key);
   }; //GLFWRELEASE
 } //KeyboardCallback
 
@@ -355,6 +959,7 @@ inline static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSe
 
   return VK_FALSE;
 } //CallBack
+
 
 struct GLFWInterface {
   pb::Config::Render* RendConf;
@@ -511,8 +1116,6 @@ struct Vertex {
     return attributeDescriptions;
   }
 };
-
-Camera* cam;
 
 struct Block :
   public Object {
@@ -2064,6 +2667,7 @@ VkInterface* vkInterface;
 
     UniformBufferObject ubo{};
 
+    auto cam = currentScene->GetCamera();
     ubo.model = cam->GetWorldPosMat();
     ubo.proj = cam->GetPerspectiveProj();
     ubo.view = cam->GetViewMatrix();
@@ -2250,12 +2854,13 @@ VkInterface* vkInterface;
   void UpdateUniformBuffer(uint32_t currentImage) {
     UniformBufferObject ubo{};
 
+    auto cam = currentScene->GetCamera();
+
     ubo.model = cam->GetWorldPosMat();
     ubo.proj = cam->SetPerspectiveProj(swapChainExtent.width, swapChainExtent.width);
     ubo.view = cam->GetViewMatrix();
 
     uniformBuffers[currentImage]->UpdateBuffer(&ubo);
-    world->TriggerDelta();
   } //UpdateUniformBuffer
 
   void CleanupSwapChain() {
@@ -2362,19 +2967,9 @@ VkInterface* vkInterface;
   }; //Render Frame
 
 
-  void ActuateEvents() {
-    if (input->w) { cam->DeltaUpWorldPos(0, 3, 0); };
-    if (input->a) { cam->DeltaUpWorldPos(-3, 0, 0); };
-    if (input->d) { cam->DeltaUpWorldPos(3, 0, 0); };
-    if (input->s) { cam->DeltaUpWorldPos(0, -3, 0); };
-    if (input->e) { cam->DeltaUpWorldPos(0, 0, 3); };
-    if (input->q) { cam->DeltaUpWorldPos(0, 0, -3); };
-  }; //ActuateEvents
-
   void Loop() {
     while (!glfwWindowShouldClose(vkInterface->glfw->win)) {
       glfwPollEvents();
-      ActuateEvents(); //Move to ControlSet
       RenderFrame(); //Move into Main Function?
     }
 
@@ -2386,14 +2981,17 @@ VkInterface* vkInterface;
   PRIVATEPB::Vulkan13::Vulkan13(
     pb::Config::Render* rendConf,
     PRIVATEPB::Features* F,
-    PRIVATEPB::Control* C
+    PRIVATEPB::Controls* C
   ) { //Vulkan13
     //These need to be separate due to the limits of the Pimpl Idiom
     auto featureSet = new FeatureSet();
     auto controlSet = new ControlSet();
 
-    auto hash = F->GetCameraVector();
-    featureSet->BuildCameraHash(hash, rendConf);
+    auto fHash = F->GetCameraVector();
+    auto cHash = C->GetInputVector();
+    featureSet->BuildCameraHash(fHash, rendConf);
+    controlSet->BuildCameraHash(cHash, rendConf);
+    
     delete F;
     
     //Ditch PbInterface, Replace with WorldSpace
@@ -2401,9 +2999,7 @@ VkInterface* vkInterface;
     auto pbInterface = new PbInterface(rendConf, featureSet, controlSet);
     vkInterface = new VkInterface(rendConf);
 
-    cam = pbInterface->GetCamera("Test");
-    world = new WorldSpace();
-    input = new Input();
+    auto cam = currentScene->GetCamera();
     block = new Block(CUBE);
 
     //Debug Was Moved to the Wrong Spot, Move to New Class

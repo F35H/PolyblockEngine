@@ -129,6 +129,38 @@ private:
 }; //FEATURES
 
 
+//Controls
+struct PRIVATEPB::Controls {
+  Controls() :
+    MotionVector({}),
+  {};
+
+  //Getters
+  std::vector
+    <pb::Feature::Camera*>
+    GetCameraVector() {
+    return CameraVector;
+  }; //GetCameraVec
+
+  std::vector
+    <pb::Feature::Scene*>
+    GetSceneVector() {
+    return SceneVector;
+  }; //GetSceneVec
+
+  bool GetConfirmed() { return Confirmed; };
+
+  //Setters
+  void SetConfirmed(bool b) { Confirmed = b; };
+
+private:
+  std::vector<pb::Feature::Camera*> CameraVector;
+  std::vector<pb::Feature::Scene*> SceneVector;
+
+  bool Confirmed;
+}; //FEATURES
+
+
 //CLIENT
 struct PRIVATEPB::Client {
   PRIVATEPB::Utils* Utils;

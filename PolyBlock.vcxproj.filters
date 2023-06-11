@@ -15,20 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GFX.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Arch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="heads\include\common.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -227,6 +213,150 @@
     <ClInclude Include="heads\include\sole.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="heads\FreeImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_resource_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_root_signature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_state_object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\dxcore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\dxcore_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\dxgicommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\dxgiformat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12compatibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12sdklayers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\D3D12TokenizedProgramFormat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12video.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dcommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_barriers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_check_feature_support.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_default.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_pipeline_state_stream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_property_format_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dx12_render_pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3d12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3d12compatibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3d12sdklayers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3d12shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\D3D12TokenizedProgramFormat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3d12video.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_barriers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_check_feature_support.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_default.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_pipeline_state_stream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_property_format_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_render_pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_resource_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_root_signature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\d3dx12_state_object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\dxcore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\dxcore_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\dxgicommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\include\DXHelpers\dxgiformat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\csv-parser-2.1.3\csv-parser-2.1.3\include\csv.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\micha\Downloads\csv-parser-2.1.3\csv-parser-2.1.3\single_include\csv.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="heads\csv.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\dlls\glfw3.dll" />
@@ -246,6 +376,9 @@
     <None Include="bin\dlls\VkLayer_screenshot.dll" />
     <None Include="bin\dlls\dxcompiler.dll" />
     <None Include="bin\dlls\FreeImage.dll" />
+    <None Include="FreeImage.dll" />
+    <None Include="shaders\shadVert\vert.vert" />
+    <None Include="..\..\..\..\Users\micha\Downloads\csv-parser-2.1.3\csv-parser-2.1.3\build\include\internal\Debug\csv.pdb" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="libs\FreeImage.lib" />
@@ -253,5 +386,85 @@
     <Library Include="libs\glfw3_mt.lib" />
     <Library Include="libs\glfw3dll.lib" />
     <Library Include="libs\vulkan-1.lib" />
+    <Library Include="..\..\..\..\Users\micha\Downloads\csv-parser-2.1.3\csv-parser-2.1.3\build\include\internal\Debug\csv.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Architecture\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Architecture\GFX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Architecture\Arch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Vulkan\Vulkan13.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Blocks\Indices.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\DirectX\Direct3D12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Blocks\Vertices.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Blocks\Colors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Blocks\Textures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Architecture\Features.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Architecture\Controls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\dxgicommon.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\dxgiformat.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12compatibility.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12sdklayers.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3d12video.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="..\..\..\..\Users\micha\Downloads\DirectX-Headers-1.608.2\DirectX-Headers-1.608.2\include\directx\d3dcommon.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="heads\include\DXHelpers\d3d12.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="heads\include\DXHelpers\d3d12compatibility.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="heads\include\DXHelpers\d3d12sdklayers.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="heads\include\DXHelpers\d3d12video.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="heads\include\DXHelpers\dxgicommon.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="heads\include\DXHelpers\dxgiformat.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

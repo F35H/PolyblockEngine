@@ -7,7 +7,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 
   auto Camera = new pb::Feature::Camera();
 
-  Render->SetRenderEngine(VULKAN13);
+  Render->SetRenderEngine(pb::RenderEngine::VULKAN13);
   Render->SetDirectXInstanceID(hInstance);
   Render->SetDirectXCmdShow(nCmdShow);
   Render->SetWindowWidth(600);

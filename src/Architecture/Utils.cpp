@@ -897,30 +897,47 @@ void pb::Utils::Output::ThrowTimedError(std::string macro, std::string meso, std
 }; //ThrowTimedError
 
 
-#undef RADIAN 0x00
-#undef DEGREE 0x01
-bool CSVTypeCheck(csv::CSVField csvValue, int i) {
-  inline constexpr int null = 0;
-  inline constexpr int integer = 1;
-  inline constexpr int string = 2;
-  inline constexpr int floating = 3;
+#undef RADIAN
+#undef DEGREE
+
+#undef ARCHED
+#undef JAGGED
+#undef TELEPORT
+#undef LINE
+#undef TRIGGER
+#undef MOTION
+
+const enum CSVTypes {
+  null = 0, 
+  integer, 
+  string, 
+  floating
+}; //CSVTypes
+
+const enum CSVMacroDef {
+  Vec3 = 0,
+  TrigUnit,
+  OutputType
+}; //CSVTypes
+
+bool CSVTypeCheck(csv::CSVField csvValue, CSVTypes i) {
   switch (i) {
-  case null: 
+  case CSVTypes::null: 
     if (csvValue.is_null()) {
       return true;
     } //CSVValue is Null
     return false;
-  case integer:
+  case CSVTypes::integer:
     if (csvValue.is_int()) {
       return true;
     } //CSVValue is int
     return false;
-  case string:
+  case CSVTypes::string:
     if (csvValue.is_str()) {
       return true;
     } //CSVValue is str
     return false;
-  case floating:
+  case CSVTypes::floating:
     if (csvValue.is_float()) {
       return true;
     } //CSVValue is float
@@ -928,17 +945,14 @@ bool CSVTypeCheck(csv::CSVField csvValue, int i) {
   }; //Switch
 }; //CSVTypeCheck
 
+
 //Finish This
-std::array<float, 3> CSVStringFormat(const char* c, int i) {
-  inline constexpr int WorldPos = 0;
-  inline constexpr int ViewMat = 1;
-  inline constexpr int FOVUnit = 2;
-  inline constexpr int charSizeLimit = 5;
+std::array<float, 3> CSVStringFormat(const char* c, CSVMacroDef i) {
   std::array<float, 3> rtrnArray;
+  inline constexpr int charSizeLimit = 3;
   
   switch (i) {
-  WorldPos:
-  ViewMat: {
+  case CSVMacroDef::Vec3: {
       int j = 2, charIndex = charSizeLimit;
       for (size_t i = strlen(c); strlen(c) > i; --i, --charIndex) {
         char charArray[charSizeLimit];
@@ -966,7 +980,7 @@ std::array<float, 3> CSVStringFormat(const char* c, int i) {
     }; //Tri-Int Parse
     return rtrnArray;
 
-  FOVUnit:
+  case CSVMacroDef::TrigUnit:
     if (c == "RADIAN") {
       rtrnArray[0] = 0x00;
     } //if (c == RADIAN)
@@ -974,11 +988,41 @@ std::array<float, 3> CSVStringFormat(const char* c, int i) {
       rtrnArray[0] = 0x01;
     }; //Else IF DEGREE
     return rtrnArray;
-  }; //Switch
-}; //CSVStirngFormat
+  
+  case CSVMacroDef::OutputType:
+    if (c == "ARCHED") {
+      rtrnArray[0] = 0x00;
+    } // (c == "ARCHED")
+    else if (c == "JAGGED") {
+      rtrnArray[0] = 0x01;
+    } // (c == "JAGGED")
+    else if (c == "TELEPORT") {
+      rtrnArray[0] = 0x02;
+    } // (c == "TELEPORT")
+    else if (c == "LINE") {
+      rtrnArray[0] = 0x03;
+    } // (c == "LINE")
+    else if (c == "TRIGGER") {
+      rtrnArray[0] = 0x04;
+    } // (c == "TRIGGER")
+    else if (c == "MOTION") {
+      rtrnArray[0] = 0x05;
+    }; // (c == "MOTION")
 
-#define RADIAN 0x00
-#define DEGREE 0x01
+  }; //Switch
+
+}; //CSVStringFormat
+
+#define RADIAN      0x00
+#define DEGREE      0x01
+
+#define ARCHED      0x00
+#define JAGGED      0x01
+#define TELEPORT    0x02
+#define LINE        0x03
+
+#define TRIGGER     0x04
+#define MOTION      0x05
 
 pb::Utils::Input::Texture* pb::Utils::Input::TextureFromFile(const char* filename) {
   auto t = new Texture();
@@ -1017,13 +1061,24 @@ pb::Feature::Scene* pb::Utils::Input::SceneFromFiles(std::vector<const char*> fi
 
 }; //SceneFromFiles
 pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const char* name) {
+  const enum CSVHeaders {
+    CameraName = 0,
+    TransitiveLayer,
+    WorldPos,
+    ViewDir,
+    FOV,
+    FOVUnit,
+    FarClip,
+    NearClip
+  }; //CSVTypes
+  
   csv::CSVFormat format;
   format.trim({ ' ', '\t' });
   
   csv::CSVReader csvRows = csv::CSVReader(filename, format);
   for (auto& rows : csvRows) {
-    if (CSVTypeCheck(rows["Camera"], 0) 
-      && CSVTypeCheck(rows["Camera"], 2));
+    if (CSVTypeCheck(rows["Camera"], CSVTypes::null) 
+      && CSVTypeCheck(rows["Camera"], CSVTypes::string));
 
     if (rows["Camera"] == std::string(name)) {
       auto newCam = new pb::Feature::Camera();
@@ -1031,8 +1086,8 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
       int i = 0;
       for (auto& fields : rows) {
         switch (i) {
-        case 0: //name
-          if (!CSVTypeCheck(fields, 2)) {
+        case CameraName: //name
+          if (!CSVTypeCheck(fields, CSVTypes::string)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1041,9 +1096,9 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
           }; //CSVTypeCheck
 
           newCam->SetName(name);
-          break;
-        case 1: //TransitiveLayer
-          if (!CSVTypeCheck(fields, 1)) {
+          continue;
+        case TransitiveLayer: //TransitiveLayer
+          if (!CSVTypeCheck(fields, CSVTypes::integer)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1052,22 +1107,22 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
           }; //CSVTypeCheck
 
           //newCam->SetName(name); 
-          break;
-        case 2: //WorldPos
-          if (!CSVTypeCheck(fields, 2)) {
+          continue;
+        case WorldPos:
+          if (!CSVTypeCheck(fields, CSVTypes::string)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
-              "Failure, Incompatible Format: WoldPos"
+              "Failure, Incompatible Format: WorldPos"
             ); //InternalReport
           }; //CSVTypeCheck
           
-          auto array = CSVStringFormat(fields.get().c_str(), 0);
+          auto array = CSVStringFormat(fields.get().c_str(), CSVMacroDef::Vec3);
 
           newCam->SetWorldPos(array);
-          break;
-        case 3: //ViewDir
-          if (!CSVTypeCheck(rows["Camera"], 2)) {
+          continue;
+        case ViewDir:
+          if (!CSVTypeCheck(rows["Camera"], CSVTypes::string)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1075,13 +1130,13 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
             ); //InternalReport
           }; //CSVTypeCheck
 
-          auto array = CSVStringFormat(fields.get().c_str(), 1);
+          auto array = CSVStringFormat(fields.get().c_str(), CSVMacroDef::Vec3);
 
           newCam->SetViewDirection(array);
-          break;
-        case 4: //FOV
-          if (!CSVTypeCheck(fields, 1)
-            && !CSVTypeCheck(fields, 3)) {
+          continue;
+        case FOV:
+          if (!CSVTypeCheck(fields, CSVTypes::integer)
+            && !CSVTypeCheck(fields, CSVTypes::floating)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1090,9 +1145,9 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
           }; //CSVTypeCheck
 
           newCam->SetFOV(std::stod(fields.get()));
-          break;
-        case 5: //FOVUnit
-          if (!CSVTypeCheck(fields, 2)) {
+          continue;
+        case FOVUnit:
+          if (!CSVTypeCheck(fields, CSVTypes::string)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1100,12 +1155,12 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
             ); //InternalReport
           }; //CSVTypeCheck
 
-          auto array = CSVStringFormat(fields.get().c_str(), 2);
+          auto array = CSVStringFormat(fields.get().c_str(), CSVMacroDef::TrigUnit);
 
           newCam->SetFOVUnit(array[0]);
           break;
-        case 6: //FarClip
-          if (!CSVTypeCheck(fields, 3)) {
+        case FarClip:
+          if (!CSVTypeCheck(fields, CSVTypes::floating)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1114,10 +1169,10 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
           }; //CSVTypeCheck
 
           newCam->SetFarClip(std::stoi(fields.get()));
-          break;
-        case 7: //NearClip
-          if (!CSVTypeCheck(fields, 1)
-            && !CSVTypeCheck(fields, 3)) {
+          continue;
+        case NearClip:
+          if (!CSVTypeCheck(fields, CSVTypes::integer)
+            && !CSVTypeCheck(fields, CSVTypes::floating)) {
             InternalReport(
               "Reading Files",
               "Uploading Camera",
@@ -1126,7 +1181,7 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
           }; //CSVTypeCheck
           
           newCam->SetNearClip(std::stoi(fields.get()));
-          break;
+          continue;
         }; //Field Switch
         ++i;
       }; //for auto& fields 
@@ -1139,7 +1194,93 @@ pb::Feature::Camera* pb::Utils::Input::CamFromFile(const char* filename, const c
     "Failure, Incompatible Format: Camera"
   ); //InternalReport
 }; //CamFromFile
+pb::Feature::Motion* pb::Utils::Input::MotionFromFile(const char* filename, const char* name) {
+  const enum CSVHeaders {
+    MotionName = 0,
+    OutputFeatureName,
+    OutputLocation,
+    OutputAccel,
+    OutputGravity,
+    Output,
+    OutputType,
+    OutputControl,
+    Input,
+    InputType,
+    InputControl,
+    InputLocation
+  }; //CSVTypes
+  
+  csv::CSVFormat format;
+  format.trim({ ' ', '\t' });
 
+  csv::CSVReader csvRows = csv::CSVReader(filename, format);
+  for (auto& rows : csvRows) {
+    if (CSVTypeCheck(rows["Motion"], CSVTypes::null)
+      && CSVTypeCheck(rows["Motion"], CSVTypes::string));
+
+    if (rows["Motion"] == std::string(name)) {
+      auto newMotion = new pb::Control::Motion();
+
+      int i = 0;
+      for (auto& fields : rows) {
+        switch (i) {
+        case 0: //name - string
+          if (!CSVTypeCheck(fields, CSVTypes::string)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: Name"
+            ); //InternalReport
+          }; //CSVTypeCheck
+          continue;
+
+        case 1: //OutputFeatureName - string
+          if (!CSVTypeCheck(fields, CSVTypes::string)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: OutputFeatureName"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          newMotion->SetOutputName(fields.get().c_str());
+          continue;
+
+        case 2: //OutputFeatureType - string
+          if (!CSVTypeCheck(fields, CSVTypes::string)) {
+            InternalReport(
+              "Reading Files",
+              "Uploading Camera",
+              "Failure, Incompatible Format: OutputFeatureType"
+            ); //InternalReport
+          }; //CSVTypeCheck
+
+          auto array = CSVStringFormat(fields.get().c_str(), CSVMacroDef::OutputType);
+
+          newMotion->SetOutputType(array[0]);
+          continue;
+
+        case 3:
+          newMotion->SetOutputAccel();
+          continue;
+        case 4:
+          continue;
+        case 5:
+          continue;
+        case 6:
+          continue;
+        case 7:
+          continue;
+        case 8:
+          continue;
+        case 9:
+          continue;
+        case 10:
+          continue;
+        case 11:
+          continue;
+        
+}; //MotionFromFile
 
 bool pb::Config::Utils::IsLogTimed() noexcept {
   return Timed;
